@@ -19,17 +19,21 @@ class Myservice extends StatefulWidget {
 class _MyserviceState extends State<Myservice> {
   InformationModel informationModel;
   UserModel userModel;
+  List<String> listOwner ;
+
    @override
   void initState() {
     // TODO: implement initState
     super.initState();
     userModel = widget.user_model;
+    listOwner = userModel.ownerID;
+
   }
   
   List<Widget> widgets = [];
   int index = 0;
   List<String> titles = MyConstant.listMenu;
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +66,7 @@ class _MyserviceState extends State<Myservice> {
         alignment: Alignment.center,
             child: Scaffold(
           body: ListView.builder(
-            itemCount: 3,
+            itemCount: listOwner.length,
             itemBuilder: (context, index) => GestureDetector(
               onTap: () => Navigator.push(
                 context,
@@ -84,7 +88,7 @@ class _MyserviceState extends State<Myservice> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Center(
-                    child: ShowTitle(title: 'Work  $index', index: 1),
+                    child: ShowTitle(title: listOwner[index], index: 1),
                   ),
                 ),
               ),

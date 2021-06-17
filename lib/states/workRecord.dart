@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:wesafe/models/user_Model.dart';
 import 'package:wesafe/states/authen.dart';
+import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
@@ -73,15 +74,21 @@ class _WorkRecordState extends State<WorkRecord> {
               children: [
                 RadioListTile(
                   value: '0',
-                  groupValue: "",
-                  onChanged: (value) {},
+                  groupValue: choose,
+                  onChanged: (value) {
+                    setState(() {
+                      choose=value;
+                    });
+                  },
                   title: Text('GND'),
                 ),
                  RadioListTile(
                   value: '1',
-                  groupValue: "",
-                  onChanged: (value) {
-                  Authen();
+                  groupValue: choose,
+                  onChanged: (value) {                  
+                    setState(() {
+                      choose=value;
+                    });
                   },
                   title: Text('ไม่ GND'),
                 ),
@@ -215,7 +222,9 @@ class _WorkRecordState extends State<WorkRecord> {
       child: buildSaveChecklist(),
       bottom: 50.8,
       left: size * 0.4,
+      
     );
+   
   }
 
   Widget buildSaveChecklist() {
@@ -224,10 +233,13 @@ class _WorkRecordState extends State<WorkRecord> {
         children: [
           Container(
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                normalDialog(context, 'radio value : ', choose);
+              },
               child: Container(child: Text('บันทึก')),
             ),
           ),
+          
         ],
       ),
     );
