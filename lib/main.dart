@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/states/authen.dart';
-import 'package:wesafe/states/myservice.dart';
+import 'package:wesafe/states/pincode.dart';
 
 final Map<String, WidgetBuilder> map = {
   '/authen': (BuildContext context) => Authen(),
-  '/myservice': (BuildContext context) => Myservice(),
+  '/mainMenu': (BuildContext context) => PinCodeAuthen(),
 };
 
 String initialRoute;
@@ -13,13 +13,14 @@ String initialRoute;
 Future<Null> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SharedPreferences preferences = await SharedPreferences.getInstance();
-  String employedidLogin = preferences.getString('employedid');
-  if (employedidLogin == null) {
+  String pincode = preferences.getString('PINCODE');
+  if (pincode == null) {
     initialRoute = '/authen';
     runApp(MyApp());
-  }else {
-    initialRoute = '/myservice';
+  }else{
+  initialRoute = '/mainMenu';
     runApp(MyApp());
+    // goto pincode
   }
 }
 

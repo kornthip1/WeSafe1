@@ -9,9 +9,11 @@ class UserModel {
   String learderID;
   String learderName;
   List<String> ownerID;
+  List<String> ownerIDDesc;
   String userRole;
   String canApprove;
   String ownerName;
+  String pinCode;
 
   UserModel(
       {this.eMPLOYEEID,
@@ -24,9 +26,11 @@ class UserModel {
       this.learderID,
       this.learderName,
       this.ownerID,
+      this.ownerIDDesc,
       this.userRole,
       this.canApprove,
-      this.ownerName});
+      this.ownerName,
+      this.pinCode});
 
   UserModel.fromJson(Map<String, dynamic> json) {
     eMPLOYEEID = json['EMPLOYEE_ID'];
@@ -39,9 +43,11 @@ class UserModel {
     learderID = json['LearderID'];
     learderName = json['LearderName'];
     ownerID = json['Owner_ID'].cast<String>();
+    ownerIDDesc = json['Owner_ID_Desc'].cast<String>();
     userRole = json['UserRole'];
     canApprove = json['CanApprove'];
     ownerName = json['Owner_Name'];
+    pinCode = json['PINCODE'];
   }
 
   Map<String, dynamic> toJson() {
@@ -56,9 +62,11 @@ class UserModel {
     data['LearderID'] = this.learderID;
     data['LearderName'] = this.learderName;
     data['Owner_ID'] = this.ownerID;
+    data['Owner_ID_Desc'] = this.ownerIDDesc;
     data['UserRole'] = this.userRole;
     data['CanApprove'] = this.canApprove;
     data['Owner_Name'] = this.ownerName;
+    data['PINCODE'] = this.pinCode;
     return data;
   }
 }

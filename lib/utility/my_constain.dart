@@ -4,6 +4,10 @@ class MyConstant {
   static final String authen = 'images/WeSafe.png';
   static final String man = 'images/man.png';
   static final String image = 'images/image.png';
+  static final String imageOutage = 'images/hotline.png';
+  static final String imageHotline = 'images/outage.png';
+
+  static final String keyPincode = "PINCODE";
 
   static final String appName = 'WeSafe';
   static final String webService =

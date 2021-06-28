@@ -2,12 +2,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/error_Model.dart';
 import 'package:wesafe/models/user_Model.dart';
-import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/states/myservice.dart';
+import 'package:wesafe/states/pincode.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showImage.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
@@ -70,15 +72,24 @@ class _AuthenState extends State<Authen> {
 
   Container buildLogin() {
     return Container(
-      child: ElevatedButton(
-        onPressed: () {
-          if (formKey.currentState.validate()) {
-            // print('NO space');
-            checkLogin(userController.text, passwordController.text);
-          }
-        },
-        child: Text('เข้าสู่ระบบ'),
-      ),
+      child: 
+          ElevatedButton(
+            onPressed: () {
+              if (formKey.currentState.validate()) {
+                // print('NO space');
+                checkLogin(userController.text, passwordController.text);
+              }
+            },
+            child: Text('ลงทะเบียน'),
+          ),
+          // ElevatedButton(
+          //   onPressed: () {
+          //     SQLiteHelperWorkList sqlite = new SQLiteHelperWorkList();
+          //     sqlite.dropDB();
+          //   },
+          //   child: Text('DROP DB'),
+          // ),
+       
     );
   }
 
@@ -90,7 +101,8 @@ class _AuthenState extends State<Authen> {
       request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
       request.write('{"userName": "$user",   "passwd": "$pass"}');
       final response = await request.close();
-
+      final SharedPreferences preferences =
+          await SharedPreferences.getInstance();
       UserModel userModel;
       Errormodel errorModel;
       response.transform(utf8.decoder).listen((contents) {
@@ -99,6 +111,10 @@ class _AuthenState extends State<Authen> {
           errorModel = Errormodel.fromJson(json.decode(contents));
           normalDialog(context, 'Error', errorModel.error);
         } else {
+          if (remember) {
+            preferences.setString(MyConstant.keyPincode, "123456");
+          }
+
           userModel = UserModel.fromJson(json.decode(contents));
           if (userModel.ownerID.length > 1) {
             routeToMultiOwner(userModel);
@@ -127,9 +143,9 @@ class _AuthenState extends State<Authen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MainMenu(
-          userModel: userModel,
-        ),
+        builder: (context) => PinCodeAuthen(//MainMenu
+            // userModel: userModel,
+            ),
       ),
     );
   }

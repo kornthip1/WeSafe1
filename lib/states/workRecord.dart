@@ -1,13 +1,10 @@
-import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:wesafe/models/user_Model.dart';
-import 'package:wesafe/states/authen.dart';
+import 'package:wesafe/models/mastWorkListDB_Model.dart';
 import 'package:wesafe/utility/dialog.dart';
-import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
 
@@ -31,7 +28,6 @@ class _WorkRecordState extends State<WorkRecord> {
   TextEditingController dataController = TextEditingController();
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     indexWork = widget.indexWork;
 
@@ -60,6 +56,12 @@ class _WorkRecordState extends State<WorkRecord> {
                         ? buildPicture()
                         : buildRadio(),
             buildSave(),
+            ElevatedButton(
+              onPressed: () {
+                buildTESTReadSQLite();
+              },
+              child: Text('Read DATA'),
+            )
           ],
         ));
   }
@@ -77,30 +79,28 @@ class _WorkRecordState extends State<WorkRecord> {
                   groupValue: choose,
                   onChanged: (value) {
                     setState(() {
-                      choose=value;
+                      choose = value;
                     });
                   },
                   title: Text('GND'),
                 ),
-                 RadioListTile(
+                RadioListTile(
                   value: '1',
                   groupValue: choose,
-                  onChanged: (value) {                  
+                  onChanged: (value) {
                     setState(() {
-                      choose=value;
+                      choose = value;
                     });
                   },
                   title: Text('ไม่ GND'),
                 ),
               ],
             ),
-            
           ),
         ),
       ),
     );
   }
-
 
   Widget buildPicture() {
     return Scaffold(
@@ -222,9 +222,7 @@ class _WorkRecordState extends State<WorkRecord> {
       child: buildSaveChecklist(),
       bottom: 50.8,
       left: size * 0.4,
-      
     );
-   
   }
 
   Widget buildSaveChecklist() {
@@ -234,14 +232,79 @@ class _WorkRecordState extends State<WorkRecord> {
           Container(
             child: ElevatedButton(
               onPressed: () {
-                normalDialog(context, 'radio value : ', choose);
+                //normalDialog(context, 'radio value : ', choose);
+                buildTESTSQLite();
               },
               child: Container(child: Text('บันทึก')),
             ),
           ),
-          
         ],
       ),
     );
+  }
+
+  Column buildTESTSQLite() {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            SQLiteHelperWorkList().deleteSQLiteAll();
+            MastWorkListModel mastWorkListModel = MastWorkListModel(
+              workID: 1,
+              userID: 'aaaa',
+              rsg: 'I03155',
+              ownerID: '12345',
+              mainWorkID: '12345',
+              subWorkID: 6,
+              checklistID: 3,
+              lat: '12345',
+              lng: '12345',
+              workPerform: 'TEST121212',
+              remark: '12345',
+              isChoice: 0,
+              reason: '12345',
+              msgFromWeb: '12345',
+              createDate: '12345',
+              uploadDate: '12345',
+            );
+
+            SQLiteHelperWorkList().insertDatebase(mastWorkListModel).then(
+                  (value) => normalDialog(context, 'SQLite', 'Success'),
+                );
+          },
+          child: Text('บันทึกข้อมูล'),
+        ),
+      ],
+    );
+  }
+
+  Column buildTESTReadSQLite() {
+    return Column(
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            readDataSQLite();
+          },
+          child: Text('อ่านข้อมูล'),
+        ),
+      ],
+    );
+  }
+
+  Future<Null> readDataSQLite() async {
+    List<MastWorkListModel> models = [];
+    print('####### readDataSQLite() ');
+    await SQLiteHelperWorkList().readDatabase().then((result) {
+      if (result == null) {
+        normalDialog(context, 'SQLite', 'no data');
+      } else {
+        print('####### readData  result: $result');
+        models = result;
+        for (var item in models) {
+          normalDialog(
+              context, 'SQLite', '${item.workID}  :    ${item.workPerform}');
+        }
+      }
+    });
   }
 }

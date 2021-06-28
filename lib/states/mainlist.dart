@@ -165,12 +165,12 @@ class _MainListState extends State<MainList> {
     return UserAccountsDrawerHeader(
       decoration: BoxDecoration(color: MyConstant.primart),
       currentAccountPicture: ShowMan(),
-      accountName: informationModel == null
+      accountName: userModel == null
           ? Text('Name')
-          : Text('${informationModel.fIRSTNAME}  ${informationModel.lASTNAME}'),
+          : Text('${userModel.fIRSTNAME}  ${userModel.lASTNAME}'),
       accountEmail: informationModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${informationModel.dEPTNAME}'),
+          : Text('ตำแหน่ง  :  ${userModel.dEPTNAME}'),
     );
   }
 
