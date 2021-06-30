@@ -3,17 +3,19 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wesafe/models/error_Model.dart';
-import 'package:wesafe/models/user_Model.dart';
+import 'package:wesafe/models/MastWorkListModel.dart';
+import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/states/myservice.dart';
 import 'package:wesafe/states/pincode.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/my_constainDB.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showImage.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 class Authen extends StatefulWidget {
+  
   @override
   _AuthenState createState() => _AuthenState();
 }
@@ -102,7 +104,6 @@ class _AuthenState extends State<Authen> {
       final SharedPreferences preferences =
           await SharedPreferences.getInstance();
       UserModel userModel;
-      Errormodel errorModel;
       // response.transform(utf8.decoder).listen((contents) {
       //   contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
       //   userModel = UserModel.fromJson(json.decode(contents));
@@ -119,9 +120,41 @@ class _AuthenState extends State<Authen> {
           //   errorModel = Errormodel.fromJson(json.decode(contents));
           //   normalDialog(context, 'Error', errorModel.error);
          // } else {
-             print('##### else   content : $contents');
-             userModel = UserModel.fromJson(json.decode(contents));
-             routeToWorkMainMenu(userModel);
+
+
+            //  print('##### else   content : $contents');
+            //  userModel = UserModel.fromJson(json.decode(contents));
+            //  routeToWorkMainMenu(userModel);
+
+
+            SQLiteHelperWorkList sqLiteHelperWorkList = new SQLiteHelperWorkList();
+            sqLiteHelperWorkList.connectedDatabase();
+
+MastWorkListModel mastWorkListModel = MastWorkListModel(
+              workID: 2,
+              userID: 'aaaa',
+              rsg: 'I03155',
+              ownerID: '12345',
+              mainWorkID: '12345',
+              subWorkID: 6,
+              checklistID: 3,
+              lat: '12345',
+              lng: '12345',
+              workPerform: 'TEST343434',
+              remark: '12345',
+              isChoice: 0,
+              reason: '12345',
+              msgFromWeb: '12345',
+              createDate: '12345',
+              uploadDate: '12345',
+            );
+
+            SQLiteHelperWorkList().insertDatebase(mastWorkListModel).then(
+                  (value) => normalDialog(context, 'SQLite', 'Success'),
+                );
+
+
+            readDataSQLite2();
 
             // if (remember) {
             //   preferences.setString(MyConstant.keyPincode, "123456");
@@ -141,12 +174,35 @@ class _AuthenState extends State<Authen> {
             //   }
             // }
          // }
+        
         },
       );
     } catch (e) {
       normalDialog(context, "Error", e.toString());
     }
   }
+
+
+
+
+
+ Future<Null> readDataSQLite2() async {
+    List<MastWorkListModel> models = [];
+    print('####### readDataSQLite() ');
+    await SQLiteHelperWorkList().readDatabase().then((result) {
+      if (result == null) {
+        normalDialog(context, 'SQLite', 'no data');
+      } else {
+        print('####### readData  result: $result');
+        models = result;
+        for (var item in models) {
+          normalDialog(
+              context, 'SQLite', '${item.workID}  :    ${item.workPerform}');
+        }
+      }
+    });
+  }
+
 
   void routeToMultiOwner(UserModel userModel) {
     Navigator.push(
@@ -163,8 +219,7 @@ class _AuthenState extends State<Authen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PinCodeAuthen(//MainMenu
-            // userModel: userModel,
+        builder: (context) => PinCodeAuthen(user_model: userModel,
             ),
       ),
     );

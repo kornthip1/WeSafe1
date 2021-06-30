@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:wesafe/models/mastWorkListDB_Model.dart';
+import 'package:wesafe/models/MastWorkListModel.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showTitle.dart';
