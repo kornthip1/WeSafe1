@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wesafe/models/information_Model.dart';
+
 import 'package:wesafe/models/user_Model.dart';
 import 'package:wesafe/states/authen.dart';
-import 'package:wesafe/states/myservice.dart';
+
 import 'package:wesafe/states/workRecord.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/widgets/showMan.dart';
@@ -17,7 +17,6 @@ class MainList extends StatefulWidget {
 }
 
 class _MainListState extends State<MainList> {
-  InformationModel informationModel;
   UserModel userModel;
   int index = 0;
   List<String> titles = MyConstant.listMenu;
@@ -167,10 +166,10 @@ class _MainListState extends State<MainList> {
       currentAccountPicture: ShowMan(),
       accountName: userModel == null
           ? Text('Name')
-          : Text('${userModel.fIRSTNAME}  ${userModel.lASTNAME}'),
-      accountEmail: informationModel == null
+          : Text('${userModel.result.fIRSTNAME}  ${userModel.result.lASTNAME}'),
+      accountEmail: userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.dEPTNAME}'),
+          : Text('ตำแหน่ง  :  ${userModel.result.dEPTNAME}'),
     );
   }
 

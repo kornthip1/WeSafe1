@@ -72,32 +72,30 @@ class _AuthenState extends State<Authen> {
 
   Container buildLogin() {
     return Container(
-      child: 
-          ElevatedButton(
-            onPressed: () {
-              if (formKey.currentState.validate()) {
-                // print('NO space');
-                checkLogin(userController.text, passwordController.text);
-              }
-            },
-            child: Text('ลงทะเบียน'),
-          ),
-          // ElevatedButton(
-          //   onPressed: () {
-          //     SQLiteHelperWorkList sqlite = new SQLiteHelperWorkList();
-          //     sqlite.dropDB();
-          //   },
-          //   child: Text('DROP DB'),
-          // ),
-       
+      child: ElevatedButton(
+        onPressed: () {
+          if (formKey.currentState.validate()) {
+            // print('NO space');
+            checkLogin(userController.text, passwordController.text);
+          }
+        },
+        child: Text('ลงทะเบียน'),
+      ),
+      // ElevatedButton(
+      //   onPressed: () {
+      //     SQLiteHelperWorkList sqlite = new SQLiteHelperWorkList();
+      //     sqlite.dropDB();
+      //   },
+      //   child: Text('DROP DB'),
+      // ),
     );
   }
 
   Future<Null> checkLogin(String user, String pass) async {
     try {
       final client = HttpClient();
-      final request =
-          await client.postUrl(Uri.parse("${MyConstant.webService}CheckEmp"));
+      final request = await client.postUrl(
+          Uri.parse("${MyConstant.webService}WeSafeCheckEmp")); //CheckEmp
       request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
       request.write('{"userName": "$user",   "passwd": "$pass"}');
       final response = await request.close();
@@ -105,24 +103,46 @@ class _AuthenState extends State<Authen> {
           await SharedPreferences.getInstance();
       UserModel userModel;
       Errormodel errorModel;
-      response.transform(utf8.decoder).listen((contents) {
-        if (contents.contains('Error')) {
-          contents = contents.replaceAll("[", "").replaceAll("]", "");
-          errorModel = Errormodel.fromJson(json.decode(contents));
-          normalDialog(context, 'Error', errorModel.error);
-        } else {
-          if (remember) {
-            preferences.setString(MyConstant.keyPincode, "123456");
-          }
+      // response.transform(utf8.decoder).listen((contents) {
+      //   contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
+      //   userModel = UserModel.fromJson(json.decode(contents));
 
-          userModel = UserModel.fromJson(json.decode(contents));
-          if (userModel.ownerID.length > 1) {
-            routeToMultiOwner(userModel);
-          } else {
-            routeToWorkMainMenu(userModel);
-          }
-        }
-      });
+      // });
+
+      response.transform(utf8.decoder).listen(
+        (contents) {
+          contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
+
+          //if (contents.contains('Error')) {
+           // print('##### if   Error : $contents');
+          //   contents = contents.replaceAll("[", "").replaceAll("]", "");
+          //   errorModel = Errormodel.fromJson(json.decode(contents));
+          //   normalDialog(context, 'Error', errorModel.error);
+         // } else {
+             print('##### else   content : $contents');
+             userModel = UserModel.fromJson(json.decode(contents));
+             routeToWorkMainMenu(userModel);
+
+            // if (remember) {
+            //   preferences.setString(MyConstant.keyPincode, "123456");
+            // }
+
+            // userModel = UserModel.fromJson(json.decode(contents));
+            // if (userModel.result.length > 0) {
+            //   if (userModel.result[0].ownerID.length > 1) {
+
+            //     print('######## LOGIN >>>  ${userModel.result[0].fIRSTNAME}');
+            //    print('######## PINCODE >>>  ${userModel.result[0].pinCode}');
+            //     //routeToMultiOwner(userModel);
+            //     // } else {
+            //     //routeToWorkMainMenu(userModel);
+            //     // insert to sqlite and go to pincode.dart
+
+            //   }
+            // }
+         // }
+        },
+      );
     } catch (e) {
       normalDialog(context, "Error", e.toString());
     }

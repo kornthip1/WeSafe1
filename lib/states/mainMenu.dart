@@ -239,10 +239,10 @@ class _MainMenuState extends State<MainMenu> {
       currentAccountPicture: ShowMan(),
       accountName: userModel == null
           ? Text('Name')
-          : Text('${userModel.fIRSTNAME}  ${userModel.lASTNAME}'),
+          : Text('${userModel.result.fIRSTNAME}  ${userModel.result.lASTNAME}'),
       accountEmail: userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.dEPTNAME}'),
+          : Text('ตำแหน่ง  :  ${userModel.result.dEPTNAME}'),
     );
   }
 }

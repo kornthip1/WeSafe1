@@ -1,4 +1,32 @@
 class UserModel {
+  bool isSuccess;
+  Result result;
+  Null message;
+  Null error;
+
+  UserModel({this.isSuccess, this.result, this.message, this.error});
+
+  UserModel.fromJson(Map<String, dynamic> json) {
+    isSuccess = json['IsSuccess'];
+    result =
+        json['Result'] != null ? new Result.fromJson(json['Result']) : null;
+    message = json['Message'];
+    error = json['Error'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['IsSuccess'] = this.isSuccess;
+    if (this.result != null) {
+      data['Result'] = this.result.toJson();
+    }
+    data['Message'] = this.message;
+    data['Error'] = this.error;
+    return data;
+  }
+}
+
+class Result {
   String eMPLOYEEID;
   String fIRSTNAME;
   String lASTNAME;
@@ -13,9 +41,9 @@ class UserModel {
   String userRole;
   String canApprove;
   String ownerName;
-  String pinCode;
+  String pincode;
 
-  UserModel(
+  Result(
       {this.eMPLOYEEID,
       this.fIRSTNAME,
       this.lASTNAME,
@@ -30,9 +58,9 @@ class UserModel {
       this.userRole,
       this.canApprove,
       this.ownerName,
-      this.pinCode});
+      this.pincode});
 
-  UserModel.fromJson(Map<String, dynamic> json) {
+  Result.fromJson(Map<String, dynamic> json) {
     eMPLOYEEID = json['EMPLOYEE_ID'];
     fIRSTNAME = json['FIRST_NAME'];
     lASTNAME = json['LAST_NAME'];
@@ -47,7 +75,7 @@ class UserModel {
     userRole = json['UserRole'];
     canApprove = json['CanApprove'];
     ownerName = json['Owner_Name'];
-    pinCode = json['PINCODE'];
+    pincode = json['Pincode'];
   }
 
   Map<String, dynamic> toJson() {
@@ -66,7 +94,7 @@ class UserModel {
     data['UserRole'] = this.userRole;
     data['CanApprove'] = this.canApprove;
     data['Owner_Name'] = this.ownerName;
-    data['PINCODE'] = this.pinCode;
+    data['Pincode'] = this.pincode;
     return data;
   }
 }

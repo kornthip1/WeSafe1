@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wesafe/models/information_Model.dart';
-import 'package:wesafe/models/mastWorkListDB_Model.dart';
 import 'package:wesafe/models/user_Model.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/states/mainlist.dart';
-import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
@@ -21,7 +18,6 @@ class Myservice extends StatefulWidget {
 }
 
 class _MyserviceState extends State<Myservice> {
-  InformationModel informationModel;
   UserModel userModel;
   List<String> listOwner;
   List<String> listOwnerID;
@@ -31,8 +27,8 @@ class _MyserviceState extends State<Myservice> {
     // TODO: implement initState
     super.initState();
     userModel = widget.user_model;
-    listOwner = userModel.ownerIDDesc;
-    listOwnerID = userModel.ownerID;
+    listOwner = userModel.result.ownerIDDesc;
+    listOwnerID = userModel.result.ownerID;
   }
 
   List<Widget> widgets = [];
@@ -265,10 +261,10 @@ class _MyserviceState extends State<Myservice> {
       currentAccountPicture: ShowMan(),
       accountName: userModel == null
           ? Text('Name')
-          : Text('${userModel.fIRSTNAME}  ${userModel.lASTNAME}'),
+          : Text('${userModel.result.fIRSTNAME}  ${userModel.result.lASTNAME}'),
       accountEmail: userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.dEPTNAME}'),
+          : Text('ตำแหน่ง  :  ${userModel.result.dEPTNAME}'),
     );
   }
 } //class

@@ -4,7 +4,6 @@ import 'package:sqflite/sqflite.dart';
 import 'package:wesafe/models/mastWorkListDB_Model.dart';
 import 'package:path/path.dart';
 import 'package:wesafe/models/user_Model.dart';
-import 'package:wesafe/utility/dialog.dart';
 
 class SQLiteHelperWorkList {
   final String nameDatabase = 'wesafe.db';
@@ -59,6 +58,36 @@ class SQLiteHelperWorkList {
       ),
     );
   }
+
+
+  Future<Null> initailUserProfileDatabase() async {
+    await openDatabase(
+      join(await getDatabasesPath(), nameDatabase),
+      version: version,
+      onCreate: (db, version) => db.execute(
+        'CREATE TABLE $nameTable ( ' +
+            ' $columnworkID INTEGER PRIMARY KEY,' +
+            ' $columnuserID TEXT,' +
+            ' $columnrsg TEXT,' +
+            ' $columnownerID TEXT,' +
+            ' $columnmainWorkID TEXT,' +
+            ' $columnsubWorkID INTEGER,' +
+            ' $columnChecklistID INTEGER,' +
+            ' $columnLat TEXT,' +
+            ' $columnLng TEXT, ' +
+            ' $columnWorkPerform TEXT, ' +
+            ' $columnRemark TEXT, ' +
+            ' $columnIsChoice INTEGER, ' +
+            ' $columnReason TEXT, ' +
+            ' $columnPinCode TEXT, ' +
+            ' $columnMsgFromWeb TEXT, ' +
+            ' $columnCreateDate TEXT, ' +
+            ' $columnUploadDate TEXT ' +
+            ')',
+      ),
+    );
+  }
+
 
   Future<Database> connectedDatabase() async {
     return await openDatabase(join(await getDatabasesPath(), nameDatabase));

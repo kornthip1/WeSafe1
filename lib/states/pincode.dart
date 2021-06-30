@@ -113,7 +113,9 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
         onPressed: () {
-          clearSharedPeference();
+          //clearSharedPeference();
+
+          
         },
         style: ElevatedButton.styleFrom(primary: MyConstant.primart),
         child: Text('เข้าสู่ระบบ'),
