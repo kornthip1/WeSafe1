@@ -5,46 +5,41 @@ class SQLiteImgModel {
   String mainWorkID;
   int subWorkID;
   int checklistID;
-  int sequenceImg;
-  String base64Img;
+  String item;
+  int amount;
+  int isComplete;
   String createDate;
-  String uploadDate;
-  String isComplete;
 
   SQLiteImgModel({
     this.workID,
     this.mainWorkID,
     this.subWorkID,
     this.checklistID,
-    this.sequenceImg,
-    this.base64Img,
+    this.item,
+    this.amount,
     this.createDate,
-    this.uploadDate,
     this.isComplete,
   });
 
   SQLiteImgModel copyWith({
-     int workID,
-  String mainWorkID,
-  int subWorkID,
-  int checklistID,
-  int sequenceImg,
-  String base64Img,
-  String createDate,
-  String uploadDate,
-  String isComplete,
+    int workID,
+    String mainWorkID,
+    int subWorkID,
+    int checklistID,
+    String item,
+    int amount,
+    int isComplete,
+    String createDate,
   }) {
     return SQLiteImgModel(
       workID: workID ?? this.workID,
       mainWorkID: mainWorkID ?? this.mainWorkID,
       subWorkID: subWorkID ?? this.subWorkID,
       checklistID: checklistID ?? this.checklistID,
-      sequenceImg: sequenceImg ?? this.sequenceImg,
-      base64Img: base64Img ?? this.base64Img,
+      item: item ?? this.item,
+      amount: amount ?? this.amount,
       createDate: createDate ?? this.createDate,
-      uploadDate: uploadDate ?? this.uploadDate,
       isComplete: isComplete ?? this.isComplete,
-     
     );
   }
 
@@ -54,11 +49,10 @@ class SQLiteImgModel {
       'mainWorkID': mainWorkID,
       'subWorkID': subWorkID,
       'checklistID': checklistID,
-      'sequenceImg': sequenceImg,
-      'base64Img': base64Img,
+      'item': item,
+      'amount': amount,
       'isComplete': isComplete,
       'createDate': createDate,
-      'uploadDate': uploadDate,
     };
   }
 
@@ -67,12 +61,11 @@ class SQLiteImgModel {
       workID: map['workID'],
       mainWorkID: map['mainWorkID'],
       subWorkID: map['subWorkID'],
-      checklistID: map['checklistID'],
-      sequenceImg: map['sequenceImg'],
-      base64Img: map['base64Img'],
+      checklistID: map['ichecklistID'],
+      item: map['item'],
+      amount: map['amount'],
       isComplete: map['isComplete'],
       createDate: map['createDate'],
-      uploadDate: map['uploadDate'],
     );
   }
 
@@ -90,11 +83,10 @@ class SQLiteImgModel {
         other.mainWorkID == mainWorkID &&
         other.subWorkID == subWorkID &&
         other.checklistID == checklistID &&
-        other.sequenceImg == sequenceImg &&
-        other.base64Img == base64Img &&
+        other.item == item &&
+        other.amount == amount &&
         other.isComplete == isComplete &&
-        other.createDate == createDate &&
-        other.uploadDate == uploadDate;
+        other.createDate == createDate;
   }
 
   @override
@@ -103,10 +95,9 @@ class SQLiteImgModel {
         mainWorkID.hashCode ^
         subWorkID.hashCode ^
         checklistID.hashCode ^
-        sequenceImg.hashCode ^
-        base64Img.hashCode ^
+        item.hashCode ^
+        amount.hashCode ^
         isComplete.hashCode ^
-        createDate.hashCode ^
-        uploadDate.hashCode;
+        createDate.hashCode;
   }
 } //class

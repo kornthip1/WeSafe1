@@ -1,32 +1,75 @@
+import 'dart:convert';
+import 'dart:io';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wesafe/models/MastWorkListModel.dart';
-import 'package:wesafe/models/UserModel.dart';
-import 'package:wesafe/states/mainlist.dart';
+import 'package:wesafe/models/MastWorkListModel_test.dart';
+import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/states/mainWorkInfo.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
+import 'package:wesafe/models/mainListModel.dart';
 
 class MainMenu extends StatefulWidget {
-  final UserModel userModel;
+  final SQLiteUserModel userModel;
   final String ownerId;
   MainMenu({@required this.userModel, this.ownerId});
+
   @override
   _MainMenuState createState() => _MainMenuState();
 }
 
 class _MainMenuState extends State<MainMenu> {
-  UserModel userModel;
+  SQLiteUserModel userModel;
   String onwerId;
+  final List<String> mainMenuZ = [];
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+
     userModel = widget.userModel;
     onwerId = widget.ownerId;
+    getWorkMenu(onwerId, "I00000");
+    mainMenuZ.add("การปฏิบัติงานภายในสถานีไฟฟ้าและระบบไฟฟ้า");
+    mainMenuZ.add("อื่นๆ");
+  }
+
+  Future<Null> getWorkMenu(String ownerID, String rsg) async {
+    try {
+      final client = HttpClient();
+
+      final request = await client
+          .postUrl(Uri.parse("${MyConstant.webService}WeSafeCheckMainMenu"));
+      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+      request.write('{"Owner_ID": "$ownerID",   "REGION_CODE": "$rsg"}');
+      final response = await request.close();
+      MainListModel mainListModel;
+
+      response.transform(utf8.decoder).listen(
+        (contents) {
+          contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
+          if (contents.contains('Error')) {
+            contents = contents.replaceAll("[", "").replaceAll("]", "");
+            normalDialog(context, 'Error', contents);
+          } else {
+            //mainListModel = MainListModel.fromJson(json.decode(contents));
+
+            //print(" -------->  menu main : ${mainListModel.result[0].lineToken[0]}");
+            
+
+          
+          } //else
+        },
+      );
+    } catch (e) {
+      normalDialog(context, "Error", e.toString());
+    }
   }
 
   int index = 0;
@@ -57,16 +100,16 @@ class _MainMenuState extends State<MainMenu> {
 
   GridView buildGridViewMainMenu(BuildContext context) {
     return GridView.count(
-      crossAxisCount: 2,
-      children: List.generate(5, (index) {
+      crossAxisCount: 2,//mainMenuZ.length > 4 ? 2 : 1,
+      children: List.generate(mainMenuZ.length, (index) {
         return Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(8.0),  
           child: ElevatedButton(
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => MainList(user_model: userModel),
+                  builder: (context) => MainWorkInfo(),
                 ),
               );
             },
@@ -79,7 +122,7 @@ class _MainMenuState extends State<MainMenu> {
                     child: Container(
                       width: 60,
                       child: ShowIconImage(
-                        fromMenu: "mainO",
+                        fromMenu:   index==0? "mainO" : "mainOther",
                       ),
                     ),
                   ),
@@ -87,7 +130,7 @@ class _MainMenuState extends State<MainMenu> {
                 Padding(
                   padding: const EdgeInsets.all(9.0),
                   child: ShowTitle(
-                    title: 'item  $index',
+                    title: mainMenuZ[index],
                     index: 4,
                   ),
                 ),
@@ -105,7 +148,7 @@ class _MainMenuState extends State<MainMenu> {
       children: [
         ElevatedButton(
           onPressed: () {
-            SQLiteHelperWorkList().deleteSQLiteAll();
+            SQLiteHelper().deleteSQLiteAll();
             MastWorkListModel mastWorkListModel = MastWorkListModel(
               workID: 1,
               userID: 'aaaa',
@@ -125,7 +168,7 @@ class _MainMenuState extends State<MainMenu> {
               uploadDate: '12345',
             );
 
-            SQLiteHelperWorkList().insertDatebase(mastWorkListModel).then(
+            SQLiteHelper().insertDatebase(mastWorkListModel).then(
                   (value) => normalDialog(context, 'SQLite', 'Success'),
                 );
           },
@@ -151,7 +194,7 @@ class _MainMenuState extends State<MainMenu> {
   Future<Null> readDataSQLite() async {
     List<MastWorkListModel> models = [];
     print('####### readDataSQLite() ');
-    await SQLiteHelperWorkList().readDatabase().then((result) {
+    await SQLiteHelper().readDatabase().then((result) {
       if (result == null) {
         normalDialog(context, 'SQLite', 'no data');
       } else {
@@ -239,10 +282,13 @@ class _MainMenuState extends State<MainMenu> {
       currentAccountPicture: ShowMan(),
       accountName: userModel == null
           ? Text('Name')
-          : Text('${userModel.result.fIRSTNAME}  ${userModel.result.lASTNAME}'),
+          : Text('${userModel.firstName}  ${userModel.lastName}'),
       accountEmail: userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.result.dEPTNAME}'),
+          : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
     );
   }
+
+
+  
 }

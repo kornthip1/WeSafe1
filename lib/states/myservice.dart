@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/UserModel.dart';
+import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/states/mainlist.dart';
@@ -11,7 +12,8 @@ import 'package:wesafe/widgets/show_icon_image.dart';
 
 class Myservice extends StatefulWidget {
   final UserModel user_model;
-  Myservice({@required this.user_model});
+  final SQLiteUserModel sqliteeUserModel;
+  Myservice({@required this.user_model,this.sqliteeUserModel});
 
   @override
   _MyserviceState createState() => _MyserviceState();
@@ -19,6 +21,7 @@ class Myservice extends StatefulWidget {
 
 class _MyserviceState extends State<Myservice> {
   UserModel userModel;
+  SQLiteUserModel sqliteeUserModel;
   List<String> listOwner;
   List<String> listOwnerID;
   double size;
@@ -29,6 +32,7 @@ class _MyserviceState extends State<Myservice> {
     userModel = widget.user_model;
     listOwner = userModel.result.ownerIDDesc;
     listOwnerID = userModel.result.ownerID;
+    sqliteeUserModel = widget.sqliteeUserModel;
   }
 
   List<Widget> widgets = [];
@@ -139,7 +143,7 @@ class _MyserviceState extends State<Myservice> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MainMenu(userModel: userModel, ownerId: ownerID),
+        builder: (context) => MainMenu(userModel: widget.sqliteeUserModel, ownerId: ownerID),
       ),
     );
   }
@@ -159,7 +163,7 @@ class _MyserviceState extends State<Myservice> {
                   builder: (context) => index == 0
                       ? Authen()
                       : MainList(
-                          user_model: userModel,
+                          user_model: widget.sqliteeUserModel,
                         ),
                 ),
               ),

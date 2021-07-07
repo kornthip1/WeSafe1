@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:wesafe/models/MastWorkListModel.dart';
+import 'package:wesafe/models/MastWorkListModel_test.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showTitle.dart';
@@ -248,7 +248,7 @@ class _WorkRecordState extends State<WorkRecord> {
       children: [
         ElevatedButton(
           onPressed: () {
-            SQLiteHelperWorkList().deleteSQLiteAll();
+            SQLiteHelper().deleteSQLiteAll();
             MastWorkListModel mastWorkListModel = MastWorkListModel(
               workID: 1,
               userID: 'aaaa',
@@ -268,7 +268,7 @@ class _WorkRecordState extends State<WorkRecord> {
               uploadDate: '12345',
             );
 
-            SQLiteHelperWorkList().insertDatebase(mastWorkListModel).then(
+            SQLiteHelper().insertDatebase(mastWorkListModel).then(
                   (value) => normalDialog(context, 'SQLite', 'Success'),
                 );
           },
@@ -294,7 +294,7 @@ class _WorkRecordState extends State<WorkRecord> {
   Future<Null> readDataSQLite() async {
     List<MastWorkListModel> models = [];
     print('####### readDataSQLite() ');
-    await SQLiteHelperWorkList().readDatabase().then((result) {
+    await SQLiteHelper().readDatabase().then((result) {
       if (result == null) {
         normalDialog(context, 'SQLite', 'no data');
       } else {
