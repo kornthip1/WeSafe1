@@ -14,6 +14,7 @@ import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
 import 'package:wesafe/models/mainListModel.dart';
+import 'package:wesafe/states/checkWork.dart';
 
 class MainMenu extends StatefulWidget {
   final SQLiteUserModel userModel;
@@ -61,9 +62,7 @@ class _MainMenuState extends State<MainMenu> {
             //mainListModel = MainListModel.fromJson(json.decode(contents));
 
             //print(" -------->  menu main : ${mainListModel.result[0].lineToken[0]}");
-            
 
-          
           } //else
         },
       );
@@ -100,10 +99,10 @@ class _MainMenuState extends State<MainMenu> {
 
   GridView buildGridViewMainMenu(BuildContext context) {
     return GridView.count(
-      crossAxisCount: 2,//mainMenuZ.length > 4 ? 2 : 1,
+      crossAxisCount: 2, //mainMenuZ.length > 4 ? 2 : 1,
       children: List.generate(mainMenuZ.length, (index) {
         return Padding(
-          padding: const EdgeInsets.all(8.0),  
+          padding: const EdgeInsets.all(8.0),
           child: ElevatedButton(
             onPressed: () {
               Navigator.push(
@@ -122,7 +121,7 @@ class _MainMenuState extends State<MainMenu> {
                     child: Container(
                       width: 60,
                       child: ShowIconImage(
-                        fromMenu:   index==0? "mainO" : "mainOther",
+                        fromMenu: index == 0 ? "mainO" : "mainOther",
                       ),
                     ),
                   ),
@@ -223,7 +222,13 @@ class _MainMenuState extends State<MainMenu> {
         setState(() {
           index = 0;
         });
-        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+               CheckWork(),
+          ),
+        );
       },
     );
   }
@@ -288,7 +293,4 @@ class _MainMenuState extends State<MainMenu> {
           : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
     );
   }
-
-
-  
 }

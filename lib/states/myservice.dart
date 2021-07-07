@@ -9,6 +9,7 @@ import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
+import 'package:wesafe/states/checkWork.dart';
 
 class Myservice extends StatefulWidget {
   final UserModel user_model;
@@ -226,10 +227,17 @@ class _MyserviceState extends State<Myservice> {
         setState(() {
           index = 0;
         });
-        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+               CheckWork(),
+          ),
+        );
       },
     );
   }
+  
 
   Column buildSignOut() {
     return Column(

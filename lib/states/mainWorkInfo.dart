@@ -1,18 +1,18 @@
-import 'dart:ffi';
+
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:wesafe/models/sqliteUserModel.dart';
-import 'package:wesafe/states/authen.dart';
+
 import 'package:wesafe/states/mainlist.dart';
 
-import 'package:wesafe/states/workRecord.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 import 'package:wesafe/utility/Test.dart';
+import 'package:wesafe/states/checkWork.dart';
 
 class MainWorkInfo extends StatefulWidget {
   final SQLiteUserModel user_model;
@@ -30,7 +30,6 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     userModel = widget.user_model;
   }
@@ -241,7 +240,13 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         setState(() {
           index = 0;
         });
-        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+               CheckWork(),
+          ),
+        );
       },
     );
   }

@@ -12,6 +12,7 @@ import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/utility/Test.dart';
+import 'package:wesafe/states/checkWork.dart';
 
 class MainList extends StatefulWidget {
   final SQLiteUserModel user_model;
@@ -59,9 +60,9 @@ class _MainListState extends State<MainList> {
 
   Widget buildBodyContent() {
     return new Column(
-      children: <Widget>[
+      children: <Widget>[       
         Padding(
-          padding: const EdgeInsets.all(8.0),
+          padding: const EdgeInsets.all(1.0),
           child: buildWorkPerform(),
         ),
         Divider(
@@ -71,6 +72,12 @@ class _MainListState extends State<MainList> {
         ),
         buildDoc(),
         buildListView(),
+         new Positioned(
+          child: ElevatedButton(
+            onPressed: () {},
+            child: Text("ยืนยัน"),
+          ),
+        ),
       ],
     );
   }
@@ -83,7 +90,7 @@ class _MainListState extends State<MainList> {
         Row(
           children: [
             Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(3.0),
               child: Container(child: Text("รายละเอียดงาน")),
             ),
           ],
@@ -118,7 +125,7 @@ class _MainListState extends State<MainList> {
         Row(
           children: [
             Padding(
-              padding: const EdgeInsets.all(12.0),
+              padding: const EdgeInsets.all(3.0),
               child: Container(child: Text("เอกสารขอดับไฟ")),
             ),
           ],
@@ -170,8 +177,16 @@ class _MainListState extends State<MainList> {
               context,
               MaterialPageRoute(
                 builder: (context) => WorkRecord(
-                  indexWork: int.parse(_listwork[index]
-                      .value), //index is work type 0 = checklist, 1 = text , 2 = pic , 3 = radio
+                  indexWork: int.parse(
+                    _listwork[index].value,
+                  ), //index is work type 0 = checklist, 1 = text , 2 = pic , 3 = radio
+                  workListname: _listwork[index].name.contains("ลักษณะงาน")
+                      ? "ดับทั้งสถานีไฟฟ้า"
+                      : _listwork[index].name.contains("ตรวจวัดเเรงดัน")
+                          ? "ตรวจวัดเเรงดัน"
+                          : _listwork[index].name.contains("ต่อลงดิน")
+                              ? "Sort GND"
+                              : "",
                 ),
               ),
             ),
@@ -232,7 +247,13 @@ class _MainListState extends State<MainList> {
         setState(() {
           index = 0;
         });
-        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+               CheckWork(),
+          ),
+        );
       },
     );
   }

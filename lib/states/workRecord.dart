@@ -10,7 +10,8 @@ import 'package:wesafe/widgets/show_icon_image.dart';
 
 class WorkRecord extends StatefulWidget {
   final int indexWork;
-  WorkRecord({@required this.indexWork});
+  final String workListname;
+  WorkRecord({@required this.indexWork, this.workListname});
 
   @override
   _WorkRecordState createState() => _WorkRecordState();
@@ -24,6 +25,7 @@ class _WorkRecordState extends State<WorkRecord> {
   //image
   List<File> files = [];
   int amountPic;
+  String workListname = "";
 
   TextEditingController dataController = TextEditingController();
   @override
@@ -36,6 +38,7 @@ class _WorkRecordState extends State<WorkRecord> {
     }
 
     amountPic = files.length;
+    workListname = widget.workListname;
   }
 
   @override
@@ -54,19 +57,16 @@ class _WorkRecordState extends State<WorkRecord> {
                     ? buildTextBox()
                     : indexWork == 2
                         ? buildPicture()
-                        : buildRadio(),
+                        : workListname.contains("ดับทั้งสถานีไฟฟ้า")
+                            ? buildRadioWorkType()
+                            : buildRadio(),
             buildSave(),
-            ElevatedButton(
-              onPressed: () {
-                buildTESTReadSQLite();
-              },
-              child: Text('Read DATA'),
-            )
           ],
         ));
   }
 
-  Widget buildRadio() {
+  Widget buildRadioWorkType() {
+    double size = MediaQuery.of(context).size.width;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -74,25 +74,118 @@ class _WorkRecordState extends State<WorkRecord> {
           child: Container(
             child: Column(
               children: [
-                RadioListTile(
-                  value: '0',
-                  groupValue: choose,
-                  onChanged: (value) {
-                    setState(() {
-                      choose = value;
-                    });
-                  },
-                  title: Text('GND'),
+                Column(
+                  children: [
+                    RadioListTile(
+                      value: '0',
+                      groupValue: choose,
+                      onChanged: (value) {
+                        setState(() {
+                          choose = value;
+                        });
+                      },
+                      title: Text(workListname),
+                    ),
+                  ],
                 ),
-                RadioListTile(
-                  value: '1',
-                  groupValue: choose,
-                  onChanged: (value) {
-                    setState(() {
-                      choose = value;
-                    });
-                  },
-                  title: Text('ไม่ GND'),
+                Column(
+                  children: [
+                    RadioListTile(
+                      value: '1',
+                      groupValue: choose,
+                      onChanged: (value) {
+                        setState(() {
+                          choose = value;
+                        });
+                      },
+                      title: Text('ดับไฟ้าบางส่วน ระบุจุดดับไฟ'),
+                    ),
+                    Container(
+                      width: size * 0.6,
+                      child: TextField(
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.notes),
+                          labelText: 'ระบุจุดดับไฟ',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    RadioListTile(
+                      value: '2',
+                      groupValue: choose,
+                      onChanged: (value) {
+                        setState(() {
+                          choose = value;
+                        });
+                      },
+                      title: Text('ไม่ $workListname'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget buildRadio() {
+    double size = MediaQuery.of(context).size.width;
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Center(
+          child: Container(
+            child: Column(
+              children: [
+                Column(
+                  children: [
+                    RadioListTile(
+                      value: '0',
+                      groupValue: choose,
+                      onChanged: (value) {
+                        setState(() {
+                          choose = value;
+                        });
+                      },
+                      title: Text(workListname),
+                    ),
+                    Container(
+                      child: IconButton(
+                        icon: Icon(Icons.add_a_photo),
+                        onPressed: () => createImage(0, ImageSource.camera),
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    RadioListTile(
+                      value: '1',
+                      groupValue: choose,
+                      onChanged: (value) {
+                        setState(() {
+                          choose = value;
+                        });
+                      },
+                      title: Text('ไม่ $workListname'),
+                    ),
+                    Container(
+                      width: size * 0.6,
+                      child: TextField(
+                        decoration: InputDecoration(
+                          prefixIcon: Icon(Icons.notes),
+                          labelText: 'เหตุผลที่ไม่ $workListname ',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -225,17 +318,20 @@ class _WorkRecordState extends State<WorkRecord> {
     );
   }
 
+//buildTESTSQLite();
   Widget buildSaveChecklist() {
     return Center(
       child: Column(
         children: [
           Container(
-            child: ElevatedButton(
-              onPressed: () {
-                //normalDialog(context, 'radio value : ', choose);
-                buildTESTSQLite();
-              },
-              child: Container(child: Text('บันทึก')),
+            child: new Positioned(
+              child: ElevatedButton(
+                
+                onPressed: () {
+                  buildTESTSQLite();
+                },
+                child: Text("บันทึก"),
+              ),
             ),
           ),
         ],
