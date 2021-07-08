@@ -3,21 +3,34 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wesafe/models/MastWorkListModel_test.dart';
+import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/models/sqliteWorklistModel.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
 
+import 'mainlist.dart';
+
 class WorkRecord extends StatefulWidget {
+  final int index;
   final int indexWork;
   final String workListname;
-  WorkRecord({@required this.indexWork, this.workListname});
+  final SQLiteUserModel sqLiteUserModel;
+  final SQLiteWorklistModel sqLiteWorklistModel;
+  WorkRecord(
+      {@required this.index,
+      this.indexWork,
+      this.workListname,
+      this.sqLiteUserModel,
+      this.sqLiteWorklistModel});
 
   @override
   _WorkRecordState createState() => _WorkRecordState();
 }
 
 class _WorkRecordState extends State<WorkRecord> {
+  int _index;
   int indexWork;
   double size;
   double sizeH;
@@ -26,8 +39,9 @@ class _WorkRecordState extends State<WorkRecord> {
   List<File> files = [];
   int amountPic;
   String workListname = "";
-
+  SQLiteUserModel userModel;
   TextEditingController dataController = TextEditingController();
+  SQLiteWorklistModel _sqLiteWorklistModel;
   @override
   void initState() {
     super.initState();
@@ -39,6 +53,9 @@ class _WorkRecordState extends State<WorkRecord> {
 
     amountPic = files.length;
     workListname = widget.workListname;
+    userModel = widget.sqLiteUserModel;
+    _sqLiteWorklistModel = widget.sqLiteWorklistModel;
+    _index = widget.index;
   }
 
   @override
@@ -46,25 +63,27 @@ class _WorkRecordState extends State<WorkRecord> {
     size = MediaQuery.of(context).size.width;
     sizeH = MediaQuery.of(context).size.height;
     return Scaffold(
-        appBar: AppBar(
-          title: Text('WORK  $indexWork'),
-        ),
-        body: Stack(
-          children: [
-            indexWork == 0
-                ? buildCheckList()
-                : indexWork == 1
-                    ? buildTextBox()
-                    : indexWork == 2
-                        ? buildPicture()
-                        : workListname.contains("ดับทั้งสถานีไฟฟ้า")
-                            ? buildRadioWorkType()
-                            : buildRadio(),
-            buildSave(),
-          ],
-        ));
+      appBar: AppBar(
+        title: Text('WORK  $indexWork'),
+      ),
+      body: Stack(
+        children: [
+          indexWork == 0
+              ? buildCheckList()
+              : indexWork == 1
+                  ? buildTextBox()
+                  : indexWork == 2
+                      ? buildPicture()
+                      : workListname.contains("ดับทั้งสถานีไฟฟ้า")
+                          ? buildRadioWorkType()
+                          : buildRadio(),
+          buildSave(),
+        ],
+      ),
+    );
   }
 
+//ElevatedButton(onPressed: (){}, child: Text("บันทึก"))
   Widget buildRadioWorkType() {
     double size = MediaQuery.of(context).size.width;
     return Center(
@@ -310,34 +329,7 @@ class _WorkRecordState extends State<WorkRecord> {
     );
   }
 
-  Positioned buildSave() {
-    return Positioned(
-      child: buildSaveChecklist(),
-      bottom: 50.8,
-      left: size * 0.4,
-    );
-  }
-
 //buildTESTSQLite();
-  Widget buildSaveChecklist() {
-    return Center(
-      child: Column(
-        children: [
-          Container(
-            child: new Positioned(
-              child: ElevatedButton(
-                
-                onPressed: () {
-                  buildTESTSQLite();
-                },
-                child: Text("บันทึก"),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Column buildTESTSQLite() {
     return Column(
@@ -402,5 +394,54 @@ class _WorkRecordState extends State<WorkRecord> {
         }
       }
     });
+  }
+
+  Column buildSave() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  print("RECORD  >>> ");
+                  SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
+                      checklistID: _index,
+                      createDate: _sqLiteWorklistModel.createDate,
+                      isChoice: 0,
+                      userID: "",
+                      lat: "",
+                      lng: "",
+                      workDoc: _sqLiteWorklistModel.workDoc,
+                      workID: _sqLiteWorklistModel.workID,
+                      workPerform: _sqLiteWorklistModel.workPerform,
+                      workProvince: _sqLiteWorklistModel.workProvince,
+                      workRegion: _sqLiteWorklistModel.workRegion,
+                      workStation: _sqLiteWorklistModel.workStation,
+                      workType: _sqLiteWorklistModel.workType,
+                      remark: "1");
+
+                  SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
+
+                  routeToMainList(sqLiteWorklistModel);
+                },
+                child: Text("บันทึก")),
+          ],
+        )
+      ],
+    );
+  }
+
+  void routeToMainList(SQLiteWorklistModel sqLiteWorklistModel) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainList(
+          user_model: userModel,
+          sqLiteWorklistModel: sqLiteWorklistModel,
+        ),
+      ),
+    );
   }
 }

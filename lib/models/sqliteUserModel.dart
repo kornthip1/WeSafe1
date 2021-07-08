@@ -7,8 +7,8 @@ class SQLiteUserModel {
   String position;
   String deptCode;
   String teamName;
-  String owerID;
-  String owerName;
+  String ownerID;
+  String ownerName;
   String leaderName;
   String pincode;
   String createdDate;
@@ -20,8 +20,8 @@ class SQLiteUserModel {
     this.position,
     this.deptCode,
     this.teamName,
-    this.owerID,
-    this.owerName,
+    this.ownerID,
+    this.ownerName,
     this.leaderName,
     this.pincode,
     this.createdDate,
@@ -34,8 +34,8 @@ class SQLiteUserModel {
     String position,
     String deptCode,
     String teamName,
-    String owerID,
-    String owerName,
+    String ownerID,
+    String ownerName,
     String leaderName,
     String pincode,
     String createdDate,
@@ -47,8 +47,8 @@ class SQLiteUserModel {
       position: position ?? this.position,
       deptCode: deptCode ?? this.deptCode,
       teamName: teamName ?? this.teamName,
-      owerID: owerID ?? this.owerID,
-      owerName: owerName ?? this.owerName,
+      ownerID: ownerID ?? this.ownerID,
+      ownerName: ownerName ?? this.ownerName,
       leaderName: leaderName ?? this.leaderName,
       pincode: pincode ?? this.pincode,
       createdDate: createdDate ?? this.createdDate,
@@ -63,8 +63,8 @@ class SQLiteUserModel {
       'position': position,
       'deptCode': deptCode,
       'teamName': teamName,
-      'owerID': owerID,
-      'owerName': owerName,
+      'ownerID': ownerID,
+      'ownerName': ownerName,
       'leaderName': leaderName,
       'pincode': pincode,
       'createdDate': createdDate,
@@ -79,8 +79,8 @@ class SQLiteUserModel {
       position: map['position'],
       deptCode: map['deptCode'],
       teamName: map['teamName'],
-      owerID: map['owerID'],
-      owerName: map['owerName'],
+      ownerID: map['ownerID'],
+      ownerName: map['ownerName'],
       leaderName: map['leaderName'],
       pincode: map['pincode'],
       createdDate: map['createdDate'],
@@ -103,8 +103,8 @@ class SQLiteUserModel {
         other.position == position &&
         other.deptCode == deptCode &&
         other.teamName == teamName &&
-        other.owerID == owerID &&
-        other.owerName == owerName &&
+        other.ownerID == ownerID &&
+        other.ownerName == ownerName &&
         other.leaderName == leaderName &&
         other.pincode == pincode &&
         other.createdDate == createdDate;
@@ -118,8 +118,8 @@ class SQLiteUserModel {
         position.hashCode ^
         deptCode.hashCode ^
         teamName.hashCode ^
-        owerID.hashCode ^
-        owerName.hashCode ^
+        ownerID.hashCode ^
+        ownerName.hashCode ^
         leaderName.hashCode ^
         pincode.hashCode ^
         createdDate.hashCode;

@@ -38,7 +38,7 @@ class _AuthenState extends State<Authen> {
                 // buildShowTitle(),
                 buildUser(),
                 buildPassword(),
-                buildRemember(),
+              //  buildRemember(),
                 buildLogin()
               ],
             ),

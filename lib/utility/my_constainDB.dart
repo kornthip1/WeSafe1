@@ -33,6 +33,12 @@ class MyConstainWorklistDB {
   static final String columnIsComplete = 'isComplete';
   static final String columnCreateDate = 'createDate';
   static final String columnUploadDate = 'uploadDate';
+
+  static final String columnWorkRegion = 'workRegion';
+  static final String columnWorkProvince = 'workProvince';
+  static final String columnWorkStation = 'workStation';
+  static final String columnWorkType = 'workType';
+  static final String columnWorkDoc = 'workDoc';
 }
 
 class MyConstainImagesDB {

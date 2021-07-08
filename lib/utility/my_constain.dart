@@ -27,6 +27,10 @@ class MyConstant {
 
   //Color
   static final Color primart = Color.fromARGB(255, 112, 55, 133);
+  static final Color floralWhite = Color.fromARGB(255, 255, 249, 244);
+
+
+
 
   static final strDateNow = getDateNow();
 }

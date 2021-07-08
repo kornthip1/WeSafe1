@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 class SQLiteWorklistModel {
+  int id;
   int workID;
   String userID;
   String rsg;
@@ -18,7 +19,14 @@ class SQLiteWorklistModel {
   String createDate;
   String uploadDate;
 
+  String workRegion;
+  String workProvince;
+  String workStation;
+  String workType;
+  String workDoc;
+
   SQLiteWorklistModel({
+    this.id,
     this.workID,
     this.userID,
     this.rsg,
@@ -35,9 +43,15 @@ class SQLiteWorklistModel {
     this.msgFromWeb,
     this.createDate,
     this.uploadDate,
+    this.workRegion,
+    this.workProvince,
+    this.workStation,
+    this.workType,
+    this.workDoc,
   });
 
   SQLiteWorklistModel copyWith({
+    int id,
     int workID,
     String userID,
     String rsg,
@@ -54,8 +68,14 @@ class SQLiteWorklistModel {
     String msgFromWeb,
     String createDate,
     String uploadDate,
+    String workRegion,
+    String workProvince,
+    String workStation,
+    String workType,
+    String workDoc,
   }) {
     return SQLiteWorklistModel(
+      id: id ?? this.id,
       workID: workID ?? this.workID,
       userID: userID ?? this.userID,
       rsg: rsg ?? this.rsg,
@@ -72,11 +92,17 @@ class SQLiteWorklistModel {
       msgFromWeb: msgFromWeb ?? this.msgFromWeb,
       createDate: createDate ?? this.createDate,
       uploadDate: uploadDate ?? this.uploadDate,
+      workRegion: workRegion ?? this.workRegion,
+      workProvince: workProvince ?? this.workProvince,
+      workStation: workStation ?? this.workStation,
+      workType: workType ?? this.workType,
+      workDoc: workDoc ?? this.workDoc,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'workID': workID,
       'userID': userID,
       'rsg': rsg,
@@ -93,11 +119,17 @@ class SQLiteWorklistModel {
       'msgFromWeb': msgFromWeb,
       'createDate': createDate,
       'uploadDate': uploadDate,
+      'workRegion': workRegion,
+      'workProvince': workProvince,
+      'workStation': workStation,
+      'workType': workType,
+      'workDoc': workDoc,
     };
   }
 
   factory SQLiteWorklistModel.fromMap(Map<String, dynamic> map) {
     return SQLiteWorklistModel(
+      id: map['id'],
       workID: map['workID'],
       userID: map['userID'],
       rsg: map['rsg'],
@@ -114,6 +146,11 @@ class SQLiteWorklistModel {
       msgFromWeb: map['msgFromWeb'],
       createDate: map['createDate'],
       uploadDate: map['uploadDate'],
+      workRegion: map['workRegion'],
+      workProvince: map['workProvince'],
+      workStation: map['workStation'],
+      workType: map['workType'],
+      workDoc: map['workDoc'],
     );
   }
 
@@ -127,6 +164,7 @@ class SQLiteWorklistModel {
     if (identical(this, other)) return true;
 
     return other is SQLiteWorklistModel &&
+        other.id == id &&
         other.workID == workID &&
         other.userID == userID &&
         other.rsg == rsg &&
@@ -142,12 +180,18 @@ class SQLiteWorklistModel {
         other.reason == reason &&
         other.msgFromWeb == msgFromWeb &&
         other.createDate == createDate &&
-        other.uploadDate == uploadDate;
+        other.uploadDate == uploadDate &&
+        other.workRegion == workRegion &&
+        other.workProvince == workProvince &&
+        other.workStation == workStation &&
+        other.workType == workType &&
+        other.workDoc == workDoc;
   }
 
   @override
   int get hashCode {
-    return workID.hashCode ^
+    return id.hashCode ^
+        workID.hashCode ^
         userID.hashCode ^
         rsg.hashCode ^
         ownerID.hashCode ^
@@ -162,6 +206,11 @@ class SQLiteWorklistModel {
         reason.hashCode ^
         msgFromWeb.hashCode ^
         createDate.hashCode ^
-        uploadDate.hashCode;
+        uploadDate.hashCode ^
+        workRegion.hashCode ^
+        workProvince.hashCode ^
+        workStation.hashCode ^
+        workType.hashCode ^
+        workDoc.hashCode;
   }
 } //class

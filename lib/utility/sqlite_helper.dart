@@ -3,6 +3,7 @@ import 'package:wesafe/models/MastWorkListModel_test.dart';
 import 'package:path/path.dart';
 import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/models/sqliteWorklistModel.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/my_constainDB.dart';
 
@@ -36,8 +37,13 @@ class SQLiteHelper {
               ' ${MyConstainWorklistDB.columnReason} TEXT, ' +
               ' ${MyConstainWorklistDB.columnMsgFromWeb} TEXT, ' +
               ' ${MyConstainWorklistDB.columnIsComplete} INTEGER, ' +
+              ' ${MyConstainWorklistDB.columnUploadDate} TEXT, ' +
               ' ${MyConstainWorklistDB.columnCreateDate} TEXT, ' +
-              ' ${MyConstainWorklistDB.columnUploadDate} TEXT ' +
+              ' ${MyConstainWorklistDB.columnWorkRegion} TEXT, ' +
+              ' ${MyConstainWorklistDB.columnWorkProvince} TEXT, ' +
+              ' ${MyConstainWorklistDB.columnWorkStation} TEXT, ' +
+              ' ${MyConstainWorklistDB.columnWorkType} TEXT, ' +
+              ' ${MyConstainWorklistDB.columnWorkDoc} TEXT ' +
               ')');
 
       await database.execute(
@@ -112,16 +118,48 @@ class SQLiteHelper {
     List<Map<String, dynamic>> maps =
         await database.query(MyConstainUserProfileDB.nameUserTable);
 
-    print("###### sqlite helper  $maps");
     for (var item in maps) {
-      print("###### sqlite helper item : $item");
       SQLiteUserModel model = SQLiteUserModel.fromMap(item);
       models.add(model);
-      print("######## sqlite helper models : ${model.firstName}");
     }
 
     return models;
   }
+
+
+Future<Null> insertWorkDatebase(SQLiteWorklistModel sqLiteWorklistModel) async {
+    Map<String, dynamic> maps = sqLiteWorklistModel.toMap();
+
+    print("#### insertWorkDatebase ${maps.values}");
+
+    Database database = await connectedDatabase();
+    try {
+      database.insert(
+        MyConstainWorklistDB.nameTable,
+        sqLiteWorklistModel.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      print('######## insertWorkDatebase database SQLite success');
+    } catch (e) {}
+  }
+
+  Future<List<SQLiteWorklistModel>> readWorkDatabase() async {
+    Database database = await connectedDatabase();
+    List<SQLiteWorklistModel> models = [];
+    List<Map<String, dynamic>> maps =
+        await database.query(MyConstainWorklistDB.nameTable ,where: "${MyConstainWorklistDB.columnsubWorkID} = '4'");
+
+    for (var item in maps) {
+      SQLiteWorklistModel model = SQLiteWorklistModel.fromMap(item);
+      models.add(model);
+    }
+
+    return models;
+  }
+
+
+
+
 
 //example
   Future<Null> insertDatebase(MastWorkListModel masterWorkListModel) async {

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/mainMenu.dart';
+import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showTitle.dart';
@@ -127,74 +128,70 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
   Widget buildSignIn() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      
-        child :
-          ElevatedButton(
-            onPressed: () async {
-              SharedPreferences preferences =
-                  await SharedPreferences.getInstance();
-             
-              if (preferences.getString('PINCODE') == null) {
-                preferences.setString(
-                    MyConstant.keyPincode, _textEditingController.text);
-                userModel.result.pincode = _textEditingController.text;
-                DateTime now = new DateTime.now();
-                SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
-                    deptCode: userModel.result.dEPTNAME,
-                    firstName: userModel.result.fIRSTNAME,
-                    lastName: userModel.result.lASTNAME,
-                    createdDate: now.toString(),
-                    leaderName: userModel.result.learderName,
-                    pincode: _textEditingController.text,
-                    owerID: userModel.result.ownerID[0],
-                    owerName: userModel.result.ownerName,
-                    position: "",
-                    teamName: userModel.result.tEAM,
-                    userID: userModel.result.eMPLOYEEID);
+      child: ElevatedButton(
+        onPressed: () async {
+          SharedPreferences preferences = await SharedPreferences.getInstance();
 
-                SQLiteHelper().insertUserDatebase(sqLiteUserModel);
+          if (preferences.getString('PINCODE') == null) {
+            preferences.setString(
+                MyConstant.keyPincode, _textEditingController.text);
+            userModel.result.pincode = _textEditingController.text;
+            DateTime now = new DateTime.now();
+            SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
+                deptCode: userModel.result.dEPTNAME,
+                firstName: userModel.result.fIRSTNAME,
+                lastName: userModel.result.lASTNAME,
+                createdDate: now.toString(),
+                leaderName: userModel.result.learderName,
+                pincode: _textEditingController.text,
+                ownerID: userModel.result.ownerID[0],
+                ownerName: userModel.result.ownerName,
+                position: "",
+                teamName: userModel.result.tEAM,
+                userID: userModel.result.eMPLOYEEID);
 
-               
-                if (userModel.result.ownerID.length > 1) {
-                    routeToMultiOwner(userModel,sqLiteUserModel);
-                } else {
-                  routeToMainMenu(sqLiteUserModel);
-                }
+            SQLiteHelper().insertUserDatebase(sqLiteUserModel);
 
-
+            if (userModel.result.ownerID.length > 1) {
+              routeToMultiOwner(userModel, sqLiteUserModel);
+            } else {
+              routeToMainMenu(sqLiteUserModel);
+            }
+          } else {
+            List<SQLiteUserModel> models = [];
+            await SQLiteHelper().readUserDatabase().then((result) {
+              if (result == null) {
               } else {
-                List<SQLiteUserModel> models = [];
-                await SQLiteHelper().readUserDatabase().then((result) {
-                  if (result == null) {
-                  } else {
-                    models = result;
-                    print(">>>>>>>  result  : ${result}");
-                    SQLiteUserModel sqLiteUserModel = SQLiteUserModel();
-                    for (var item in models) {
-                      SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
-                          deptCode: item.deptCode,
-                          createdDate: item.createdDate,
-                          firstName: item.firstName,
-                          lastName: item.lastName,
-                          leaderName: item.leaderName,
-                          owerID: item.owerID,
-                          owerName: item.owerName,
-                          pincode: item.pincode,
-                          position: item.position,
-                          teamName: item.teamName,
-                          userID: item.userID);
-                    } //for
-                    print(">>>>>>>  sqLiteUserModel  : ${sqLiteUserModel.owerID}");
-                    routeToMainMenu(sqLiteUserModel);
-                  }
-                });
+                models = result;
+                SQLiteUserModel sqLiteUserModel = SQLiteUserModel();
+                for (var item in models) {
+                  sqLiteUserModel = SQLiteUserModel(
+                      deptCode: item.deptCode,
+                      createdDate: item.createdDate,
+                      firstName: item.firstName,
+                      lastName: item.lastName,
+                      leaderName: item.leaderName,
+                      ownerID: item.ownerID,
+                      ownerName: item.ownerName,
+                      pincode: item.pincode,
+                      position: item.position,
+                      teamName: item.teamName,
+                      userID: item.userID);
+                } //for
+
+                if (sqLiteUserModel.pincode.trim() ==
+                    _textEditingController.text.trim()) {
+                  routeToMainMenu(sqLiteUserModel);
+                } else {
+                  normalDialog(context, "เตือน", "PINCODE ไม่ถูกต้อง");
+                }
               }
-            },
-            style: ElevatedButton.styleFrom(primary: MyConstant.primart),
-            child: Text('เข้าสู่ระบบ'),
-          ),
-       
-     
+            });
+          }
+        },
+        style: ElevatedButton.styleFrom(primary: MyConstant.primart),
+        child: Text('เข้าสู่ระบบ'),
+      ),
     );
   }
 
@@ -209,13 +206,13 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       MaterialPageRoute(
         builder: (context) => MainMenu(
           userModel: userModel,
-          ownerId: userModel.owerID,
+          ownerId: userModel.ownerID,
         ),
       ),
     );
   }
 
-    void routeToMultiOwner(UserModel userModel,SQLiteUserModel sqLiteUserModel) {
+  void routeToMultiOwner(UserModel userModel, SQLiteUserModel sqLiteUserModel) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -226,5 +223,4 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       ),
     );
   }
-
 }

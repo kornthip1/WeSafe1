@@ -1,18 +1,20 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/models/sqliteWorklistModel.dart';
 
 import 'package:wesafe/states/mainlist.dart';
 
 import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 import 'package:wesafe/utility/Test.dart';
 import 'package:wesafe/states/checkWork.dart';
+
+import 'mainMenu.dart';
 
 class MainWorkInfo extends StatefulWidget {
   final SQLiteUserModel user_model;
@@ -27,7 +29,9 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
   List<String> titles = MyConstant.listMenu;
   String choose;
   double size;
-
+  ListItem _selectedRegionItem;
+  ListItem _selectedProviceItem;
+  ListItem _selectedStationItem;
   @override
   void initState() {
     super.initState();
@@ -52,7 +56,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
     size = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: ShowTitle(title: 'MAIN LIST', index: 1),
+        title: ShowTitle(title: 'MAIN INFO', index: 1),
       ),
       drawer: Drawer(
         child: Stack(
@@ -68,7 +72,15 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
           ],
         ),
       ),
-      body: buildBodyContent(),
+      body: Stack(
+        children: [
+          buildBodyContent(),
+          buildNext(),
+        ],
+      )
+
+      //Stack(child: buildBodyContent()),
+      ,
     );
   }
 
@@ -78,34 +90,27 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
       child: Column(
         children: <Widget>[
           buildDept(),
+          buildDivider(),
           buildRegion(),
-          buildRegion(),
-          buildRegion(),
+          buildDivider(),
+          buildProvince(),
+          buildDivider(),
+          buildStation(),
+          buildDivider(),
           buildRadio(),
-          buildNext(),
+          //buildNext(),
         ],
       ),
     );
   }
 
-  Widget buildNext() {
-    size = MediaQuery.of(context).size.height;
-    double bttn = size*0.3;
-    return Container(
-      padding: const EdgeInsets.only(bottom: 1.5,top: 200.0  ),
-      child: Center(
-        child: Column(
-          children: [
-            Container(
-              child: ElevatedButton(
-                onPressed: () {
-                  routeToMainList();
-                },
-                child: Container(child: Text('ถัดไป')),
-              ),
-            ),
-          ],
-        ),
+  Padding buildDivider() {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Divider(
+        endIndent: 10.0,
+        indent: 10.0,
+        thickness: 2,
       ),
     );
   }
@@ -118,13 +123,18 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         children: [
           Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Container(child: Text("หน่วยงาน")),
+            child: Container(
+              child: ShowTitle(
+                title: "หน่วยงาน",
+                index: 4,
+              ),
+            ),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Container(
                 child:
-                    Text(userModel == null ? "กบส.สนญ." : userModel.teamName)),
+                    Text(userModel == null ? "กบส.สนญ." : userModel.deptCode)),
           ),
         ],
       ),
@@ -135,7 +145,10 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text("ประเภทงาน"),
+        ShowTitle(
+          title: "ประเภทงาน",
+          index: 4,
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -148,7 +161,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
                 });
               },
             ),
-            Text("PM")
+            Text("PM(ZPM4)")
           ],
         ),
         Row(
@@ -163,7 +176,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
                 });
               },
             ),
-            Text("CM")
+            Text("CM(ZPM2)")
           ],
         ),
       ],
@@ -195,7 +208,10 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
       children: [
         Padding(
           padding: const EdgeInsets.all(8.0),
-          child: Text("เขต"),
+          child: ShowTitle(
+            title: "เขต",
+            index: 4,
+          ),
         ),
         Padding(
           padding: const EdgeInsets.all(8.0),
@@ -204,6 +220,45 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
             items: _dropdownMenuItems,
             onChanged: (value) {
               _selectedItem = value;
+              _selectedRegionItem = value;
+              print("selected >>>>>> ${_selectedItem.name}");
+              buildProvince();
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Row buildProvince() {
+    List<DropdownMenuItem<ListItem>> _dropdownMenuItems;
+    ListItem _selectedItem;
+
+    List<ListItem> _dropdownItems = [
+      ListItem("A", "นครปฐม"),
+      ListItem("B", "สุพรรณบุรี"),
+      ListItem("C", "กาญจนบุรี"),
+    ];
+    _dropdownMenuItems = buildDropDownMenuItems(_dropdownItems);
+    _selectedItem = _dropdownMenuItems[0].value;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ShowTitle(
+            title: "จังหวัด",
+            index: 4,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: DropdownButton<ListItem>(
+            value: _selectedItem,
+            items: _dropdownMenuItems,
+            onChanged: (value) {
+              _selectedItem = value;
+              _selectedProviceItem = value;
               print("selected >>>>>> ${_selectedItem.name}");
             },
           ),
@@ -212,18 +267,54 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
     );
   }
 
-  void routeToMainList() {
+  Row buildStation() {
+    List<DropdownMenuItem<ListItem>> _dropdownMenuItems;
+    ListItem _selectedItem;
+
+    List<ListItem> _dropdownItems = [
+      ListItem("A", "สถานีไฟฟ้า A"),
+      ListItem("B", "สถานีไฟฟ้า B"),
+      ListItem("C", "สถานีไฟฟ้า C"),
+    ];
+    _dropdownMenuItems = buildDropDownMenuItems(_dropdownItems);
+    _selectedItem = _dropdownMenuItems[0].value;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ShowTitle(
+            title: "สถานีไฟฟ้า",
+            index: 4,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: DropdownButton<ListItem>(
+            value: _selectedItem,
+            items: _dropdownMenuItems,
+            onChanged: (value) {
+              _selectedItem = value;
+              _selectedStationItem = value;
+              print("selected >>>>>> ${_selectedItem.name}");
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  void routeToMainList(SQLiteWorklistModel sqLiteWorklistModel) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MainList(user_model: userModel,
-          
+        builder: (context) => MainList(
+          user_model: userModel,
+          sqLiteWorklistModel: sqLiteWorklistModel,
         ),
       ),
     );
   }
-
- 
 
   ListTile buildCheckStatus(BuildContext context) {
     return ListTile(
@@ -233,7 +324,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         color: MyConstant.primart,
       ),
       title: ShowTitle(
-        title: MyConstant.listMenu[0],
+        title: MyConstant.listMenu[1],
         index: 1,
       ),
       onTap: () {
@@ -243,8 +334,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-               CheckWork(),
+            builder: (context) => CheckWork(),
           ),
         );
       },
@@ -259,15 +349,76 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         color: MyConstant.primart,
       ),
       title: ShowTitle(
-        title: MyConstant.listMenu[1],
+        title: MyConstant.listMenu[0],
         index: 1,
       ),
       onTap: () {
         setState(() {
           index = 0;
         });
-        Navigator.pop(context);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainMenu(
+              userModel: userModel,
+              ownerId: userModel.ownerID,
+            ),
+          ),
+        );
       },
+    );
+  }
+
+  Column buildNext() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+                onPressed: () {
+                  //         SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
+                  //     deptCode: userModel.result.dEPTNAME,
+                  //     firstName: userModel.result.fIRSTNAME,
+                  //     lastName: userModel.result.lASTNAME,
+                  //     createdDate: now.toString(),
+                  //     leaderName: userModel.result.learderName,
+                  //     pincode: _textEditingController.text,
+                  //     ownerID: userModel.result.ownerID[0],
+                  //     ownerName: userModel.result.ownerName,
+                  //     position: "",
+                  //     teamName: userModel.result.tEAM,
+                  //     userID: userModel.result.eMPLOYEEID);
+
+                  // SQLiteHelper().insertUserDatebase(sqLiteUserModel);
+
+                  SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
+                    checklistID: 0,
+                    createDate: "",
+                    isChoice: 0,
+                    userID: userModel.userID,
+                    lat: "",
+                    lng: "",
+                    workDoc: "",
+                    workID: 4,
+                    workPerform: "",
+                    workProvince: _selectedProviceItem.name,
+                    workRegion: _selectedRegionItem.name,
+                    workStation: _selectedStationItem.name,
+                  );
+
+                  //SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
+                  print("NEXT Region -----> ${_selectedRegionItem.name}");
+                  print("NEXT Provice -----> ${_selectedProviceItem.name}");
+                  print("NEXT Station -----> ${_selectedStationItem.name}");
+
+                  routeToMainList(sqLiteWorklistModel);
+                },
+                child: Text("ถัดไป")),
+          ],
+        )
+      ],
     );
   }
 
@@ -309,6 +460,55 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
       accountEmail: userModel == null
           ? Text('Position')
           : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
+    );
+  }
+
+  Widget dropList() {
+    List statesList = [0];
+    String _myState;
+
+    statesList.add(1212);
+    statesList.add(23232);
+
+    return Container(
+      padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: ButtonTheme(
+                alignedDropdown: true,
+                child: DropdownButton<String>(
+                  value: _myState,
+                  iconSize: 30,
+                  icon: (null),
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 16,
+                  ),
+                  hint: Text('Select State'),
+                  onChanged: (String newValue) {
+                    // setState(() {
+                    //   _myState = newValue;
+                    //   _getCitiesList();
+                    //   print(_myState);
+                    // });
+                  },
+                  items: statesList?.map((item) {
+                        return new DropdownMenuItem(
+                          child: new Text(item['name']),
+                          value: item['id'].toString(),
+                        );
+                      })?.toList() ??
+                      [],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
