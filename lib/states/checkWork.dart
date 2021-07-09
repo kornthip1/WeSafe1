@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
+import 'package:wesafe/states/mainlist.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
@@ -16,18 +17,21 @@ class CheckWork extends StatefulWidget {
 
 class _CheckWorkState extends State<CheckWork> {
   int index = 0;
-  SQLiteUserModel userModel;
+  SQLiteUserModel _userModel;
   SQLiteWorklistModel _sqLiteWorklistModel;
   String tt = "";
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    readWorklist();
+    //readUserInfo();
+    //readWorklist();
   }
 
   @override
   Widget build(BuildContext context) {
+     readUserInfo();
+     readWorklist();
     return Scaffold(
       appBar: AppBar(
         title: Text("ตรวจสอบสถานะการทำงาน"),
@@ -51,21 +55,47 @@ class _CheckWorkState extends State<CheckWork> {
   }
 
   Widget buildListView() {
-    
-    print("CHECCK >>>>>  remark : ${_sqLiteWorklistModel.remark}");
+    print("#### buildListView()");
+    readWorklist();
+    readUserInfo();
+
+    if(_sqLiteWorklistModel == null){
+    _sqLiteWorklistModel = SQLiteWorklistModel(
+              checklistID: 1,
+              createDate: "",
+              isChoice: 0,
+              userID: "",
+              lat: "",
+              lng: "",
+              workDoc: "",
+              workID: 1,
+              workPerform: "",
+              workProvince: "กฟฉ.3",
+              workRegion: "กาญจนบุรี",
+              workStation: "สถานีไฟฟ้า C",
+              workType: "PM",
+              remark: "9",
+            );
+    }
+
     return Container(
       child: new ListView.builder(
         itemCount: 1,
         itemBuilder: (context, index) => GestureDetector(
           onTap: () {
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => (
+            print("ontap  : $tt");
 
-            //     ),
-            //   ),
-            // );
+            print("ontap  : ${_sqLiteWorklistModel.remark}");
+            print("ontap  userID : ${_userModel.userID}");
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MainList(
+                  sqLiteWorklistModel: _sqLiteWorklistModel,
+                  user_model: _userModel ,
+                ),
+              ),
+            );
           },
           child: Card(
             color: Colors.grey,
@@ -74,9 +104,24 @@ class _CheckWorkState extends State<CheckWork> {
               child: Center(
                 child: Column(
                   children: [
-                    Text("AAAAAA"),
-                    Text("BBBBB"),
-                    Text("CCCCCC"),
+                    ShowTitle(
+                      title: "WSI2021OZ0000000001",
+                      index: 4,
+                    ),
+                    ShowTitle(
+                      title: "การปฏิบัติงานภายในสถานีไฟฟ้าและระบบไฟฟ้า",
+                      index: 2,
+                    ),
+                    ShowTitle(
+                      title: _sqLiteWorklistModel.workRegion +
+                          " " +
+                          _sqLiteWorklistModel.workStation,
+                      index: 2,
+                    ),
+                    ShowTitle(
+                      title: "ตรวจสอบแล้วรอปิดงาน",
+                      index: 4,
+                    )
                   ],
                 ),
               ),
@@ -88,45 +133,84 @@ class _CheckWorkState extends State<CheckWork> {
   }
 
   Future<Null> readWorklist() async {
+    print("#### readWorklist()");
+
+    SQLiteWorklistModel sqLiteWorklistModel;
     List<SQLiteWorklistModel> models = [];
     await SQLiteHelper().readWorkDatabase().then((result) {
       if (result == null) {
       } else {
         models = result;
-        SQLiteWorklistModel sqLiteWorklistModel;
+        print("#### CHECK readWorklist()   models size  : ${models.length}");
         for (var item in models) {
-          print("CHECK()  #####  id ${item.id}");
+           if (item.id == models.length) {
+            print("CHECK()  #####  id ${item.id}");
+            print("CHECK()  #####  id ${item.id}");
+            print("CHECK()  #####  workID ${item.workID}");
+            print("CHECK()  #####  region ${item.workRegion}");
+            print("CHECK()  #####  region ${item.workRegion}");
+            print("CHECK()  #####  Province ${item.workProvince}");
+            print("CHECK()  #####  Station  ${item.workStation}");
 
-          print("CHECK()  #####  id ${item.id}");
-
-          print("CHECK()  #####  workID ${item.workID}");
-
-          print("CHECK()  #####  region ${item.workRegion}");
-          print("CHECK()  #####  region ${item.workRegion}");
-          print("CHECK()  #####  Province ${item.workProvince}");
-          print("CHECK()  #####  Station  ${item.workStation}");
-          sqLiteWorklistModel = SQLiteWorklistModel(
-            checklistID: item.checklistID,
-            createDate: item.createDate,
-            isChoice: 0,
-            userID: "",
-            lat: "",
-            lng: "",
-            workDoc: item.workDoc,
-            workID: item.workID,
-            workPerform: item.workPerform,
-            workProvince: item.workProvince,
-            workRegion: item.workRegion,
-            workStation: item.workStation,
-            workType: item.workType,
-            remark: "9",
-          );
+            sqLiteWorklistModel = SQLiteWorklistModel(
+              checklistID: item.checklistID,
+              createDate: item.createDate,
+              isChoice: 0,
+              userID: "",
+              lat: "",
+              lng: "",
+              workDoc: item.workDoc,
+              workID: 1,
+              workPerform: item.workPerform,
+              workProvince: item.workProvince,
+              workRegion: item.workRegion,
+              workStation: item.workStation,
+              workType: item.workType,
+              remark: "9",
+            );
+            _sqLiteWorklistModel = sqLiteWorklistModel;
+           }
         } //for
-        setState(() {
-          _sqLiteWorklistModel = sqLiteWorklistModel;
-        });
+        
       }
     });
+
+   
+
+   
+    tt = "TEST";
+  }
+
+  Future<Null> readUserInfo() async {
+    print("#### readWorklist()");
+
+    SQLiteUserModel sqLiteUserModel;
+    List<SQLiteUserModel> models = [];
+    await SQLiteHelper().readUserDatabase().then((result) {
+      if (result == null) {
+      } else {
+        models = result;
+        print("#### readUserInfo()   models size  : ${models.length}");
+        for (var item in models) {
+          print("CHECK()  #####  id ${item.userID}");
+          print("CHECK()  #####  id ${item.firstName}");
+          print("CHECK()  #####  region ${item.ownerID}");
+          print("CHECK()  #####  region ${item.ownerName}");
+
+          sqLiteUserModel = SQLiteUserModel(
+            userID: item.userID,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            deptCode: item.deptCode,
+            ownerID: item.ownerID,
+            ownerName: item.ownerName,
+            pincode: item.pincode,
+          );
+        } //for
+      }
+    });
+    _userModel = sqLiteUserModel;
+    tt = "TEST";
   }
 
 /************ LEFT MENU */
@@ -134,12 +218,12 @@ class _CheckWorkState extends State<CheckWork> {
     return UserAccountsDrawerHeader(
       decoration: BoxDecoration(color: MyConstant.primart),
       currentAccountPicture: ShowMan(),
-      accountName: userModel == null
+      accountName: _userModel == null
           ? Text('Name')
-          : Text('${userModel.firstName}  ${userModel.lastName}'),
-      accountEmail: userModel == null
+          : Text('${_userModel.firstName}  ${_userModel.lastName}'),
+      accountEmail: _userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
+          : Text('ตำแหน่ง  :  ${_userModel.deptCode}'),
     );
   }
 
@@ -163,8 +247,8 @@ class _CheckWorkState extends State<CheckWork> {
           context,
           MaterialPageRoute(
             builder: (context) => MainMenu(
-              userModel: userModel,
-              ownerId: userModel.ownerID,
+              userModel: _userModel,
+              ownerId: _userModel.ownerID,
             ),
           ),
         );

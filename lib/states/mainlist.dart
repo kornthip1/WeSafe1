@@ -53,7 +53,7 @@ class _MainListState extends State<MainList> {
         for (var item in models) {
           print("MAINLIST()  #####  id ${item.id}");
 
-           print("MAINLIST()  #####  id ${item.id}");
+          print("MAINLIST()  #####  id ${item.id}");
 
           print("MAINLIST()  #####  workID ${item.workID}");
 
@@ -126,6 +126,15 @@ class _MainListState extends State<MainList> {
         ElevatedButton(
           onPressed: () {
             setLine();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MainMenu(
+                  userModel: userModel,
+                  ownerId: userModel.ownerID,
+                ),
+              ),
+            );
           },
           child: Text("ยืนยัน"),
         ),
@@ -144,10 +153,12 @@ class _MainListState extends State<MainList> {
         "การปฏิบัติงานภายในสถานีและระบบไฟฟ้า :  ก่อนปฏิบัติงาน " +
         "\n" +
         "\n" +
-        "งานสำหรับ สนญ" 
-        +_sqLiteWorklistModel.workRegion+"  "+
-        _sqLiteWorklistModel.workProvince+"  "
-        +_sqLiteWorklistModel.workStation+
+        //"งานสำหรับ สนญ.   " +
+        _sqLiteWorklistModel.workRegion +
+        "  " +
+        _sqLiteWorklistModel.workProvince +
+        "  " +
+        _sqLiteWorklistModel.workStation +
         "\n" +
         "\n" +
         userModel.firstName +
@@ -248,15 +259,25 @@ class _MainListState extends State<MainList> {
   }
 
   Expanded buildListView() {
-    List<ListItem> _listwork = [
-      ListItem("3", "ลักษณะงาน"), //3
-      ListItem("2", "ภาพการประชุมชี้แจงงาน"),
-      ListItem("2", "ภาพผู้ปฏิบัติงานสวมใส่ PPE "),
-      ListItem("3", "ภาพการตรวจวัดเเรงดัน"),
-      ListItem("2", "ภาพเครื่องมือปฏิบัติงาน"),
-      ListItem("3", "ภาพการต่อลงดิน"),
-      // ListItem("5", "จำนวน พัสดุ ที่ใช้งาน"),
-    ];
+    List<ListItem> _listwork = [];
+    _sqLiteWorklistModel.remark == "9" || _sqLiteWorklistModel.remark == "11"
+        ? _listwork = [
+            ListItem("3", "ลักษณะงาน"), //3
+            ListItem("2", "ภาพการประชุมชี้แจงงาน"),
+            ListItem("2", "ภาพผู้ปฏิบัติงานสวมใส่ PPE "),
+            ListItem("3", "ภาพการตรวจวัดเเรงดัน"),
+            ListItem("2", "ภาพเครื่องมือปฏิบัติงาน"),
+            ListItem("3", "ภาพการต่อลงดิน"),
+            ListItem("5", "จำนวน พัสดุ ที่ใช้งาน"),
+          ]
+        : _listwork = [
+            ListItem("3", "ลักษณะงาน"), //3
+            ListItem("2", "ภาพการประชุมชี้แจงงาน"),
+            ListItem("2", "ภาพผู้ปฏิบัติงานสวมใส่ PPE "),
+            ListItem("3", "ภาพการตรวจวัดเเรงดัน"),
+            ListItem("2", "ภาพเครื่องมือปฏิบัติงาน"),
+            ListItem("3", "ภาพการต่อลงดิน"),
+          ];
 
     return new Expanded(
       child: Container(
@@ -266,6 +287,7 @@ class _MainListState extends State<MainList> {
             onTap: () {
               DateTime now = DateTime.now();
 
+              
               SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
                   checklistID: index,
                   createDate: now.toString(),
@@ -282,12 +304,14 @@ class _MainListState extends State<MainList> {
                   workType: _sqLiteWorklistModel.workType,
                   remark: "0");
 
+               sqLiteWorklistModel =  _sqLiteWorklistModel ==null? readWorklist() : sqLiteWorklistModel;
               //SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
 
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => WorkRecord(
+                    sqLiteUserModel: userModel,
                     index: index,
                     indexWork: int.parse(
                       _listwork[index].value,
@@ -299,7 +323,7 @@ class _MainListState extends State<MainList> {
                             : _listwork[index].name.contains("ต่อลงดิน")
                                 ? "Sort GND"
                                 : "",
-                                sqLiteWorklistModel: sqLiteWorklistModel,
+                    sqLiteWorklistModel: sqLiteWorklistModel,
                   ),
                 ),
               );
@@ -309,7 +333,11 @@ class _MainListState extends State<MainList> {
                   _sqLiteWorklistModel.remark == "1" &&
                           _sqLiteWorklistModel.checklistID >= index
                       ? Colors.green
-                      : Colors.grey,
+                      : _sqLiteWorklistModel.remark == "9" && index != 6
+                          ? Colors.green
+                          : _sqLiteWorklistModel.remark == "11"
+                              ? Colors.green
+                              : Colors.grey,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
@@ -413,7 +441,7 @@ class _MainListState extends State<MainList> {
             SharedPreferences preferences =
                 await SharedPreferences.getInstance();
             preferences.clear();
-
+            SQLiteHelper().deleteWorkAll();
             Navigator.pushNamedAndRemoveUntil(
                 context, '/authen', (route) => false);
           },

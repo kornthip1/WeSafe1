@@ -147,8 +147,8 @@ Future<Null> insertWorkDatebase(SQLiteWorklistModel sqLiteWorklistModel) async {
     Database database = await connectedDatabase();
     List<SQLiteWorklistModel> models = [];
     List<Map<String, dynamic>> maps =
-        await database.query(MyConstainWorklistDB.nameTable ,where: "${MyConstainWorklistDB.columnsubWorkID} = '4'");
-
+        await database.query(MyConstainWorklistDB.nameTable );
+//,where: "${MyConstainWorklistDB.columnsubWorkID} = '4'"
     for (var item in maps) {
       SQLiteWorklistModel model = SQLiteWorklistModel.fromMap(item);
       models.add(model);
@@ -158,6 +158,13 @@ Future<Null> insertWorkDatebase(SQLiteWorklistModel sqLiteWorklistModel) async {
   }
 
 
+Future<Null> deleteWorkAll() async {
+    Database database = await connectedDatabase();
+    try {
+      await database.delete(MyConstainWorklistDB.nameTable);
+      print('====> delete work success');
+    } catch (e) {}
+  }
 
 
 

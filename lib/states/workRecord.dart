@@ -64,7 +64,7 @@ class _WorkRecordState extends State<WorkRecord> {
     sizeH = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: Text('WORK  $indexWork'),
+        title: Text(''),
       ),
       body: Stack(
         children: [
@@ -76,7 +76,9 @@ class _WorkRecordState extends State<WorkRecord> {
                       ? buildPicture()
                       : workListname.contains("ดับทั้งสถานีไฟฟ้า")
                           ? buildRadioWorkType()
-                          : buildRadio(),
+                          : _index == 6
+                              ? buildCloseWork()
+                              : buildRadio(),
           buildSave(),
         ],
       ),
@@ -214,18 +216,169 @@ class _WorkRecordState extends State<WorkRecord> {
     );
   }
 
+  
+
+Widget buildCloseWork() {
+    return Scaffold(
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ShowTitle(
+            //   title: "Take Pic",
+            // ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ShowTitle(
+                title: '1. ภาพอะไหล่อุปกรณ์ที่ใช้ไป',
+              ),
+            ),
+
+            ListView.builder(
+              shrinkWrap: true,
+              physics: ScrollPhysics(),
+              itemCount: 1,
+              itemBuilder: (context, index) => Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                     
+                      Container(
+                        width: 120,
+                        height: 120,
+                        child: files[index] == null
+                            ? ShowIconImage(fromMenu: "image",)
+                            : Image.file(files[0]),
+                      ),
+                      Column(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.add_a_photo),
+                            onPressed: () =>
+                                createImage(index, ImageSource.camera),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.add_photo_alternate),
+                            onPressed: () =>
+                                createImage(index, ImageSource.gallery),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                  Divider(
+                    thickness: 1,
+                  ),
+                ],
+              ),
+            ),
+             // ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ShowTitle(
+                title: '2. อะไหล่อุปกรณ์และจำนวนที่ใช้ไป',
+              ),
+            ),
+
+            ListView.builder(
+              shrinkWrap: true,
+              physics: ScrollPhysics(),
+              itemCount: 1,
+              itemBuilder: (context, index) => Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Container(child: Text('${index + 1}')),
+                      buildPercel(),
+                      buildAmountPercel(),
+                    ],
+                  ),
+                  Divider(
+                    thickness: 1,
+                  ),
+                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Container(child: Text('${index + 2}')),
+                      buildPercel(),
+                      buildAmountPercel(),
+                    ],
+                  ),
+                  Divider(
+                    thickness: 1,
+                  ),
+                ],
+              ),
+            ),
+            // buildUpload(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Container buildPercel() {
+    return Container(
+      // margin: EdgeInsets.only(top: 5),
+      width: size * 0.6,
+      height: 50.0,
+      child: TextFormField(
+        
+        validator: (value) {
+          if (value.isEmpty) {
+            return 'Please fill ...';
+          } else {
+            return null;
+          }
+        },
+        decoration: InputDecoration(
+          
+          labelText: 'อุปกรณ์ :',
+          border: OutlineInputBorder(),
+        ),
+      ),
+    );
+  }
+Container buildAmountPercel() {
+    return Container(
+      // margin: EdgeInsets.only(top: 5),
+      width: size * 0.3,
+      height: 50.0,
+      child: TextFormField(
+        
+        validator: (value) {
+          if (value.isEmpty) {
+            return 'Please fill ...';
+          } else {
+            return null;
+          }
+        },
+        decoration: InputDecoration(
+         
+          labelText: 'จำนวน :',
+          border: OutlineInputBorder(),
+        ),
+      ),
+    );
+  }
+
+
+
+
   Widget buildPicture() {
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ShowTitle(
-              title: "Take Pic",
-            ),
-            ShowTitle(
-              title: 'จำนวนรูป : $amountPic  รูป',
-            ),
+            // ShowTitle(
+            //   title: "Take Pic",
+            // ),
+            // ShowTitle(
+            //   title: 'จำนวนรูป : $amountPic  รูป',
+            // ),
             Divider(
               thickness: 1,
             ),
@@ -238,12 +391,13 @@ class _WorkRecordState extends State<WorkRecord> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      Text('${index + 1}'),
                       Container(
                         width: 120,
                         height: 120,
                         child: files[index] == null
-                            ? ShowIconImage()
+                            ? ShowIconImage(
+                                fromMenu: "image",
+                              )
                             : Image.file(files[index]),
                       ),
                       Column(
@@ -268,7 +422,9 @@ class _WorkRecordState extends State<WorkRecord> {
                 ],
               ),
             ),
-            // buildUpload(),
+            Divider(
+              thickness: 1,
+            ),
           ],
         ),
       ),
@@ -406,6 +562,10 @@ class _WorkRecordState extends State<WorkRecord> {
             ElevatedButton(
                 onPressed: () {
                   print("RECORD  >>> ");
+                  String remark = "1";
+                  if (_index == 6 || _sqLiteWorklistModel.remark == "9") {
+                    remark = "11";
+                  }
                   SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
                       checklistID: _index,
                       createDate: _sqLiteWorklistModel.createDate,
@@ -414,13 +574,13 @@ class _WorkRecordState extends State<WorkRecord> {
                       lat: "",
                       lng: "",
                       workDoc: _sqLiteWorklistModel.workDoc,
-                      workID: _sqLiteWorklistModel.workID,
+                      workID: 1,
                       workPerform: _sqLiteWorklistModel.workPerform,
                       workProvince: _sqLiteWorklistModel.workProvince,
                       workRegion: _sqLiteWorklistModel.workRegion,
                       workStation: _sqLiteWorklistModel.workStation,
                       workType: _sqLiteWorklistModel.workType,
-                      remark: "1");
+                      remark: remark);
 
                   SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
 
@@ -433,12 +593,32 @@ class _WorkRecordState extends State<WorkRecord> {
     );
   }
 
-  void routeToMainList(SQLiteWorklistModel sqLiteWorklistModel) {
+  Future<void> routeToMainList(SQLiteWorklistModel sqLiteWorklistModel) async {
+    SQLiteUserModel sqLiteUserModel;
+    List<SQLiteUserModel> models = [];
+    await SQLiteHelper().readUserDatabase().then((result) {
+      if (result == null) {
+      } else {
+        models = result;
+        for (var item in models) {
+          sqLiteUserModel = SQLiteUserModel(
+            userID: item.userID,
+            firstName: item.firstName,
+            lastName: item.lastName,
+            deptCode: item.deptCode,
+            ownerID: item.ownerID,
+            ownerName: item.ownerName,
+            pincode: item.pincode,
+          );
+        } //for
+      }
+    });
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MainList(
-          user_model: userModel,
+          user_model: sqLiteUserModel,
           sqLiteWorklistModel: sqLiteWorklistModel,
         ),
       ),
