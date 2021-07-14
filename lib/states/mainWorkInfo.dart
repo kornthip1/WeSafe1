@@ -1,10 +1,13 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
-
+import 'package:wesafe/models/sqliteStationModel.dart';
 import 'package:wesafe/states/mainlist.dart';
+import 'package:wesafe/utility/dialog.dart';
 
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
@@ -32,10 +35,17 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
   ListItem _selectedRegionItem;
   ListItem _selectedProviceItem;
   ListItem _selectedStationItem;
+
+  List<ListItem> _dropdownItems = [];
+  List<ListItem> _dropdownProvince = [];
+
+  List<String> listProvince = [];
+  String _myProvince;
   @override
   void initState() {
-    super.initState();
     userModel = widget.user_model;
+    _getStateList();
+    super.initState();
   }
 
   List<DropdownMenuItem<ListItem>> buildDropDownMenuItems(List listItems) {
@@ -183,127 +193,197 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
     );
   }
 
-  Row buildRegion() {
-    List<DropdownMenuItem<ListItem>> _dropdownMenuItems;
-    ListItem _selectedItem;
+  List statesList;
+  String _myState;
+  List<String> listRegion = [];
 
-    List<ListItem> _dropdownItems = [
-      ListItem("A", "กฟน.1"),
-      ListItem("B", "กฟน.2"),
-      ListItem("C", "กฟน.3"),
-      ListItem("D", "กฟฉ.1"),
-      ListItem("E", "กฟฉ.2"),
-      ListItem("F", "กฟฉ.3"),
-      ListItem("G", "กฟก.1"),
-      ListItem("H", "กฟก.2"),
-      ListItem("I", "กฟก.3"),
-      ListItem("J", "กฟต.1"),
-      ListItem("K", "กฟต.2"),
-      ListItem("L", "กฟต.3"),
-    ];
-    _dropdownMenuItems = buildDropDownMenuItems(_dropdownItems);
-    _selectedItem = _dropdownMenuItems[0].value;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ShowTitle(
-            title: "เขต",
-            index: 4,
+  Widget buildRegion() {
+    return Container(
+      padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: ButtonTheme(
+                alignedDropdown: true,
+                child: DropdownButton<String>(
+                  value: _myState,
+                  iconSize: 30,
+                  icon: (null),
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 16,
+                  ),
+                  hint: Text('Select Region'),
+                  onChanged: (String newValue) {
+                    setState(() {
+                      _myState = newValue;
+                      _selectedRegionItem = ListItem("1", _myState);
+                      _getProvinceList();
+                      //print("####  my state : $_myState");
+                    });
+                  },
+                  items: listRegion.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: DropdownButton<ListItem>(
-            value: _selectedItem,
-            items: _dropdownMenuItems,
-            onChanged: (value) {
-              _selectedItem = value;
-              _selectedRegionItem = value;
-              print("selected >>>>>> ${_selectedItem.name}");
-              buildProvince();
-            },
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Row buildProvince() {
-    List<DropdownMenuItem<ListItem>> _dropdownMenuItems;
-    ListItem _selectedItem;
-
-    List<ListItem> _dropdownItems = [
-      ListItem("A", "นครปฐม"),
-      ListItem("B", "สุพรรณบุรี"),
-      ListItem("C", "กาญจนบุรี"),
-    ];
-    _dropdownMenuItems = buildDropDownMenuItems(_dropdownItems);
-    _selectedItem = _dropdownMenuItems[0].value;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ShowTitle(
-            title: "จังหวัด",
-            index: 4,
+  Widget buildProvince() {
+    return Container(
+      padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: ButtonTheme(
+                alignedDropdown: true,
+                child: DropdownButton<String>(
+                  value: _myProvince,
+                  iconSize: 30,
+                  icon: (null),
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 16,
+                  ),
+                  hint: Text('Select Province'),
+                  onChanged: (String newValue) {
+                    setState(() {
+                      _myProvince = newValue;
+                      _selectedProviceItem =  ListItem("2", _myProvince);
+                      _getStationList();
+                    });
+                  },
+                  items: listProvince.map((String values) {
+                    return DropdownMenuItem<String>(
+                      value: values,
+                      child: Text(values),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: DropdownButton<ListItem>(
-            value: _selectedItem,
-            items: _dropdownMenuItems,
-            onChanged: (value) {
-              _selectedItem = value;
-              _selectedProviceItem = value;
-              print("selected >>>>>> ${_selectedItem.name}");
-            },
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Row buildStation() {
-    List<DropdownMenuItem<ListItem>> _dropdownMenuItems;
-    ListItem _selectedItem;
+  Widget buildStation() {
+    return Container(
+      padding: EdgeInsets.only(left: 15, right: 15, top: 5),
+      color: Colors.white,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: <Widget>[
+          Expanded(
+            child: DropdownButtonHideUnderline(
+              child: ButtonTheme(
+                alignedDropdown: true,
+                child: DropdownButton<String>(
+                  value: _myStation,
+                  iconSize: 30,
+                  icon: (null),
+                  style: TextStyle(
+                    color: Colors.black54,
+                    fontSize: 16,
+                  ),
+                  hint: Text('Select Station'),
+                  onChanged: (String newValue) {
+                    setState(() {
+                      _myStation = newValue;
+                      _selectedStationItem =  ListItem("3", _myStation);
+                    });
 
-    List<ListItem> _dropdownItems = [
-      ListItem("A", "สถานีไฟฟ้า A"),
-      ListItem("B", "สถานีไฟฟ้า B"),
-      ListItem("C", "สถานีไฟฟ้า C"),
-    ];
-    _dropdownMenuItems = buildDropDownMenuItems(_dropdownItems);
-    _selectedItem = _dropdownMenuItems[0].value;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ShowTitle(
-            title: "สถานีไฟฟ้า",
-            index: 4,
+                    print("####   _myStation : $_myStation");
+                  },
+                  items: listStation.map((String values) {
+                    return DropdownMenuItem<String>(
+                      value: values,
+                      child: Text(values),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: DropdownButton<ListItem>(
-            value: _selectedItem,
-            items: _dropdownMenuItems,
-            onChanged: (value) {
-              _selectedItem = value;
-              _selectedStationItem = value;
-              print("selected >>>>>> ${_selectedItem.name}");
-            },
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
+//******STATION INFO ****/
+
+  Future<Null> _getStateList() async {
+    List<SQLiteStationModel> models = [];
+    listRegion = [];
+    await SQLiteHelper().readStation().then((result) {
+      if (result == null) {
+      } else {
+        models = result;
+        for (var item in models) {
+          listRegion.add(item.regionName);
+        }
+      }
+    });
+  }
+
+  Future<Null> _getProvinceList() async {
+    _myProvince = null;
+    _myStation = null;
+    listStation = [];
+    print("#### state : $_myState     my province : $_myProvince");
+    List<SQLiteStationModel> models = [];
+    listProvince.clear();
+    await SQLiteHelper().readStationByRegion(_myState).then((result) {
+      if (result == null) {
+      } else {
+        models = result;
+
+        for (var item in models) {
+          setState(() {
+            listProvince.add(item.province);
+          });
+        }
+      }
+    });
+  }
+
+  List<String> listStation = [];
+  String _myStation;
+  Future<Null> _getStationList() async {
+    _myStation = null;
+    print("#### province : $_myProvince     my Station : $_myStation");
+    listStation.clear();
+    List<SQLiteStationModel> models = [];
+    await SQLiteHelper().readStationByProvince(_myProvince).then((result) {
+      if (result == null) {
+      } else {
+        models = result;
+
+        for (var item in models) {
+          setState(() {
+            listStation.add(item.stationName);
+          });
+        }
+      }
+    });
+  }
+
+/*******************/ /// */
   void routeToMainList(SQLiteWorklistModel sqLiteWorklistModel) {
     Navigator.push(
       context,
@@ -378,22 +458,28 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
           children: [
             ElevatedButton(
                 onPressed: () {
-                  //         SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
-                  //     deptCode: userModel.result.dEPTNAME,
-                  //     firstName: userModel.result.fIRSTNAME,
-                  //     lastName: userModel.result.lASTNAME,
-                  //     createdDate: now.toString(),
-                  //     leaderName: userModel.result.learderName,
-                  //     pincode: _textEditingController.text,
-                  //     ownerID: userModel.result.ownerID[0],
-                  //     ownerName: userModel.result.ownerName,
-                  //     position: "",
-                  //     teamName: userModel.result.tEAM,
-                  //     userID: userModel.result.eMPLOYEEID);
+                  // SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
+                  //   checklistID: 0,
+                  //   createDate: "",
+                  //   isChoice: 0,
+                  //   userID: userModel.userID,
+                  //   lat: "",
+                  //   lng: "",
+                  //   workDoc: "",
+                  //   workID: 4,
+                  //   workPerform: "",
+                  //   workProvince: _selectedProviceItem.name,
+                  //   workRegion: _selectedRegionItem.name,
+                  //   workStation: _selectedStationItem.name,
+                  // );
 
-                  // SQLiteHelper().insertUserDatebase(sqLiteUserModel);
+                  //SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
+                  SQLiteWorklistModel sqLiteWorklistModel;
 
-                  SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
+                  _selectedRegionItem==null?  normalDialog(context, "เตือน!", "กรุณาเลือก เขต ที่ต้องการปฏิบัติงาน"): 
+                  _selectedProviceItem ==null?  normalDialog(context, "เตือน!", "กรุณาเลือก จังหวัดที่ต้องการปฏิบัติงาน"):
+                  _selectedStationItem==null? normalDialog(context, "เตือน!", "กรุณาเลือก สถานีที่ต้องการปฏิบัติงาน") : 
+                  sqLiteWorklistModel = SQLiteWorklistModel(
                     checklistID: 0,
                     createDate: "",
                     isChoice: 0,
@@ -407,11 +493,11 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
                     workRegion: _selectedRegionItem.name,
                     workStation: _selectedStationItem.name,
                   );
+                  _selectedRegionItem = null; _selectedProviceItem = null; _selectedStationItem = null;
 
-                  //SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
-                  print("NEXT Region -----> ${_selectedRegionItem.name}");
-                  print("NEXT Provice -----> ${_selectedProviceItem.name}");
-                  print("NEXT Station -----> ${_selectedStationItem.name}");
+                  // print("NEXT Region -----> ${_selectedRegionItem.name}");
+                  // print("NEXT Provice -----> ${_selectedProviceItem.name}");
+                  // print("NEXT Station -----> ${_selectedStationItem.name}");
 
                   routeToMainList(sqLiteWorklistModel);
                 },
@@ -431,7 +517,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
             SharedPreferences preferences =
                 await SharedPreferences.getInstance();
             preferences.clear();
-
+            SQLiteHelper().deleteStationAll();
             Navigator.pushNamedAndRemoveUntil(
                 context, '/authen', (route) => false);
           },
@@ -460,55 +546,6 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
       accountEmail: userModel == null
           ? Text('Position')
           : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
-    );
-  }
-
-  Widget dropList() {
-    List statesList = [0];
-    String _myState;
-
-    statesList.add(1212);
-    statesList.add(23232);
-
-    return Container(
-      padding: EdgeInsets.only(left: 15, right: 15, top: 5),
-      color: Colors.white,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: <Widget>[
-          Expanded(
-            child: DropdownButtonHideUnderline(
-              child: ButtonTheme(
-                alignedDropdown: true,
-                child: DropdownButton<String>(
-                  value: _myState,
-                  iconSize: 30,
-                  icon: (null),
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 16,
-                  ),
-                  hint: Text('Select State'),
-                  onChanged: (String newValue) {
-                    // setState(() {
-                    //   _myState = newValue;
-                    //   _getCitiesList();
-                    //   print(_myState);
-                    // });
-                  },
-                  items: statesList?.map((item) {
-                        return new DropdownMenuItem(
-                          child: new Text(item['name']),
-                          value: item['id'].toString(),
-                        );
-                      })?.toList() ??
-                      [],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

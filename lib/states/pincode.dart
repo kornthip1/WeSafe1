@@ -6,6 +6,7 @@ import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/models/sqliteStationModel.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
@@ -152,6 +153,8 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
 
             SQLiteHelper().insertUserDatebase(sqLiteUserModel);
 
+            insertStationInfo();  
+              
             if (userModel.result.ownerID.length > 1) {
               routeToMultiOwner(userModel, sqLiteUserModel);
             } else {
@@ -222,5 +225,63 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
         ),
       ),
     );
+  }
+
+  void insertStationInfo() {
+    // SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
+    //             deptCode: userModel.result.dEPTNAME,
+    //             firstName: userModel.result.fIRSTNAME,
+    //             lastName: userModel.result.lASTNAME,
+    //             createdDate: now.toString(),
+    //             leaderName: userModel.result.learderName,
+    //             pincode: _textEditingController.text,
+    //             ownerID: userModel.result.ownerID[0],
+    //             ownerName: userModel.result.ownerName,
+    //             position: "",
+    //             teamName: userModel.result.tEAM,
+    //             userID: userModel.result.eMPLOYEEID);
+
+    //         SQLiteHelper().insertUserDatebase(sqLiteUserModel);
+
+    SQLiteStationModel sqLiteStationModel = SQLiteStationModel(
+      id: 1,
+      province: "นครปฐม",
+      regionCode: "I",
+      regionName: "กฟก.3",
+      stationId: "S0001",
+      stationName: "สถานีไฟฟ้า นครปฐม",
+    );
+    SQLiteHelper().insertStation(sqLiteStationModel);
+     sqLiteStationModel = SQLiteStationModel(
+       id:2,
+      province: "กาญจนบุรี",
+      regionCode: "I",
+      regionName: "กฟก.3",
+      stationId: "S0002",
+      stationName: "สถานีไฟฟ้า กาญจนบุรี",
+    );
+    SQLiteHelper().insertStation(sqLiteStationModel);
+    sqLiteStationModel = SQLiteStationModel(
+       id:3,
+      province: "เชียงใหม่",
+      regionCode: "A",
+      regionName: "กฟน.1",
+      stationId: "S0005",
+      stationName: "สถานีไฟฟ้า เชียงใหม่",
+    );
+    SQLiteHelper().insertStation(sqLiteStationModel);
+
+    sqLiteStationModel = SQLiteStationModel(
+       id:4,
+      province: "ยะลา",
+      regionCode: "L",
+      regionName: "กฟต.1",
+      stationId: "S0007",
+      stationName: "สถานีไฟฟ้า ยะลา",
+    );
+    SQLiteHelper().insertStation(sqLiteStationModel);
+
+
+
   }
 }

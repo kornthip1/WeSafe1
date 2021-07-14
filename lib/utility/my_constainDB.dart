@@ -68,4 +68,16 @@ class MyConstainPercelDB {
 }
 
 
+class MyConstainStationInfoDB {
+  static final String nameStationTable = 'mastStation';
+  static final String columnRegionCode = 'regionCode';
+  static final String columnRegionName = 'regionName';
+  static final String columnProvince = 'province';
+  static final String columnStationId = 'stationId';
+  static final String columnStationName = 'stationName';
+  static final String columnCreateDate = 'createdDate';
+  static final String columnUpdatedDate = 'updatedDate';
+}
+
+
 

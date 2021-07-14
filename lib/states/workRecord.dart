@@ -42,12 +42,14 @@ class _WorkRecordState extends State<WorkRecord> {
   SQLiteUserModel userModel;
   TextEditingController dataController = TextEditingController();
   SQLiteWorklistModel _sqLiteWorklistModel;
+
+  int rows = 1;
   @override
   void initState() {
     super.initState();
     indexWork = widget.indexWork;
 
-    for (var i = 0; i < 3; i++) {
+    for (var i = 0; i < rows; i++) {
       files.add(null);
     }
 
@@ -56,6 +58,8 @@ class _WorkRecordState extends State<WorkRecord> {
     userModel = widget.sqLiteUserModel;
     _sqLiteWorklistModel = widget.sqLiteWorklistModel;
     _index = widget.index;
+
+    rows = 1;
   }
 
   @override
@@ -216,9 +220,7 @@ class _WorkRecordState extends State<WorkRecord> {
     );
   }
 
-  
-
-Widget buildCloseWork() {
+  Widget buildCloseWork() {
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
@@ -243,12 +245,13 @@ Widget buildCloseWork() {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                     
                       Container(
                         width: 120,
                         height: 120,
                         child: files[index] == null
-                            ? ShowIconImage(fromMenu: "image",)
+                            ? ShowIconImage(
+                                fromMenu: "image",
+                              )
                             : Image.file(files[0]),
                       ),
                       Column(
@@ -273,7 +276,7 @@ Widget buildCloseWork() {
                 ],
               ),
             ),
-             // ),
+            // ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ShowTitle(
@@ -298,7 +301,7 @@ Widget buildCloseWork() {
                   Divider(
                     thickness: 1,
                   ),
-                   Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       Container(child: Text('${index + 2}')),
@@ -325,7 +328,6 @@ Widget buildCloseWork() {
       width: size * 0.6,
       height: 50.0,
       child: TextFormField(
-        
         validator: (value) {
           if (value.isEmpty) {
             return 'Please fill ...';
@@ -334,20 +336,19 @@ Widget buildCloseWork() {
           }
         },
         decoration: InputDecoration(
-          
           labelText: 'อุปกรณ์ :',
           border: OutlineInputBorder(),
         ),
       ),
     );
   }
-Container buildAmountPercel() {
+
+  Container buildAmountPercel() {
     return Container(
       // margin: EdgeInsets.only(top: 5),
       width: size * 0.3,
       height: 50.0,
       child: TextFormField(
-        
         validator: (value) {
           if (value.isEmpty) {
             return 'Please fill ...';
@@ -356,7 +357,6 @@ Container buildAmountPercel() {
           }
         },
         decoration: InputDecoration(
-         
           labelText: 'จำนวน :',
           border: OutlineInputBorder(),
         ),
@@ -364,28 +364,19 @@ Container buildAmountPercel() {
     );
   }
 
-
-
-
   Widget buildPicture() {
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ShowTitle(
-            //   title: "Take Pic",
-            // ),
-            // ShowTitle(
-            //   title: 'จำนวนรูป : $amountPic  รูป',
-            // ),
             Divider(
               thickness: 1,
             ),
             ListView.builder(
               shrinkWrap: true,
               physics: ScrollPhysics(),
-              itemCount: files.length,
+              itemCount: rows, //files.length,
               itemBuilder: (context, index) => Column(
                 children: [
                   Row(
@@ -414,6 +405,14 @@ Container buildAmountPercel() {
                           ),
                         ],
                       ),
+                      ElevatedButton(
+                          onPressed: () {
+                            setState(() {
+                              rows = rows + 1;
+                              files.add(null);
+                            });
+                          },
+                          child: Text("เพิ่มรูปถ่าย"))
                     ],
                   ),
                   Divider(

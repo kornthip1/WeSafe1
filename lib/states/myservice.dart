@@ -26,6 +26,7 @@ class _MyserviceState extends State<Myservice> {
   List<String> listOwner;
   List<String> listOwnerID;
   double size;
+  int rowGrid = 1;
   @override
   void initState() {
     // TODO: implement initState
@@ -64,6 +65,9 @@ class _MyserviceState extends State<Myservice> {
       body: menu(),
     );
   }
+
+
+  
 
   Widget menu() {
     return Center(

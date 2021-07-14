@@ -1,9 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:wesafe/models/MastWorkListModel_test.dart';
 import 'package:path/path.dart';
 import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
+import 'package:wesafe/models/sqliteStationModel.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/my_constainDB.dart';
 
@@ -87,6 +89,18 @@ class SQLiteHelper {
               ' ${MyConstainPercelDB.columnCreateDate} TEXT,' +
               ' ${MyConstainPercelDB.columnIsComplete} INTEGER ' +
               ')');
+
+      await database.execute(
+          'CREATE TABLE ${MyConstainStationInfoDB.nameStationTable} ( ' +
+              ' id INTEGER PRIMARY KEY,' +
+              ' ${MyConstainStationInfoDB.columnRegionCode} TEXT,' +
+              ' ${MyConstainStationInfoDB.columnRegionName} TEXT ,' +
+              ' ${MyConstainStationInfoDB.columnProvince} TEXT ,' +
+              ' ${MyConstainStationInfoDB.columnStationId} TEXT,' +
+              ' ${MyConstainStationInfoDB.columnStationName} TEXT,' +
+              ' ${MyConstainStationInfoDB.columnCreateDate} TEXT,' +
+              ' ${MyConstainStationInfoDB.columnUpdatedDate} TEXT ' +
+              ')');
     });
   }
 
@@ -126,8 +140,8 @@ class SQLiteHelper {
     return models;
   }
 
-
-Future<Null> insertWorkDatebase(SQLiteWorklistModel sqLiteWorklistModel) async {
+  Future<Null> insertWorkDatebase(
+      SQLiteWorklistModel sqLiteWorklistModel) async {
     Map<String, dynamic> maps = sqLiteWorklistModel.toMap();
 
     print("#### insertWorkDatebase ${maps.values}");
@@ -147,7 +161,7 @@ Future<Null> insertWorkDatebase(SQLiteWorklistModel sqLiteWorklistModel) async {
     Database database = await connectedDatabase();
     List<SQLiteWorklistModel> models = [];
     List<Map<String, dynamic>> maps =
-        await database.query(MyConstainWorklistDB.nameTable );
+        await database.query(MyConstainWorklistDB.nameTable);
 //,where: "${MyConstainWorklistDB.columnsubWorkID} = '4'"
     for (var item in maps) {
       SQLiteWorklistModel model = SQLiteWorklistModel.fromMap(item);
@@ -157,8 +171,7 @@ Future<Null> insertWorkDatebase(SQLiteWorklistModel sqLiteWorklistModel) async {
     return models;
   }
 
-
-Future<Null> deleteWorkAll() async {
+  Future<Null> deleteWorkAll() async {
     Database database = await connectedDatabase();
     try {
       await database.delete(MyConstainWorklistDB.nameTable);
@@ -166,7 +179,76 @@ Future<Null> deleteWorkAll() async {
     } catch (e) {}
   }
 
+//*********  STATION  */
 
+  Future<Null> insertStation(SQLiteStationModel sqLiteStationModel) async {
+    Map<String, dynamic> maps = sqLiteStationModel.toMap();
+
+    print("#### insertWorkDatebase ${maps.values}");
+
+    Database database = await connectedDatabase();
+    try {
+      database.insert(
+        MyConstainStationInfoDB.nameStationTable,
+        sqLiteStationModel.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      print('######## insertWorkDatebase database SQLite success');
+    } catch (e) {}
+  }
+
+  Future<List<SQLiteStationModel>> readStation() async {
+    Database database = await connectedDatabase();
+    List<SQLiteStationModel> models = [];
+    List<Map<String, dynamic>> maps =
+        await database.query(MyConstainStationInfoDB.nameStationTable,distinct: true,columns:[MyConstainStationInfoDB.columnRegionName]);
+//,where: "${MyConstainWorklistDB.columnsubWorkID} = '4'"
+    for (var item in maps) {
+      SQLiteStationModel model = SQLiteStationModel.fromMap(item);
+      models.add(model);
+    }
+
+    return models;
+  }
+
+  Future<List<SQLiteStationModel>> readStationByRegion(String region) async {
+    Database database = await connectedDatabase();
+    List<SQLiteStationModel> models = [];
+    List<Map<String, dynamic>> maps =
+        await database.rawQuery("SELECT ${MyConstainStationInfoDB.columnProvince}  "+
+        "FROM ${MyConstainStationInfoDB.nameStationTable}  "+
+        "WHERE ${MyConstainStationInfoDB.columnRegionName}=?",['$region']);
+    for (var item in maps) {
+      SQLiteStationModel model = SQLiteStationModel.fromMap(item);
+      models.add(model);
+    }
+
+    return models;
+  }
+
+  Future<List<SQLiteStationModel>> readStationByProvince(String province) async {
+    Database database = await connectedDatabase();
+    List<SQLiteStationModel> models = [];
+    List<Map<String, dynamic>> maps =
+        await database.rawQuery("SELECT ${MyConstainStationInfoDB.columnStationName}  "+
+        "FROM ${MyConstainStationInfoDB.nameStationTable}  "+
+        "WHERE ${MyConstainStationInfoDB.columnProvince}=?",['$province']);
+    for (var item in maps) {
+      SQLiteStationModel model = SQLiteStationModel.fromMap(item);
+      models.add(model);
+    }
+
+    return models;
+  }
+
+
+  Future<Null> deleteStationAll() async {
+    Database database = await connectedDatabase();
+    try {
+      await database.delete(MyConstainStationInfoDB.nameStationTable);
+      print('====> delete Station success');
+    } catch (e) {}
+  }
 
 //example
   Future<Null> insertDatebase(MastWorkListModel masterWorkListModel) async {
