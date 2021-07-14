@@ -35,31 +35,19 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
   ListItem _selectedRegionItem;
   ListItem _selectedProviceItem;
   ListItem _selectedStationItem;
-
-  List<ListItem> _dropdownItems = [];
-  List<ListItem> _dropdownProvince = [];
+List<ListItem> _dropdownItems;
 
   List<String> listProvince = [];
   String _myProvince;
   @override
   void initState() {
+    
     userModel = widget.user_model;
-    _getStateList();
     super.initState();
+     _getStateList();
+     readStationInfo();
   }
 
-  List<DropdownMenuItem<ListItem>> buildDropDownMenuItems(List listItems) {
-    List<DropdownMenuItem<ListItem>> items = List();
-    for (ListItem listItem in listItems) {
-      items.add(
-        DropdownMenuItem(
-          child: Text(listItem.name),
-          value: listItem,
-        ),
-      );
-    }
-    return items;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -328,6 +316,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
 //******STATION INFO ****/
 
   Future<Null> _getStateList() async {
+    print("#### _getStateList()");
     List<SQLiteStationModel> models = [];
     listRegion = [];
     await SQLiteHelper().readStation().then((result) {
@@ -547,5 +536,23 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
           ? Text('Position')
           : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
     );
+  }
+
+
+    Future<Null> readStationInfo() async {
+    List<SQLiteStationModel> models = [];
+    await SQLiteHelper().readStation().then((result) {
+      if (result == null) {
+      } else {
+        models = result;
+        SQLiteStationModel sqLiteStationModel;
+        _dropdownItems = [];
+        for (var item in models) {
+          setState(() {
+            _dropdownItems.add(ListItem(item.regionCode, item.regionName));
+          });
+        }
+      }
+    });
   }
 }
