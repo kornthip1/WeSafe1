@@ -16,6 +16,7 @@ class SQLiteWorklistModel {
   int isChoice;
   String reason;
   String msgFromWeb;
+  bool isComplete;
   String createDate;
   String uploadDate;
 
@@ -24,6 +25,8 @@ class SQLiteWorklistModel {
   String workStation;
   String workType;
   String workDoc;
+
+  String imgList;
 
   SQLiteWorklistModel({
     this.id,
@@ -41,6 +44,7 @@ class SQLiteWorklistModel {
     this.isChoice,
     this.reason,
     this.msgFromWeb,
+    this.isComplete,
     this.createDate,
     this.uploadDate,
     this.workRegion,
@@ -48,6 +52,7 @@ class SQLiteWorklistModel {
     this.workStation,
     this.workType,
     this.workDoc,
+    this.imgList,
   });
 
   SQLiteWorklistModel copyWith({
@@ -66,6 +71,7 @@ class SQLiteWorklistModel {
     int isChoice,
     String reason,
     String msgFromWeb,
+    bool isComplete,
     String createDate,
     String uploadDate,
     String workRegion,
@@ -73,6 +79,7 @@ class SQLiteWorklistModel {
     String workStation,
     String workType,
     String workDoc,
+    String imgList,
   }) {
     return SQLiteWorklistModel(
       id: id ?? this.id,
@@ -90,6 +97,7 @@ class SQLiteWorklistModel {
       isChoice: isChoice ?? this.isChoice,
       reason: reason ?? this.reason,
       msgFromWeb: msgFromWeb ?? this.msgFromWeb,
+      isComplete: isComplete ?? this.isComplete,
       createDate: createDate ?? this.createDate,
       uploadDate: uploadDate ?? this.uploadDate,
       workRegion: workRegion ?? this.workRegion,
@@ -97,6 +105,7 @@ class SQLiteWorklistModel {
       workStation: workStation ?? this.workStation,
       workType: workType ?? this.workType,
       workDoc: workDoc ?? this.workDoc,
+      imgList: imgList ?? this.imgList,
     );
   }
 
@@ -117,6 +126,7 @@ class SQLiteWorklistModel {
       'isChoice': isChoice,
       'reason': reason,
       'msgFromWeb': msgFromWeb,
+      'isComplete' : isComplete,
       'createDate': createDate,
       'uploadDate': uploadDate,
       'workRegion': workRegion,
@@ -124,6 +134,8 @@ class SQLiteWorklistModel {
       'workStation': workStation,
       'workType': workType,
       'workDoc': workDoc,
+      'imgList': imgList,
+      
     };
   }
 
@@ -144,6 +156,7 @@ class SQLiteWorklistModel {
       isChoice: map['isChoice'],
       reason: map['reason'],
       msgFromWeb: map['msgFromWeb'],
+      isComplete:map['isComplete'],
       createDate: map['createDate'],
       uploadDate: map['uploadDate'],
       workRegion: map['workRegion'],
@@ -151,6 +164,7 @@ class SQLiteWorklistModel {
       workStation: map['workStation'],
       workType: map['workType'],
       workDoc: map['workDoc'],
+       imgList: map['imgList'],
     );
   }
 
@@ -179,13 +193,15 @@ class SQLiteWorklistModel {
         other.isChoice == isChoice &&
         other.reason == reason &&
         other.msgFromWeb == msgFromWeb &&
+        other.isComplete == isComplete &&
         other.createDate == createDate &&
         other.uploadDate == uploadDate &&
         other.workRegion == workRegion &&
         other.workProvince == workProvince &&
         other.workStation == workStation &&
         other.workType == workType &&
-        other.workDoc == workDoc;
+        other.workDoc == workDoc&&
+        other.imgList == imgList;
   }
 
   @override
@@ -205,12 +221,14 @@ class SQLiteWorklistModel {
         isChoice.hashCode ^
         reason.hashCode ^
         msgFromWeb.hashCode ^
+        isComplete.hashCode ^
         createDate.hashCode ^
         uploadDate.hashCode ^
         workRegion.hashCode ^
         workProvince.hashCode ^
         workStation.hashCode ^
         workType.hashCode ^
-        workDoc.hashCode;
+        workDoc.hashCode^
+        imgList.hashCode;
   }
 } //class

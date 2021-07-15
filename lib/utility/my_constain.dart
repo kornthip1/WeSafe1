@@ -33,9 +33,13 @@ class MyConstant {
 
 
   static final strDateNow = getDateNow();
+
+
 }
 
 String getDateNow() {
   final DateTime now = DateTime.now();
   return now.toString();
 }
+
+

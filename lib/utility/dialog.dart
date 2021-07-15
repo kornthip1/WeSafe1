@@ -8,7 +8,7 @@ Future<Null> normalDialog(
     context: context,
     builder: (context) => SimpleDialog(
       title: ListTile(
-        leading: ShowImage(),
+        leading: title.contains("กรุณา")?  Icon(Icons.warning,size: 40,color: Colors.red,) : ShowImage(),
         title: ShowTitle(
           title: title,
           index: 0,

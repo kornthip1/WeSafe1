@@ -95,6 +95,7 @@ class _AuthenState extends State<Authen> {
           await SharedPreferences.getInstance();
       UserModel userModel;
 
+
       response.transform(utf8.decoder).listen(
         (contents) {
           contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
@@ -104,6 +105,7 @@ class _AuthenState extends State<Authen> {
           } else {
             userModel = UserModel.fromJson(json.decode(contents));
             routeToCreatePinCode(userModel);
+            
           } //else
         },
       );

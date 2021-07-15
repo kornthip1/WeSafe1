@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesafe/models/insertWorklistModel.dart';
 
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
@@ -35,11 +36,10 @@ class _MainListState extends State<MainList> {
   SQLiteWorklistModel _sqLiteWorklistModel;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-
     userModel = widget.user_model;
     _sqLiteWorklistModel = widget.sqLiteWorklistModel;
+
     //readWorklist();
   }
 
@@ -51,16 +51,6 @@ class _MainListState extends State<MainList> {
         models = result;
         SQLiteWorklistModel sqLiteWorklistModel;
         for (var item in models) {
-          print("MAINLIST()  #####  id ${item.id}");
-
-          print("MAINLIST()  #####  id ${item.id}");
-
-          print("MAINLIST()  #####  workID ${item.workID}");
-
-          print("MAINLIST()  #####  region ${item.workRegion}");
-          print("MAINLIST()  #####  region ${item.workRegion}");
-          print("MAINLIST()  #####  Province ${item.workProvince}");
-          print("MAINLIST()  #####  Station  ${item.workStation}");
           sqLiteWorklistModel = SQLiteWorklistModel(
             checklistID: item.checklistID,
             createDate: item.createDate,
@@ -125,22 +115,137 @@ class _MainListState extends State<MainList> {
         buildListView(),
         ElevatedButton(
           onPressed: () {
-            setLine();
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MainMenu(
-                  userModel: userModel,
-                  ownerId: userModel.ownerID,
-                ),
-              ),
-            );
+            insertDataTOServer();
+
+            //setLine();
+
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => MainMenu(
+            //       userModel: userModel,
+            //       ownerId: userModel.ownerID,
+            //     ),
+            //   ),
+            // );
           },
           child: Text("ยืนยัน"),
         ),
       ],
     );
   }
+
+  Future<void> insertDataTOServer() async {
+    List<SQLiteWorklistModel> models = [];
+    List<String> listValues = [];
+    try {
+      await SQLiteHelper().readWorkDatabase().then((result) {
+        if (result == null) {
+        } else {
+          models = result;
+          InsertWorklistModel insertWorklistModel;
+
+          for (var item in models) {
+            generateImage(item.imgList);
+            print("###### check user model  : $userModel");
+            insertWorklistModel = InsertWorklistModel(
+                deptName: userModel.deptName == null ? "" : userModel.deptName,
+                dateTimeWorkFinish: "",
+                docRequire: item.workDoc == null ? "" : item.workDoc,
+                empLeaderID: userModel.leaderId,
+                employeeID: userModel.userID == null ? "" : userModel.userID,
+                gNDReason: "",
+                iPAddress: "",
+                image: generateImage(item.imgList).replaceAll("[", "").replaceAll("]", ""),
+                isOffElect: "0",
+                isSortGND: "0",
+                locationLat: "",
+                locationLng: "",
+                macAddress: "",
+                menuChecklistID: item.checklistID == null? "" : item.checklistID.toString(),
+                menuMainID: item.mainWorkID == null? "" : item.mainWorkID.toString(),
+                menuSubID: item.subWorkID == null? "" : item.subWorkID.toString(),
+                offElectReason: "",
+                ownerID: item.ownerID == null ? "" : item.ownerID,
+                parcel: "",
+                province: item.workProvince == null ? "" : item.workProvince,
+                regionCode: userModel.rsg,
+                remark: "",
+                sender: userModel.userID == null ? "" : userModel.userID,
+                station: item.workStation == null ? "" : item.workStation,
+                tokenNoti: "",
+                waitApprove: "",
+                workArea: item.workRegion == null ? "" : item.workRegion,
+                workPerform: item.workPerform == null ? "" : item.workPerform,
+                workStatus: "1",
+                workType: item.workType == null ? "" : item.workType,
+                );
+
+            String _strJson = json.encode(insertWorklistModel);
+            listValues.add(_strJson);
+          }
+        }
+      });
+
+      print("########## listValues lenhtg >> ${listValues.length}");
+      final client = HttpClient();
+      final request = await client.postUrl(Uri.parse(
+          "${MyConstant.webService}WeSafe_InsertTransaction")); //CheckEmp
+      request.headers.set(HttpHeaders.contentTypeHeader, "application/json;charset=utf-8");
+      var data = listValues.toString();
+      request.write(data);
+
+      final response = await request.close();
+
+      response.transform(utf8.decoder).listen(
+        (contents) {
+          contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
+          if (contents.contains('Error')) {
+            print("########## return Error  content  >> $contents");
+          } else {
+            print("########## return Insert  content  >> $contents");
+          } //else
+        },
+      );
+    } catch (E) {
+      print("PREPair Error : $E");
+    }
+  }
+
+  String generateImage(String strImg) {
+    List arr;
+    arr = strImg.split(',');
+    // print("########## generateImage arr >> ${arr.length}");
+    // print("########## generateImage value >> ${arr.toString()}");
+
+    return arr.toString();
+  }
+  // Future<Null> insertDataTOServer() async {
+
+  //   try {
+  //     final client = HttpClient();
+
+  //     final request = await client.postUrl(Uri.parse(
+  //         "${MyConstant.webService}WeSafe_InsertTransaction")); //CheckEmp
+  //     request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+  //     var values = '[{"tt" : "122"}]';
+
+  //     String _json = json.encode(_sqLiteWorklistModel);
+
+  //     request.write(values);
+
+  //     final response = await request.close();
+  //     response.transform(utf8.decoder).listen(
+  //       (contents) {
+  //         contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
+  //         if (contents.contains('Error')) {
+  //         } else {} //else
+  //       },
+  //     );
+  //   } catch (e) {
+  //     normalDialog(context, "Error", e.toString());
+  //   }
+  // }
 
   Future<Null> setLine() async {
     DateTime now = DateTime.now();
@@ -165,7 +270,7 @@ class _MainListState extends State<MainList> {
         "  " +
         userModel.lastName +
         "\n" +
-        userModel.deptCode +
+        userModel.deptName +
         "\n" +
         "\n" +
         now.toString() +
@@ -185,13 +290,12 @@ class _MainListState extends State<MainList> {
 
   Widget buildWorkPerform() {
     double size = MediaQuery.of(context).size.width;
-    double sizH = MediaQuery.of(context).size.height;
     return Column(
       children: [
         Row(
           children: [
             Padding(
-              padding: const EdgeInsets.all(3.0),
+              padding: const EdgeInsets.only(left: 23),
               child: Container(child: Text("รายละเอียดงาน")),
             ),
           ],
@@ -209,7 +313,13 @@ class _MainListState extends State<MainList> {
             },
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.work_rounded),
-              labelText: 'รายละเอียดงาน :',
+              labelText: _sqLiteWorklistModel == null
+                  ? 'รายละเอียดงาน :'
+                  : _sqLiteWorklistModel.workPerform == null
+                      ? 'รายละเอียดงาน :'
+                      : _sqLiteWorklistModel.workPerform.trim() == ""
+                          ? 'รายละเอียดงาน :'
+                          : _sqLiteWorklistModel.workPerform,
               border: OutlineInputBorder(),
             ),
           ),
@@ -226,7 +336,7 @@ class _MainListState extends State<MainList> {
         Row(
           children: [
             Padding(
-              padding: const EdgeInsets.all(3.0),
+              padding: const EdgeInsets.only(left: 23),
               child: Container(child: Text("เอกสารขอดับไฟ")),
             ),
           ],
@@ -244,7 +354,13 @@ class _MainListState extends State<MainList> {
             },
             decoration: InputDecoration(
               prefixIcon: Icon(Icons.description),
-              labelText: 'เอกสารขอดับไฟ :',
+              labelText: _sqLiteWorklistModel == null
+                  ? 'เอกสารขอดับไฟ :'
+                  : _sqLiteWorklistModel.workDoc == null
+                      ? 'เอกสารขอดับไฟ :'
+                      : _sqLiteWorklistModel.workDoc.trim() == ""
+                          ? 'เอกสารขอดับไฟ :'
+                          : _sqLiteWorklistModel.workDoc,
               border: OutlineInputBorder(),
             ),
           ),
@@ -287,7 +403,6 @@ class _MainListState extends State<MainList> {
             onTap: () {
               DateTime now = DateTime.now();
 
-              
               SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
                   checklistID: index,
                   createDate: now.toString(),
@@ -302,11 +417,16 @@ class _MainListState extends State<MainList> {
                   workRegion: _sqLiteWorklistModel.workRegion,
                   workStation: _sqLiteWorklistModel.workStation,
                   workType: _sqLiteWorklistModel.workType,
-                  remark: "0");
+                  remark: null);
 
-               sqLiteWorklistModel =  _sqLiteWorklistModel ==null? readWorklist() : sqLiteWorklistModel;
+              sqLiteWorklistModel = _sqLiteWorklistModel == null
+                  ? readWorklist()
+                  : sqLiteWorklistModel;
               //SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
 
+              setState(() {
+                _sqLiteWorklistModel = sqLiteWorklistModel;
+              });
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -469,7 +589,7 @@ class _MainListState extends State<MainList> {
           : Text('${userModel.firstName}  ${userModel.lastName}'),
       accountEmail: userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
+          : Text('ตำแหน่ง  :  ${userModel.deptName}'),
     );
   }
 

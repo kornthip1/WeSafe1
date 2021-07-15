@@ -201,7 +201,7 @@ class _CheckWorkState extends State<CheckWork> {
             userID: item.userID,
             firstName: item.firstName,
             lastName: item.lastName,
-            deptCode: item.deptCode,
+            deptName: item.deptName,
             ownerID: item.ownerID,
             ownerName: item.ownerName,
             pincode: item.pincode,
@@ -223,7 +223,7 @@ class _CheckWorkState extends State<CheckWork> {
           : Text('${_userModel.firstName}  ${_userModel.lastName}'),
       accountEmail: _userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${_userModel.deptCode}'),
+          : Text('ตำแหน่ง  :  ${_userModel.deptName}'),
     );
   }
 

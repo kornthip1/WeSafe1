@@ -1,12 +1,15 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/UserModel.dart';
-import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteStationModel.dart';
+import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/models/mastStation.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
@@ -92,13 +95,14 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
   }
 
   Widget buildPinCodeTextField() {
+    double winsize = MediaQuery.of(context).size.width;
     return Container(
       margin: EdgeInsets.only(left: 50),
       child: Row(
         children: [
           PinCodeTextField(
-            pinBoxWidth: 40,
-            pinBoxHeight: 40,
+            pinBoxWidth: winsize * 0.09, //40
+            pinBoxHeight: winsize * 0.1,
             autofocus: true,
             controller: _textEditingController,
             maxLength: 6,
@@ -139,22 +143,33 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
             userModel.result.pincode = _textEditingController.text;
             DateTime now = new DateTime.now();
             SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
-                deptCode: userModel.result.dEPTNAME,
+                deptName: userModel.result.dEPTNAME == null
+                    ? ""
+                    : userModel.result.dEPTNAME.replaceAll('/', ' '),
                 firstName: userModel.result.fIRSTNAME,
                 lastName: userModel.result.lASTNAME,
                 createdDate: now.toString(),
                 leaderName: userModel.result.learderName,
                 pincode: _textEditingController.text,
-                ownerID: userModel.result.ownerID[0],
-                ownerName: userModel.result.ownerName,
+                ownerID: checkIntList(userModel.result.ownerID),
+                ownerName: userModel.result.ownerName == null
+                    ? ""
+                    : userModel.result.ownerName.replaceAll('/', ' '),
                 position: "",
                 teamName: userModel.result.tEAM,
-                userID: userModel.result.eMPLOYEEID);
+                userID: userModel.result.eMPLOYEEID,
+                leaderId: userModel.result.learderID.toString(),
+                canApprove: userModel.result.canApprove.toString(),
+                ownerDesc: checkIntList(userModel.result.ownerIDDesc),
+                rsg: userModel.result.rEGIONCODE.toString(),
+                userRole: userModel.result.userRole.toString());
 
             SQLiteHelper().insertUserDatebase(sqLiteUserModel);
 
-            insertStationInfo();  
-              
+            //SQLiteHelper().insertUserDatebase(userModel);
+
+            insertStationInfo();
+
             if (userModel.result.ownerID.length > 1) {
               routeToMultiOwner(userModel, sqLiteUserModel);
             } else {
@@ -169,17 +184,23 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
                 SQLiteUserModel sqLiteUserModel = SQLiteUserModel();
                 for (var item in models) {
                   sqLiteUserModel = SQLiteUserModel(
-                      deptCode: item.deptCode,
-                      createdDate: item.createdDate,
-                      firstName: item.firstName,
-                      lastName: item.lastName,
-                      leaderName: item.leaderName,
-                      ownerID: item.ownerID,
-                      ownerName: item.ownerName,
-                      pincode: item.pincode,
-                      position: item.position,
-                      teamName: item.teamName,
-                      userID: item.userID);
+                    deptName: item.deptName,
+                    createdDate: item.createdDate,
+                    firstName: item.firstName,
+                    lastName: item.lastName,
+                    leaderName: item.leaderName,
+                    ownerID: item.ownerID,
+                    ownerName: item.ownerName,
+                    pincode: item.pincode,
+                    position: item.position,
+                    teamName: item.teamName,
+                    userID: item.userID,
+                    userRole: item.userRole,
+                    rsg: item.rsg,
+                    ownerDesc: item.ownerDesc,
+                    canApprove: item.canApprove,
+                    leaderId: item.leaderId,
+                  );
                 } //for
 
                 if (sqLiteUserModel.pincode.trim() ==
@@ -198,6 +219,15 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
     );
   }
 
+  String checkIntList(List<String> list) {
+    List<String> newList = [];
+    for (int i = 0; i < list.length; i++) {
+      newList.add(list[i].replaceAll('/', '').replaceAll(' ', '').toString());
+    }
+
+    return newList.toString().replaceAll("[", "").replaceAll("]", "");
+  }
+
   Future<Null> clearSharedPeference() async {
     SharedPreferences preferences = await SharedPreferences.getInstance();
     await preferences.clear();
@@ -209,7 +239,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       MaterialPageRoute(
         builder: (context) => MainMenu(
           userModel: userModel,
-          ownerId: userModel.ownerID,
+          ownerId: userModel.ownerID.substring(0,1),
         ),
       ),
     );
@@ -227,21 +257,69 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
     );
   }
 
-  void insertStationInfo() {
-    // SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
-    //             deptCode: userModel.result.dEPTNAME,
-    //             firstName: userModel.result.fIRSTNAME,
-    //             lastName: userModel.result.lASTNAME,
-    //             createdDate: now.toString(),
-    //             leaderName: userModel.result.learderName,
-    //             pincode: _textEditingController.text,
-    //             ownerID: userModel.result.ownerID[0],
-    //             ownerName: userModel.result.ownerName,
-    //             position: "",
-    //             teamName: userModel.result.tEAM,
-    //             userID: userModel.result.eMPLOYEEID);
+  Future<void> insertStationInfo() async {
+    print("########  insertStationInfo()");
+    MastStationModel mastStationModel;
+    //try {
+      /*******
+      * 
 
-    //         SQLiteHelper().insertUserDatebase(sqLiteUserModel);
+      HttpLink link = HttpLink(
+  uri: 'https://api.github.com/graphql',
+  headers: <String, String>{
+    'Authorization': 'Bearer <YOUR_PERSONAL_ACCESS_TOKEN>',
+    'Content-Type': 'application/json; charset=utf-8',
+   },
+);
+
+      */
+
+      /*
+      final client = HttpClient();
+
+      final request = await client
+          .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SelectStation"));
+      request.headers.set(
+        HttpHeaders.contentTypeHeader,
+        "application/json;charset=UTF-8",
+      );
+      request.write('{"strMsg": "Station"}');
+
+      final response = await request.close();
+      response.transform(utf8.decoder).listen(
+        (contents) {
+          //contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
+          if (contents.contains('Error')) {
+            contents = contents.replaceAll("[", "").replaceAll("]", "");
+            normalDialog(context, 'Error', contents);
+          } else {
+            mastStationModel = MastStationModel.fromJson(json.decode(  contents    ));
+          } //else
+        },
+      );
+    } catch (e) {
+      normalDialog(context, "Error", e.toString());
+    }
+
+    SQLiteStationModel _sqLiteStationModel;
+    int count;
+    for (var item in mastStationModel.result) {
+      count++;
+      _sqLiteStationModel = SQLiteStationModel(
+        id: count,
+        province: item.stationProvince,
+        regionCode: "",
+        regionName: item.stationPEA,
+        stationId: item.stationID,
+        stationName: item.stationName,
+      );
+      //SQLiteHelper().insertStation(_sqLiteStationModel);
+    }
+
+*/
+
+
+
 
     SQLiteStationModel sqLiteStationModel = SQLiteStationModel(
       id: 1,
@@ -252,8 +330,8 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       stationName: "สถานีไฟฟ้า นครปฐม",
     );
     SQLiteHelper().insertStation(sqLiteStationModel);
-     sqLiteStationModel = SQLiteStationModel(
-       id:2,
+    sqLiteStationModel = SQLiteStationModel(
+      id: 2,
       province: "กาญจนบุรี",
       regionCode: "I",
       regionName: "กฟก.3",
@@ -262,7 +340,16 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
     );
     SQLiteHelper().insertStation(sqLiteStationModel);
     sqLiteStationModel = SQLiteStationModel(
-       id:3,
+      id: 2,
+      province: "กาญจนบุรี",
+      regionCode: "I",
+      regionName: "กฟก.3",
+      stationId: "S0003",
+      stationName: "อื่นๆ",
+    );
+    SQLiteHelper().insertStation(sqLiteStationModel);
+    sqLiteStationModel = SQLiteStationModel(
+      id: 3,
       province: "เชียงใหม่",
       regionCode: "A",
       regionName: "กฟน.1",
@@ -272,7 +359,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
     SQLiteHelper().insertStation(sqLiteStationModel);
 
     sqLiteStationModel = SQLiteStationModel(
-       id:4,
+      id: 4,
       province: "ยะลา",
       regionCode: "L",
       regionName: "กฟต.1",
@@ -280,8 +367,5 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       stationName: "สถานีไฟฟ้า ยะลา",
     );
     SQLiteHelper().insertStation(sqLiteStationModel);
-
-
-
   }
 }

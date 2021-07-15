@@ -5,13 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/models/sqliteWorklistModel.dart';
+import 'package:wesafe/models/mastMainMenuModel.dart';
 import 'package:wesafe/states/mainWorkInfo.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
-import 'package:wesafe/models/mainListModel.dart';
 import 'package:wesafe/states/checkWork.dart';
 
 class MainMenu extends StatefulWidget {
@@ -26,7 +28,8 @@ class MainMenu extends StatefulWidget {
 class _MainMenuState extends State<MainMenu> {
   SQLiteUserModel userModel;
   String onwerId;
-  final List<String> mainMenuZ = [];
+  List<String> mainMenuZ = [];
+  int workID;
   @override
   void initState() {
     // TODO: implement initState
@@ -34,15 +37,14 @@ class _MainMenuState extends State<MainMenu> {
 
     userModel = widget.userModel;
     onwerId = widget.ownerId;
-    getWorkMenu(onwerId, "I00000");
-    mainMenuZ.add("การปฏิบัติงานภายในสถานีไฟฟ้าและระบบไฟฟ้า");
-    mainMenuZ.add("อื่นๆ");
-   // mainMenuZ.add("1. อื่นๆ");
-    //mainMenuZ.add("2. อื่นๆ");
-   // mainMenuZ.add("3. อื่นๆ");
+    getWorkMenu(onwerId, userModel.rsg);
   }
 
+
+
   Future<Null> getWorkMenu(String ownerID, String rsg) async {
+
+    MastMainMenuModel _mainMenuModel;
     try {
       final client = HttpClient();
 
@@ -54,18 +56,39 @@ class _MainMenuState extends State<MainMenu> {
 
       response.transform(utf8.decoder).listen(
         (contents) {
-          contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
           if (contents.contains('Error')) {
             contents = contents.replaceAll("[", "").replaceAll("]", "");
             normalDialog(context, 'Error', contents);
           } else {
-            //mainListModel = MainListModel.fromJson(json.decode(contents));
 
-            //print(" -------->  menu main : ${mainListModel.result[0].lineToken[0]}");
-
+            _mainMenuModel = MastMainMenuModel.fromJson(json.decode(contents));
+            for(var item in _mainMenuModel.result){
+               if(item.menuMainName!=null)  setState(() {
+                 mainMenuZ.add(item.menuMainName);
+               }); 
+            }
           } //else
         },
       );
+
+      List<SQLiteWorklistModel> models = [];
+      await SQLiteHelper().selectLastestWorkID().then((result) {
+        if (result == null) {
+        } else {
+          models = result;
+          if (models.length == 0) {
+            setState(() {
+              workID = 1;
+            });
+          } else {
+            for (var item in models) {
+              setState(() {
+                workID = item.workID;
+              });
+            }
+          }
+        }
+      });
     } catch (e) {
       normalDialog(context, "Error", e.toString());
     }
@@ -98,6 +121,7 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   GridView buildGridViewMainMenu(BuildContext context) {
+    double winsize = MediaQuery.of(context).size.width;
     return GridView.count(
       padding: mainMenuZ.length > 4
           ? const EdgeInsets.only(top: 0.0)
@@ -113,6 +137,7 @@ class _MainMenuState extends State<MainMenu> {
                 MaterialPageRoute(
                   builder: (context) => MainWorkInfo(
                     user_model: userModel,
+                    workID: workID,
                   ),
                 ),
               );
@@ -131,12 +156,24 @@ class _MainMenuState extends State<MainMenu> {
                     ),
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(9.0),
-                  child: ShowTitle(
-                    title: mainMenuZ[index],
-                    index: 4,
-                  ),
+                Column(
+                  children: <Widget>[
+                    Align(
+                      alignment: Alignment.topCenter,
+                      child: Container(
+                        child: Padding(
+                          padding: mainMenuZ[index].length > 30 ? const EdgeInsets.all(0.0) : const EdgeInsets.only(top: 18),
+                          child: Text(
+                            mainMenuZ[index],
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontSize: mainMenuZ[index].length > 30 ? winsize *0.04 : winsize *0.05),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -229,7 +266,7 @@ class _MainMenuState extends State<MainMenu> {
           : Text('${userModel.firstName}  ${userModel.lastName}'),
       accountEmail: userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
+          : Text('ตำแหน่ง  :  ${userModel.deptName}'),
     );
   }
 }

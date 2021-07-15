@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -21,13 +19,15 @@ import 'mainMenu.dart';
 
 class MainWorkInfo extends StatefulWidget {
   final SQLiteUserModel user_model;
-  MainWorkInfo({@required this.user_model});
+  final int workID;
+  MainWorkInfo({@required this.user_model, this.workID});
   @override
   _MainWorkInfoState createState() => _MainWorkInfoState();
 }
 
 class _MainWorkInfoState extends State<MainWorkInfo> {
   SQLiteUserModel userModel;
+  int _workId;
   int index = 0;
   List<String> titles = MyConstant.listMenu;
   String choose;
@@ -35,19 +35,20 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
   ListItem _selectedRegionItem;
   ListItem _selectedProviceItem;
   ListItem _selectedStationItem;
-List<ListItem> _dropdownItems;
+  List<ListItem> _dropdownItems;
 
   List<String> listProvince = [];
   String _myProvince;
+  bool isOtherStation = false;
+  TextEditingController _otherStation = TextEditingController();
   @override
   void initState() {
-    
     userModel = widget.user_model;
+    _workId = widget.workID;
     super.initState();
-     _getStateList();
-     readStationInfo();
+    _getStateList();
+    readStationInfo();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -95,10 +96,54 @@ List<ListItem> _dropdownItems;
           buildDivider(),
           buildStation(),
           buildDivider(),
+          if (isOtherStation == true) buildOtherStation(),
+          if (isOtherStation == true) buildDivider(),
           buildRadio(),
           //buildNext(),
         ],
       ),
+    );
+  }
+
+  Widget buildOtherStation() {
+    double size = MediaQuery.of(context).size.width;
+    return Column(
+      children: [
+        Row(
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 23),
+              child: Container(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ShowTitle(
+                    title: "สถานีไฟฟ้า",
+                    index: 2,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        Container(
+          width: size * 0.7,
+          child: TextFormField(
+            controller: _otherStation,
+            validator: (value) {
+              if (value.isEmpty) {
+                return 'กรุณาสถานีไฟฟ้า';
+              } else {
+                return null;
+              }
+            },
+            decoration: InputDecoration(
+              prefixIcon: Icon(Icons.add_location_alt_rounded),
+              labelText: 'สถานีไฟฟ้า :',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -132,7 +177,7 @@ List<ListItem> _dropdownItems;
             padding: const EdgeInsets.all(8.0),
             child: Container(
                 child:
-                    Text(userModel == null ? "กบส.สนญ." : userModel.deptCode)),
+                    Text(userModel == null ? "กบส.สนญ." : userModel.deptName)),
           ),
         ],
       ),
@@ -251,7 +296,7 @@ List<ListItem> _dropdownItems;
                   onChanged: (String newValue) {
                     setState(() {
                       _myProvince = newValue;
-                      _selectedProviceItem =  ListItem("2", _myProvince);
+                      _selectedProviceItem = ListItem("2", _myProvince);
                       _getStationList();
                     });
                   },
@@ -293,7 +338,10 @@ List<ListItem> _dropdownItems;
                   onChanged: (String newValue) {
                     setState(() {
                       _myStation = newValue;
-                      _selectedStationItem =  ListItem("3", _myStation);
+                      _selectedStationItem = ListItem("3", _myStation);
+                      _myStation.contains("อื่น")
+                          ? isOtherStation = true
+                          : isOtherStation = false;
                     });
 
                     print("####   _myStation : $_myStation");
@@ -447,48 +495,49 @@ List<ListItem> _dropdownItems;
           children: [
             ElevatedButton(
                 onPressed: () {
-                  // SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
-                  //   checklistID: 0,
-                  //   createDate: "",
-                  //   isChoice: 0,
-                  //   userID: userModel.userID,
-                  //   lat: "",
-                  //   lng: "",
-                  //   workDoc: "",
-                  //   workID: 4,
-                  //   workPerform: "",
-                  //   workProvince: _selectedProviceItem.name,
-                  //   workRegion: _selectedRegionItem.name,
-                  //   workStation: _selectedStationItem.name,
-                  // );
-
                   //SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
                   SQLiteWorklistModel sqLiteWorklistModel;
+                  if (_selectedRegionItem == null) {
+                    normalDialog(
+                        context, "กรุณาเลือก", "เขต ที่ต้องการปฏิบัติงาน");
+                  } else if (_selectedProviceItem == null) {
+                    normalDialog(
+                        context, "กรุณาเลือก", "จังหวัดที่ต้องการปฏิบัติงาน");
+                  } else if (_selectedStationItem == null || (_selectedStationItem.name.contains("อื่น") && _otherStation.text == "" ) ) {
+                    normalDialog(
+                        context, "กรุณาเลือก", "สถานีที่ต้องการปฏิบัติงาน");
+                  } else if (choose == null) {
+                    normalDialog(context, "กรุณาเลือก", "ประเภทงาน");
+                  } else {
+                    // print("NEXT WORK -----> $_workId");
+                    // print("NEXT Region -----> ${_selectedRegionItem.name}");
+                    // print("NEXT Provice -----> ${_selectedProviceItem.name}");
+                    // print("NEXT Station -----> ${_selectedStationItem.name}");
+                    // print("NEXT WORK TYPE -----> $choose");
 
-                  _selectedRegionItem==null?  normalDialog(context, "เตือน!", "กรุณาเลือก เขต ที่ต้องการปฏิบัติงาน"): 
-                  _selectedProviceItem ==null?  normalDialog(context, "เตือน!", "กรุณาเลือก จังหวัดที่ต้องการปฏิบัติงาน"):
-                  _selectedStationItem==null? normalDialog(context, "เตือน!", "กรุณาเลือก สถานีที่ต้องการปฏิบัติงาน") : 
-                  sqLiteWorklistModel = SQLiteWorklistModel(
-                    checklistID: 0,
-                    createDate: "",
-                    isChoice: 0,
-                    userID: userModel.userID,
-                    lat: "",
-                    lng: "",
-                    workDoc: "",
-                    workID: 4,
-                    workPerform: "",
-                    workProvince: _selectedProviceItem.name,
-                    workRegion: _selectedRegionItem.name,
-                    workStation: _selectedStationItem.name,
-                  );
-                  _selectedRegionItem = null; _selectedProviceItem = null; _selectedStationItem = null;
+                    sqLiteWorklistModel = SQLiteWorklistModel(
+                      checklistID: 0,
+                      createDate: "",
+                      isChoice: 0,
+                      userID: userModel.userID,
+                      lat: "",
+                      lng: "",
+                      workDoc: "",
+                      workID: _workId,
+                      workPerform: null,
+                      workProvince: _selectedProviceItem.name,
+                      workRegion: _selectedRegionItem.name,
+                      workStation: _selectedStationItem.name.contains("อื่น")? _otherStation.text : _selectedStationItem.name,
+                      workType: choose,
+                      remark: null,
+                    );
 
-                  // print("NEXT Region -----> ${_selectedRegionItem.name}");
-                  // print("NEXT Provice -----> ${_selectedProviceItem.name}");
-                  // print("NEXT Station -----> ${_selectedStationItem.name}");
+                    _selectedRegionItem = null;
+                    _selectedProviceItem = null;
+                    _selectedStationItem = null;
 
-                  routeToMainList(sqLiteWorklistModel);
+                    routeToMainList(sqLiteWorklistModel);
+                  }
                 },
                 child: Text("ถัดไป")),
           ],
@@ -534,12 +583,11 @@ List<ListItem> _dropdownItems;
           : Text('${userModel.firstName}  ${userModel.lastName}'),
       accountEmail: userModel == null
           ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.deptCode}'),
+          : Text('ตำแหน่ง  :  ${userModel.deptName}'),
     );
   }
 
-
-    Future<Null> readStationInfo() async {
+  Future<Null> readStationInfo() async {
     List<SQLiteStationModel> models = [];
     await SQLiteHelper().readStation().then((result) {
       if (result == null) {

@@ -5,12 +5,17 @@ class SQLiteUserModel {
   String firstName;
   String lastName;
   String position;
-  String deptCode;
+  String deptName;
   String teamName;
   String ownerID;
   String ownerName;
   String leaderName;
   String pincode;
+  String rsg;
+  String leaderId;
+  String ownerDesc;
+  String userRole;
+  String canApprove;
   String createdDate;
 
   SQLiteUserModel({
@@ -18,12 +23,17 @@ class SQLiteUserModel {
     this.firstName,
     this.lastName,
     this.position,
-    this.deptCode,
+    this.deptName,
     this.teamName,
     this.ownerID,
     this.ownerName,
     this.leaderName,
     this.pincode,
+    this.rsg,
+    this.leaderId,
+    this.ownerDesc,
+    this.userRole,
+    this.canApprove,
     this.createdDate,
   });
 
@@ -38,6 +48,11 @@ class SQLiteUserModel {
     String ownerName,
     String leaderName,
     String pincode,
+    String rsg,
+    String leaderId,
+    String ownerDesc,
+    String userRole,
+    String canApprove,
     String createdDate,
   }) {
     return SQLiteUserModel(
@@ -45,12 +60,17 @@ class SQLiteUserModel {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       position: position ?? this.position,
-      deptCode: deptCode ?? this.deptCode,
+      deptName: deptCode ?? this.deptName,
       teamName: teamName ?? this.teamName,
       ownerID: ownerID ?? this.ownerID,
       ownerName: ownerName ?? this.ownerName,
       leaderName: leaderName ?? this.leaderName,
       pincode: pincode ?? this.pincode,
+      rsg: rsg ?? this.rsg,
+      leaderId: leaderId ?? this.leaderId,
+      ownerDesc: ownerDesc ?? this.ownerDesc,
+      userRole: userRole ?? this.userRole,
+      canApprove: canApprove ?? this.canApprove,
       createdDate: createdDate ?? this.createdDate,
     );
   }
@@ -61,12 +81,17 @@ class SQLiteUserModel {
       'firstName': firstName,
       'lastName': lastName,
       'position': position,
-      'deptCode': deptCode,
+      'deptName': deptName,
       'teamName': teamName,
       'ownerID': ownerID,
       'ownerName': ownerName,
       'leaderName': leaderName,
       'pincode': pincode,
+      'regionCode': rsg,
+      'leaderId': leaderId,
+      'ownerDesc': ownerDesc,
+      'userRole': userRole,
+      'canApprove': canApprove,
       'createdDate': createdDate,
     };
   }
@@ -77,12 +102,17 @@ class SQLiteUserModel {
       firstName: map['firstName'],
       lastName: map['lastName'],
       position: map['position'],
-      deptCode: map['deptCode'],
+      deptName: map['deptName'],
       teamName: map['teamName'],
       ownerID: map['ownerID'],
       ownerName: map['ownerName'],
       leaderName: map['leaderName'],
       pincode: map['pincode'],
+      rsg: map['regionCode'],
+      leaderId: map['leaderId'],
+      ownerDesc: map['ownerDesc'],
+      userRole: map['userRole'],
+      canApprove: map['canApprove'],
       createdDate: map['createdDate'],
     );
   }
@@ -101,12 +131,17 @@ class SQLiteUserModel {
         other.firstName == firstName &&
         other.lastName == lastName &&
         other.position == position &&
-        other.deptCode == deptCode &&
+        other.deptName == deptName &&
         other.teamName == teamName &&
         other.ownerID == ownerID &&
         other.ownerName == ownerName &&
         other.leaderName == leaderName &&
         other.pincode == pincode &&
+        other.rsg == rsg &&
+        other.leaderId == leaderId &&
+        other.ownerDesc == ownerDesc &&
+        other.userRole == userRole &&
+        other.canApprove == canApprove &&
         other.createdDate == createdDate;
   }
 
@@ -116,12 +151,17 @@ class SQLiteUserModel {
         firstName.hashCode ^
         lastName.hashCode ^
         position.hashCode ^
-        deptCode.hashCode ^
+        deptName.hashCode ^
         teamName.hashCode ^
         ownerID.hashCode ^
         ownerName.hashCode ^
         leaderName.hashCode ^
         pincode.hashCode ^
+        rsg.hashCode ^
+        leaderId.hashCode ^
+        ownerDesc.hashCode ^
+        userRole.hashCode ^
+        canApprove.hashCode ^
         createdDate.hashCode;
   }
 } //class

@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:io' as Io;
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:wesafe/models/MastWorkListModel_test.dart';
+import 'package:wesafe/models/mastWorkListModel_test.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
 import 'package:wesafe/utility/dialog.dart';
@@ -421,9 +424,7 @@ class _WorkRecordState extends State<WorkRecord> {
                 ],
               ),
             ),
-            Divider(
-              thickness: 1,
-            ),
+            
           ],
         ),
       ),
@@ -551,6 +552,7 @@ class _WorkRecordState extends State<WorkRecord> {
     });
   }
 
+  String base64Encode(List<int> bytes) => base64.encode(bytes);
   Column buildSave() {
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -565,7 +567,57 @@ class _WorkRecordState extends State<WorkRecord> {
                   if (_index == 6 || _sqLiteWorklistModel.remark == "9") {
                     remark = "11";
                   }
-                  SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
+                  // SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
+                  //     checklistID: _index,
+                  //     createDate: _sqLiteWorklistModel.createDate,
+                  //     isChoice: 0,
+                  //     userID: "",
+                  //     lat: "",
+                  //     lng: "",
+                  //     workDoc: _sqLiteWorklistModel.workDoc,
+                  //     workID: 1,
+                  //     workPerform: _sqLiteWorklistModel.workPerform,
+                  //     workProvince: _sqLiteWorklistModel.workProvince,
+                  //     workRegion: _sqLiteWorklistModel.workRegion,
+                  //     workStation: _sqLiteWorklistModel.workStation,
+                  //     workType: _sqLiteWorklistModel.workType,
+                  //     remark: remark);
+
+                  print("##### Pic : ${files.length}");
+                  SQLiteWorklistModel sqLiteWorklistModel;
+                  List<String> base64Strs = [];
+                  for (var item in files) {
+                    if (item != null) {
+                      List<int> imageBytes =
+                          Io.File(item.path).readAsBytesSync();
+                      String base64Str = base64Encode(imageBytes);
+                      // normalDialog(context, 'aaa', '$base64Str');
+                      //test64Dialog(context, 'teset', base64Str);
+                      base64Strs.add(base64Str);
+                    }
+                  }
+
+                  // for (var item in files) {
+                  //   if (item != null) {
+                  //     List<int> imageBytes =
+                  //         Io.File(item.path).readAsBytesSync();
+                  //     String base64Str = base64Encode(imageBytes);
+                  //     try{
+                  //         llistImage.add(base64Str);
+                  //     }catch(e){
+                  //       print("!!!!!!!!!!!!!!!! base64 error : ${e.toString()}");
+                  //     }
+                  //   //llistImage.add(base64Str);
+                  //     //print("######### Base64 : "+base64Str);
+                  //   }
+                  // }
+
+                  // print("######### all list : "+llistImage.toString());
+
+
+                  int i = Random().nextInt(100000);
+                  sqLiteWorklistModel = SQLiteWorklistModel(
+                      id: i,
                       checklistID: _index,
                       createDate: _sqLiteWorklistModel.createDate,
                       isChoice: 0,
@@ -579,10 +631,10 @@ class _WorkRecordState extends State<WorkRecord> {
                       workRegion: _sqLiteWorklistModel.workRegion,
                       workStation: _sqLiteWorklistModel.workStation,
                       workType: _sqLiteWorklistModel.workType,
-                      remark: remark);
+                      remark: remark,
+                      imgList:    base64Strs.toString().replaceAll('[', "").replaceAll("]", "") );
 
                   SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
-
                   routeToMainList(sqLiteWorklistModel);
                 },
                 child: Text("บันทึก")),
@@ -604,7 +656,7 @@ class _WorkRecordState extends State<WorkRecord> {
             userID: item.userID,
             firstName: item.firstName,
             lastName: item.lastName,
-            deptCode: item.deptCode,
+            deptName: item.deptName,
             ownerID: item.ownerID,
             ownerName: item.ownerName,
             pincode: item.pincode,
