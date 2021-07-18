@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-class SQLiteImgModel {
+class SQLitePercelModel {
   int workID;
   String mainWorkID;
   int subWorkID;
@@ -9,8 +9,9 @@ class SQLiteImgModel {
   int amount;
   int isComplete;
   String createDate;
+  String reqNo;
 
-  SQLiteImgModel({
+  SQLitePercelModel({
     this.workID,
     this.mainWorkID,
     this.subWorkID,
@@ -19,9 +20,10 @@ class SQLiteImgModel {
     this.amount,
     this.createDate,
     this.isComplete,
+    this.reqNo,
   });
 
-  SQLiteImgModel copyWith({
+  SQLitePercelModel copyWith({
     int workID,
     String mainWorkID,
     int subWorkID,
@@ -30,8 +32,9 @@ class SQLiteImgModel {
     int amount,
     int isComplete,
     String createDate,
+    String reqNo,
   }) {
-    return SQLiteImgModel(
+    return SQLitePercelModel(
       workID: workID ?? this.workID,
       mainWorkID: mainWorkID ?? this.mainWorkID,
       subWorkID: subWorkID ?? this.subWorkID,
@@ -40,6 +43,7 @@ class SQLiteImgModel {
       amount: amount ?? this.amount,
       createDate: createDate ?? this.createDate,
       isComplete: isComplete ?? this.isComplete,
+      reqNo: reqNo ?? this.reqNo,
     );
   }
 
@@ -53,11 +57,12 @@ class SQLiteImgModel {
       'amount': amount,
       'isComplete': isComplete,
       'createDate': createDate,
+      'reqNo': createDate,
     };
   }
 
-  factory SQLiteImgModel.fromMap(Map<String, dynamic> map) {
-    return SQLiteImgModel(
+  factory SQLitePercelModel.fromMap(Map<String, dynamic> map) {
+    return SQLitePercelModel(
       workID: map['workID'],
       mainWorkID: map['mainWorkID'],
       subWorkID: map['subWorkID'],
@@ -66,19 +71,20 @@ class SQLiteImgModel {
       amount: map['amount'],
       isComplete: map['isComplete'],
       createDate: map['createDate'],
+      reqNo: map['reqNo'],
     );
   }
 
   String toJson() => json.encode(toMap());
 
-  factory SQLiteImgModel.fromJson(String source) =>
-      SQLiteImgModel.fromMap(json.decode(source));
+  factory SQLitePercelModel.fromJson(String source) =>
+      SQLitePercelModel.fromMap(json.decode(source));
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is SQLiteImgModel &&
+    return other is SQLitePercelModel &&
         other.workID == workID &&
         other.mainWorkID == mainWorkID &&
         other.subWorkID == subWorkID &&
@@ -86,6 +92,7 @@ class SQLiteImgModel {
         other.item == item &&
         other.amount == amount &&
         other.isComplete == isComplete &&
+        other.reqNo == reqNo &&
         other.createDate == createDate;
   }
 
@@ -98,6 +105,7 @@ class SQLiteImgModel {
         item.hashCode ^
         amount.hashCode ^
         isComplete.hashCode ^
+        reqNo.hashCode^
         createDate.hashCode;
   }
 } //class

@@ -7,41 +7,46 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/models/insertWorklistModel.dart';
-
+import 'package:wesafe/models/checkStatusModel.dart';
+import 'package:wesafe/models/sqlitePercelModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
 import 'package:wesafe/models/responeModel.dart';
 import 'package:wesafe/states/authen.dart';
+import 'package:wesafe/states/closeRecord.dart';
 import 'package:wesafe/states/mainMenu.dart';
-
 import 'package:wesafe/states/workRecord.dart';
-import 'package:wesafe/utility/dialog.dart';
+
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
-import 'package:wesafe/utility/Test.dart';
 import 'package:wesafe/states/checkWork.dart';
 
-class MainList extends StatefulWidget {
+class CloseList extends StatefulWidget {
   final SQLiteUserModel user_model;
+  final CheckStatusModel checkStatusModel;
+  final SQLitePercelModel sqLitePercelModel;
   final SQLiteWorklistModel sqLiteWorklistModel;
-  final int countList;
-  MainList(
-      {@required this.user_model, this.sqLiteWorklistModel, this.countList});
+  CloseList(
+      {@required this.user_model,
+      this.checkStatusModel,
+      this.sqLitePercelModel,
+      this.sqLiteWorklistModel});
   @override
-  _MainListState createState() => _MainListState();
+  _CloseListState createState() => _CloseListState();
 }
 
-class _MainListState extends State<MainList> {
+class _CloseListState extends State<CloseList> {
   SQLiteUserModel userModel;
   int index = 0;
   List<String> titles = MyConstant.listMenu;
   TextEditingController workController = TextEditingController();
   TextEditingController docController = TextEditingController();
   SQLiteWorklistModel _sqLiteWorklistModel;
+  CheckStatusModel _checkSatatusModel;
+  SQLitePercelModel _sqLitePercelModel;
   int _countList;
   double lat, lng;
   bool locationServiceEnable, load = true, denieBool = false;
@@ -49,14 +54,15 @@ class _MainListState extends State<MainList> {
   @override
   void initState() {
     super.initState();
-    userModel = widget.user_model;
     _sqLiteWorklistModel = widget.sqLiteWorklistModel;
-    _countList = widget.countList;
-
-    //readWorklist();
+    readWorklist();
+    userModel = widget.user_model;
+    _checkSatatusModel = widget.checkStatusModel;
+    _sqLitePercelModel = widget.sqLitePercelModel;
   }
 
   Future<Null> readWorklist() async {
+    print("###closelist   readWorklist()");
     List<SQLiteWorklistModel> models = [];
     await SQLiteHelper().readWorkDatabase().then((result) {
       if (result == null) {
@@ -64,7 +70,15 @@ class _MainListState extends State<MainList> {
         models = result;
         SQLiteWorklistModel sqLiteWorklistModel;
         for (var item in models) {
+          print("##### workperform : ${item.workPerform}");
+          print("##### work doc: ${item.workDoc}");
           sqLiteWorklistModel = SQLiteWorklistModel(
+            //.result[index].reqNo
+            reqNo: _checkSatatusModel == null
+                ? _sqLiteWorklistModel.reqNo
+                : _checkSatatusModel.result[index].reqNo == ""
+                    ? _sqLiteWorklistModel.reqNo
+                    : _checkSatatusModel.result[index].reqNo,
             checklistID: item.checklistID,
             createDate: item.createDate,
             isChoice: 0,
@@ -129,24 +143,18 @@ class _MainListState extends State<MainList> {
         buildListView(),
         ElevatedButton(
           onPressed: () {
-            if (_countList >= 6) {
-              insertDataTOServer();
-
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MainMenu(
-                    userModel: userModel,
-                    ownerId: userModel.ownerID,
-                  ),
-                ),
-              );
-            }
+            insertDataTOServer();
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => MainMenu(
+            //       userModel: userModel,
+            //       ownerId: userModel.ownerID,
+            //     ),
+            //   ),
+            // );
           },
-          child: Text("ยืนยัน"),
-          style: ButtonStyle(
-              backgroundColor: MaterialStateColor.resolveWith((states) =>
-                  _countList >= 6 ? MyConstant.primart : Colors.grey)),
+          child: Text("ปิดงาน"),
         ),
       ],
     );
@@ -157,62 +165,55 @@ class _MainListState extends State<MainList> {
     List<String> listValues = [];
     String _strJson;
     int workId;
-    InsertWorklistModel insertWorklistModel;
-    try {
-      await SQLiteHelper().readWorkDatabase().then((result) {
-        if (result == null) {
-        } else {
-          double lat, lng;
 
-          models = result;
-          for (var item in models) {
-            workId = item.workID;
-            insertWorklistModel = InsertWorklistModel(
-              deptName: userModel.deptName == null ? "" : userModel.deptName,
-              dateTimeWorkFinish: "",
-              docRequire: item.workDoc == null ? "" : item.workDoc,
-              empLeaderID: userModel.leaderId == null ? "" : userModel.leaderId,
-              employeeID: userModel.userID == null ? "" : userModel.userID,
-              iPAddress: "",
-              image: generateImage(item.imgList),
-              isOffElect: item.isOffElect == null ? "" : item.isOffElect,
-              offElectReason:
-                  item.offElectReason == null ? "" : item.offElectReason,
-              isSortGND: item.isSortGND == null ? "" : item.isSortGND,
-              gNDReason: item.gNDReason == null ? "" : item.gNDReason,
-              locationLat: "13.886555475448976",
-              locationLng: "100.2603517379212",
-              macAddress: "",
-              menuChecklistID:
-                  item.checklistID == null ? "" : item.checklistID.toString(),
-              menuMainID:
-                  item.mainWorkID == null ? "" : item.mainWorkID.toString(),
-              menuSubID: item.subWorkID == null
-                  ? "1"
-                  : item.reqNo == null
-                      ? 1
-                      : 2,
-              ownerID: item.ownerID == null ? "" : item.ownerID,
-              parcel: "",
-              province: item.workProvince == null ? "" : item.workProvince,
-              regionCode: userModel.rsg == null ? "" : userModel.rsg,
-              remark: "",
-              sender: userModel.userID == null ? "" : userModel.userID,
-              station: item.workStation == null ? "" : item.workStation,
-              tokenNoti: "",
-              waitApprove: "",
-              workArea: item.workRegion == null ? "" : item.workRegion,
-              workPerform: item.workPerform == null ? "" : item.workPerform,
-              workStatus: "0",
-              workType: item.workType == null ? "" : item.workType,
-            );
-            print("#######----> rsg ${userModel.rsg}");
-            print("######-----> sub menu  ${insertWorklistModel.menuSubID}");
-            _strJson = json.encode(insertWorklistModel);
-            listValues.add(_strJson);
-          }
-        }
-      });
+    try {
+      InsertWorklistModel insertWorklistModel = InsertWorklistModel(
+        reqNo: _sqLitePercelModel.reqNo,
+        deptName: userModel.deptName == null ? "" : userModel.deptName,
+        dateTimeWorkFinish: "",
+        docRequire: _sqLiteWorklistModel.workDoc == null
+            ? ""
+            : _sqLiteWorklistModel.workDoc,
+        empLeaderID: userModel.leaderId == null ? "" : userModel.leaderId,
+        employeeID: userModel.userID == null ? "" : userModel.userID,
+        iPAddress: "",
+        image: [],
+        isOffElect: _sqLiteWorklistModel.isOffElect == null
+            ? ""
+            : _sqLiteWorklistModel.isOffElect,
+        offElectReason: _sqLiteWorklistModel.offElectReason == null
+            ? ""
+            : _sqLiteWorklistModel.offElectReason,
+        isSortGND: _sqLiteWorklistModel.isSortGND == null
+            ? ""
+            : _sqLiteWorklistModel.isSortGND,
+        gNDReason: _sqLiteWorklistModel.gNDReason == null
+            ? ""
+            : _sqLiteWorklistModel.gNDReason,
+        locationLat: "13.886555475448976",
+        locationLng: "100.2603517379212",
+        macAddress: "",
+        menuChecklistID: "7",
+        menuMainID: "300",
+        menuSubID: "2",
+        ownerID: "Z",
+        parcel: _sqLitePercelModel.item,
+        sender: userModel.userID == null ? "" : userModel.userID,
+        workStatus: "5",
+        province: "",
+        regionCode: "",
+        remark: "",
+        station: "",
+        tokenNoti: "",
+        waitApprove: "",
+        workArea: "",
+        workPerform: "",
+        workType: "",
+      );
+      print("#######----> reqNO  ${_sqLitePercelModel.reqNo}");
+      print("######-----> sub menu  ${insertWorklistModel.menuSubID}");
+      _strJson = json.encode(insertWorklistModel);
+      listValues.add(_strJson);
 
       final response = await http.post(
         Uri.parse('${MyConstant.webService}WeSafe_InsertTransaction'),
@@ -246,7 +247,7 @@ class _MainListState extends State<MainList> {
     final client = HttpClient();
     final request = await client
         .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
-    String msg = "📣 ใบงาน : $reqNo" +
+    String msg = "📣 ปิดงาน : $reqNo" +
         "\n" +
         "การปฏิบัติงานภายในสถานีและระบบไฟฟ้า :  ก่อนปฏิบัติงาน " +
         "\n" +
@@ -291,6 +292,10 @@ class _MainListState extends State<MainList> {
   }
 
   Widget buildWorkPerform() {
+    print("################## - buildWorkPerform() - ##################");
+    if (_sqLiteWorklistModel == null) {
+      readWorklist();
+    }
     double size = MediaQuery.of(context).size.width;
     return Column(
       children: [
@@ -304,26 +309,11 @@ class _MainListState extends State<MainList> {
         ),
         Container(
           width: size * 0.7,
-          child: TextFormField(
-            controller: workController,
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'กรุณาระบุรายละเอียดงาน';
-              } else {
-                return null;
-              }
-            },
-            decoration: InputDecoration(
-              prefixIcon: Icon(Icons.work_rounded),
-              labelText: _sqLiteWorklistModel == null
-                  ? 'รายละเอียดงาน :'
-                  : _sqLiteWorklistModel.workPerform == null
-                      ? 'รายละเอียดงาน :'
-                      : _sqLiteWorklistModel.workPerform.trim() == ""
-                          ? 'รายละเอียดงาน :'
-                          : _sqLiteWorklistModel.workPerform,
-              border: OutlineInputBorder(),
-            ),
+          child: ShowTitle(
+            title: _sqLiteWorklistModel == null
+                ? ""
+                : _sqLiteWorklistModel.workPerform,
+            index: 4,
           ),
         ),
       ],
@@ -331,6 +321,9 @@ class _MainListState extends State<MainList> {
   }
 
   Widget buildDoc() {
+    if (_sqLiteWorklistModel == null) {
+      readWorklist();
+    }
     double size = MediaQuery.of(context).size.width;
     return Column(
       children: [
@@ -344,25 +337,13 @@ class _MainListState extends State<MainList> {
         ),
         Container(
           width: size * 0.7,
-          child: TextFormField(
-            controller: docController,
-            validator: (value) {
-              if (value.isEmpty) {
-                return 'กรุณาระบุเอกสารขอดับไฟ';
-              } else {
-                return null;
-              }
-            },
-            decoration: InputDecoration(
-              prefixIcon: Icon(Icons.description),
-              labelText: _sqLiteWorklistModel == null
-                  ? 'เอกสารขอดับไฟ :'
-                  : _sqLiteWorklistModel.workDoc == null
-                      ? 'เอกสารขอดับไฟ :'
-                      : _sqLiteWorklistModel.workDoc.trim() == ""
-                          ? 'เอกสารขอดับไฟ :'
-                          : _sqLiteWorklistModel.workDoc,
-              border: OutlineInputBorder(),
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ShowTitle(
+              title: _sqLiteWorklistModel.workDoc == null
+                  ? ""
+                  : _sqLiteWorklistModel.workDoc,
+              index: 4,
             ),
           ),
         ),
@@ -376,133 +357,44 @@ class _MainListState extends State<MainList> {
   }
 
   Expanded buildListView() {
-    // key = type , value = name
-    List<ListItem> _listwork = [];
-    _sqLiteWorklistModel.remark == "9" || _sqLiteWorklistModel.remark == "11"
-        ? _listwork = [
-            ListItem("3", "ลักษณะงาน"), //3
-            ListItem("2", "ภาพการประชุมชี้แจงงาน"),
-            ListItem("2", "ภาพผู้ปฏิบัติงานสวมใส่ PPE "),
-            ListItem("3", "ภาพการตรวจวัดเเรงดัน"),
-            ListItem("2", "ภาพเครื่องมือปฏิบัติงาน"),
-            ListItem("3", "ภาพการต่อลงดิน"),
-           // ListItem("5", "จำนวน พัสดุ ที่ใช้งาน"),
-          ]
-        : _listwork = [
-            ListItem("3", "ลักษณะงาน"), //3
-            ListItem("2", "ภาพการประชุมชี้แจงงาน"),
-            ListItem("2", "ภาพผู้ปฏิบัติงานสวมใส่ PPE "),
-            ListItem("3", "ภาพการตรวจวัดเเรงดัน"),
-            ListItem("2", "ภาพเครื่องมือปฏิบัติงาน"),
-            ListItem("3", "ภาพการต่อลงดิน"),
-          ];
-
     return new Expanded(
       child: Container(
         child: new ListView.builder(
-          itemCount: _listwork.length,
+          itemCount: 1,
           itemBuilder: (context, index) => GestureDetector(
             onTap: () {
-              if (_countList == null) {
-                _countList = 0;
-              }
-
-              if (_countList >= index) {
-                DateTime now = DateTime.now();
-
-                SQLiteWorklistModel sqLiteWorklistModel = SQLiteWorklistModel(
-                    checklistID: index,
-                    subWorkID: 1,
-                    createDate: now.toString(),
-                    isChoice: 0,
-                    userID: "",
-                    lat: "",
-                    lng: "",
-                    workDoc: _sqLiteWorklistModel.workDoc == null ||
-                            _sqLiteWorklistModel.workDoc == ""
-                        ? docController.text
-                        : _sqLiteWorklistModel.workDoc,
-                    workID: _sqLiteWorklistModel.workID,
-                    workPerform: _sqLiteWorklistModel.workPerform == null
-                        ? workController.text
-                        : _sqLiteWorklistModel.workPerform,
-                    workProvince: _sqLiteWorklistModel.workProvince,
-                    workRegion: _sqLiteWorklistModel.workRegion,
-                    workStation: _sqLiteWorklistModel.workStation,
-                    workType: _sqLiteWorklistModel.workType,
-                    rsg: userModel.rsg,
-                    remark: null);
-
-                sqLiteWorklistModel = _sqLiteWorklistModel == null
-                    ? readWorklist()
-                    : sqLiteWorklistModel;
-                //SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
-
-                setState(() {
-                  _sqLiteWorklistModel = sqLiteWorklistModel;
-                });
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => WorkRecord(
-                      sqLiteUserModel: userModel,
-                      index: index + 1,
-                      indexWork: int.parse(
-                        _listwork[index].value,
-                      ), //index is work type 0 = checklist, 1 = text , 2 = pic , 3 = radio
-                      workListname:
-                          _listwork[index].name.contains("ตรวจวัดเเรงดัน")
-                              ? "ตรวจวัดเเรงดัน"
-                              : _listwork[index].name.contains("ต่อลงดิน")
-                                  ? "ตรวจสอบการต่อลงดิน"
-                                  : _listwork[index].name,
-                      sqLiteWorklistModel: sqLiteWorklistModel,
-                      countList: _countList == null ? 0 : _countList,
-                    ),
+              print("######## userModel  ${userModel.userID}");
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => WorkRecord(
+                    sqLiteUserModel: userModel,
+                    index: 7,
+                    indexWork: 7,
+                    workListname: "จำนวน พัสดุ ที่ใช้งาน",
+                    sqLiteWorklistModel: _sqLiteWorklistModel,
+                    countList: 6,
                   ),
-                );
-              }
+                ),
+              );
             },
             child: Card(
-              color: //Colors.grey,
-                  _sqLiteWorklistModel.remark == "1" &&
-                          _sqLiteWorklistModel.checklistID > index
+              color: _sqLitePercelModel == null
+                  ? Colors.grey
+                  : _sqLitePercelModel.checklistID == 7
                       ? Colors.green
-                      : _sqLiteWorklistModel.remark == "9" && index != 6
-                          ? Colors.green
-                          : _sqLiteWorklistModel.remark == "11"
-                              ? Colors.green
-                              : Colors.grey,
+                      : Colors.grey,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
                   child: Container(
                     child: ListTile(
                       leading: Icon(
-                        int.parse(_listwork[index].value) == 0
-                            ? Icons.check
-                            : int.parse(_listwork[index].value) == 1
-                                ? Icons.description_outlined
-                                : int.parse(_listwork[index].value) == 2
-                                    ? Icons.camera_alt_outlined
-                                    : int.parse(_listwork[index].value) == 3
-                                        ? Icons.radio_button_checked_outlined
-                                        : Icons.more_horiz_outlined
-
-                        // index == 0
-                        //     ? Icons.camera_alt_outlined
-                        //     : index == 1
-                        //         ? Icons.offline_bolt_outlined
-                        //         : index == 2
-                        //             ? Icons.fence_outlined
-                        //             : Icons.check_circle_outline
-
-                        ,
+                        Icons.calculate_outlined,
                         size: 36,
                         color: MyConstant.primart,
                       ),
-                      title: Text('${index + 1}  :   ${_listwork[index].name}'),
+                      title: Text(' จำนวน พัสดุ ที่ใช้งาน '),
                     ),
                   ),
                 ),
@@ -616,11 +508,7 @@ class _MainListState extends State<MainList> {
         onTap: () => Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => index == 0
-                ? Authen()
-                : MainList(
-                    user_model: userModel,
-                  ),
+            builder: (context) => index == 0 ? Authen() : CloseList(),
           ),
         ),
         child: Card(

@@ -21,6 +21,7 @@ class MyConstainUserProfileDB {
 class MyConstainWorklistDB {
   static final String nameTable = 'mastWorklist';
   static final String columnworkID = 'workID';
+  static final String columnReqNo = 'reqNo';
   static final String columnuserID = 'userID';
   static final String columnrsg = 'rsg';
   static final String columnownerID = 'ownerID';
@@ -43,6 +44,11 @@ class MyConstainWorklistDB {
   static final String columnWorkStation = 'workStation';
   static final String columnWorkType = 'workType';
   static final String columnWorkDoc = 'workDoc';
+
+  static final String columnIsSortGND = 'isSortGND';
+  static final String columnGNDReason = 'gNDReason';
+  static final String columnIsOffElect = 'isOffElect';
+  static final String columnOffElectReason = 'offElectReason';
 
   static final String columnImgList = 'imgList';
 }

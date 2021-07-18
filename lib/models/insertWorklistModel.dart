@@ -1,4 +1,5 @@
 class InsertWorklistModel {
+  String _reqNo;
   String _regionCode;
   String _menuMainID;
   String _menuSubID;
@@ -16,7 +17,7 @@ class InsertWorklistModel {
   String _isOffElect;
   String _offElectReason;
   String _parcel;
-  String _image;
+  List<String> _image;
   String _deptName;
   String _workArea;
   String _province;
@@ -31,7 +32,8 @@ class InsertWorklistModel {
   String _iPAddress;
 
   InsertWorklistModel(
-      {String regionCode,
+      {String reqNo,
+      String regionCode,
       String menuMainID,
       String menuSubID,
       String menuChecklistID,
@@ -48,7 +50,7 @@ class InsertWorklistModel {
       String isOffElect,
       String offElectReason,
       String parcel,
-      String image,
+      List<String> image,
       String deptName,
       String workArea,
       String province,
@@ -61,6 +63,7 @@ class InsertWorklistModel {
       String tokenNoti,
       String macAddress,
       String iPAddress}) {
+    this._reqNo = reqNo;
     this._regionCode = regionCode;
     this._menuMainID = menuMainID;
     this._menuSubID = menuSubID;
@@ -92,6 +95,9 @@ class InsertWorklistModel {
     this._macAddress = macAddress;
     this._iPAddress = iPAddress;
   }
+
+  String get reqNo => _reqNo;
+  set reqNo(String reqNo) => _reqNo = reqNo;
 
   String get regionCode => _regionCode;
   set regionCode(String regionCode) => _regionCode = regionCode;
@@ -129,8 +135,8 @@ class InsertWorklistModel {
   set offElectReason(String offElectReason) => _offElectReason = offElectReason;
   String get parcel => _parcel;
   set parcel(String parcel) => _parcel = parcel;
-  String get image => _image;
-  set image(String image) => _image = image;
+  List<String> get image => _image;
+  set image(List<String> image) => _image = image;
   String get deptName => _deptName;
   set deptName(String deptName) => _deptName = deptName;
   String get workArea => _workArea;
@@ -157,6 +163,7 @@ class InsertWorklistModel {
   set iPAddress(String iPAddress) => _iPAddress = iPAddress;
 
   InsertWorklistModel.fromJson(Map<String, dynamic> json) {
+    _reqNo = json['Req_No'];
     _regionCode = json['Region_Code'];
     _menuMainID = json['MenuMain_ID'];
     _menuSubID = json['MenuSub_ID'];
@@ -191,6 +198,8 @@ class InsertWorklistModel {
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = new Map<String, dynamic>();
+
+    data['Req_No'] = this._reqNo;
     data['Region_Code'] = this._regionCode;
     data['MenuMain_ID'] = this._menuMainID;
     data['MenuSub_ID'] = this._menuSubID;

@@ -40,10 +40,7 @@ class _MainMenuState extends State<MainMenu> {
     getWorkMenu(onwerId, userModel.rsg);
   }
 
-
-
   Future<Null> getWorkMenu(String ownerID, String rsg) async {
-
     MastMainMenuModel _mainMenuModel;
     try {
       final client = HttpClient();
@@ -60,12 +57,13 @@ class _MainMenuState extends State<MainMenu> {
             contents = contents.replaceAll("[", "").replaceAll("]", "");
             normalDialog(context, 'Error', contents);
           } else {
-
             _mainMenuModel = MastMainMenuModel.fromJson(json.decode(contents));
-            for(var item in _mainMenuModel.result){
-               if(item.menuMainName!=null)  setState(() {
-                 mainMenuZ.add(item.menuMainName);
-               }); 
+            for (var item in _mainMenuModel.result) {
+              if (item.menuMainName != null)
+                setState(() {
+                  print("#### mainMenu  :  ${item.menuMainName}");
+                  mainMenuZ.add(item.menuMainName);
+                });
             }
           } //else
         },
@@ -162,12 +160,16 @@ class _MainMenuState extends State<MainMenu> {
                       alignment: Alignment.topCenter,
                       child: Container(
                         child: Padding(
-                          padding: mainMenuZ[index].length > 30 ? const EdgeInsets.all(0.0) : const EdgeInsets.only(top: 18),
+                          padding: mainMenuZ[index].length > 30
+                              ? const EdgeInsets.all(0.0)
+                              : const EdgeInsets.only(top: 18),
                           child: Text(
                             mainMenuZ[index],
                             style: TextStyle(
                                 color: Colors.black,
-                                fontSize: mainMenuZ[index].length > 30 ? winsize *0.04 : winsize *0.05),
+                                fontSize: mainMenuZ[index].length > 30
+                                    ? winsize * 0.04
+                                    : winsize * 0.05),
                             textAlign: TextAlign.center,
                           ),
                         ),

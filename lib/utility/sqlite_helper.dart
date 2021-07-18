@@ -28,6 +28,7 @@ class SQLiteHelper {
               ' ${MyConstainWorklistDB.columnrsg} TEXT,' +
               ' ${MyConstainWorklistDB.columnownerID} TEXT ,' +
               ' ${MyConstainWorklistDB.columnmainWorkID} TEXT,' +
+              ' ${MyConstainWorklistDB.columnReqNo} TEXT,' +
               ' ${MyConstainWorklistDB.columnsubWorkID} INTEGER,' +
               ' ${MyConstainWorklistDB.columnChecklistID} INTEGER,' +
               ' ${MyConstainWorklistDB.columnLat} TEXT,' +
@@ -45,6 +46,12 @@ class SQLiteHelper {
               ' ${MyConstainWorklistDB.columnWorkStation} TEXT, ' +
               ' ${MyConstainWorklistDB.columnWorkType} TEXT, ' +
               ' ${MyConstainWorklistDB.columnWorkDoc} TEXT, ' +
+
+              ' ${MyConstainWorklistDB.columnIsSortGND} TEXT, ' +
+              ' ${MyConstainWorklistDB.columnGNDReason} TEXT, ' +
+              ' ${MyConstainWorklistDB.columnIsOffElect} TEXT, ' +
+              ' ${MyConstainWorklistDB.columnOffElectReason} TEXT, ' +
+
               ' ${MyConstainWorklistDB.columnImgList} TEXT ' +
               ')');
 
@@ -82,18 +89,17 @@ class SQLiteHelper {
               ' ${MyConstainImagesDB.columnIsComplete} TEXT ' +
               ')');
 
-      await database.execute(
-          'CREATE TABLE ${MyConstainPercelDB.nameTable} ( ' +
-              ' id INTEGER PRIMARY KEY,' +
-              ' ${MyConstainPercelDB.columnworkID} TEXT,' +
-              ' ${MyConstainPercelDB.columnmainWorkID} TEXT ,' +
-              ' ${MyConstainPercelDB.columnsubWorkID} INTEGER ,' +
-              ' ${MyConstainPercelDB.columnChecklistID} INTEGER,' +
-              ' ${MyConstainPercelDB.columnItem} TEXT,' +
-              ' ${MyConstainPercelDB.columnAmount} INTEGER,' +
-              ' ${MyConstainPercelDB.columnCreateDate} TEXT,' +
-              ' ${MyConstainPercelDB.columnIsComplete} INTEGER ' +
-              ')');
+      await database.execute('CREATE TABLE ${MyConstainPercelDB.nameTable} ( ' +
+          ' id INTEGER PRIMARY KEY,' +
+          ' ${MyConstainPercelDB.columnworkID} TEXT,' +
+          ' ${MyConstainPercelDB.columnmainWorkID} TEXT ,' +
+          ' ${MyConstainPercelDB.columnsubWorkID} INTEGER ,' +
+          ' ${MyConstainPercelDB.columnChecklistID} INTEGER,' +
+          ' ${MyConstainPercelDB.columnItem} TEXT,' +
+          ' ${MyConstainPercelDB.columnAmount} INTEGER,' +
+          ' ${MyConstainPercelDB.columnCreateDate} TEXT,' +
+          ' ${MyConstainPercelDB.columnIsComplete} INTEGER ' +
+          ')');
 
       await database.execute(
           'CREATE TABLE ${MyConstainStationInfoDB.nameStationTable} ( ' +
@@ -191,6 +197,21 @@ class SQLiteHelper {
     }
 
     return models;
+  }
+
+  Future<Null> updateWorkReqNo(String reqNo, int workID) async {
+    Database database = await connectedDatabase();
+    try {
+      int count = await database.rawUpdate(
+        'UPDATE ${MyConstainWorklistDB.nameTable} ' +
+            'SET ${MyConstainWorklistDB.columnReqNo} = ? , ${MyConstainWorklistDB.columnIsComplete} = ? ' +
+            'WHERE ${MyConstainWorklistDB.columnworkID} = ?',['$reqNo',1,workID ]
+      );
+
+      //print("###### updateWorkReqNo()  update seccess $count   row");
+    } catch (e) {
+      print("########## readWorkDatabase()  Error : ${e.toString()}");
+    }
   }
 
   Future<Null> deleteWorkAll() async {

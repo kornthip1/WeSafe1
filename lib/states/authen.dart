@@ -38,7 +38,7 @@ class _AuthenState extends State<Authen> {
                 // buildShowTitle(),
                 buildUser(),
                 buildPassword(),
-              //  buildRemember(),
+                //  buildRemember(),
                 buildLogin()
               ],
             ),
@@ -95,7 +95,6 @@ class _AuthenState extends State<Authen> {
           await SharedPreferences.getInstance();
       UserModel userModel;
 
-
       response.transform(utf8.decoder).listen(
         (contents) {
           contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
@@ -104,8 +103,8 @@ class _AuthenState extends State<Authen> {
             normalDialog(context, 'Error', contents);
           } else {
             userModel = UserModel.fromJson(json.decode(contents));
+            preferences.setString(MyConstant.keyUser, userController.text);
             routeToCreatePinCode(userModel);
-            
           } //else
         },
       );
@@ -119,8 +118,8 @@ class _AuthenState extends State<Authen> {
       context,
       MaterialPageRoute(
         builder: (context) => Myservice(
-          //user_model: userModel,
-        ),
+            //user_model: userModel,
+            ),
       ),
     );
   }

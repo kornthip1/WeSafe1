@@ -1,14 +1,20 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
-import 'package:wesafe/models/sqliteWorklistModel.dart';
-import 'package:wesafe/states/mainlist.dart';
+import 'package:wesafe/models/sqliteWorklistModel.dart'; //CheckSatatusModel
+import 'package:wesafe/models/checkStatusModel.dart';
+import 'package:wesafe/states/CloseList.dart';
+import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 import 'mainMenu.dart';
+import 'mainlist.dart';
 
 class CheckWork extends StatefulWidget {
   @override
@@ -20,18 +26,17 @@ class _CheckWorkState extends State<CheckWork> {
   SQLiteUserModel _userModel;
   SQLiteWorklistModel _sqLiteWorklistModel;
   String tt = "";
+  CheckStatusModel checkSatatusModel;
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    //readUserInfo();
-    //readWorklist();
+    readWorklist();
   }
 
   @override
   Widget build(BuildContext context) {
-     readUserInfo();
-     readWorklist();
+    //readUserInfo();
     return Scaffold(
       appBar: AppBar(
         title: Text("ตรวจสอบสถานะการทำงาน"),
@@ -55,47 +60,62 @@ class _CheckWorkState extends State<CheckWork> {
   }
 
   Widget buildListView() {
-    print("#### buildListView()");
-    readWorklist();
+    //print("#### buildListView()");
+
     readUserInfo();
 
-    if(_sqLiteWorklistModel == null){
-    _sqLiteWorklistModel = SQLiteWorklistModel(
-              checklistID: 1,
-              createDate: "",
-              isChoice: 0,
-              userID: "",
-              lat: "",
-              lng: "",
-              workDoc: "",
-              workID: 1,
-              workPerform: "",
-              workProvince: "กฟฉ.3",
-              workRegion: "กาญจนบุรี",
-              workStation: "สถานีไฟฟ้า C",
-              workType: "PM",
-              remark: "9",
-            );
+    //print("#####--->  ${checkSatatusModel.result[0].jobStatusName}");
+    if (_sqLiteWorklistModel == null) {
+      _sqLiteWorklistModel = SQLiteWorklistModel(
+        checklistID: 1,
+        createDate: "",
+        isChoice: 0,
+        userID: "",
+        lat: "",
+        lng: "",
+        workDoc: "",
+        workID: 1,
+        workPerform: "",
+        workProvince: "กฟฉ.3",
+        workRegion: "กาญจนบุรี",
+        workStation: "สถานีไฟฟ้า C",
+        workType: "PM",
+        remark: "9",
+      );
     }
 
     return Container(
       child: new ListView.builder(
-        itemCount: 1,
+        itemCount: checkSatatusModel.result == null
+            ? 0
+            : checkSatatusModel.result.length,
         itemBuilder: (context, index) => GestureDetector(
           onTap: () {
-            print("ontap  : $tt");
+            //print("ontap  : $tt");
 
-            print("ontap  : ${_sqLiteWorklistModel.remark}");
-            print("ontap  userID : ${_userModel.userID}");
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => MainList(
-                  sqLiteWorklistModel: _sqLiteWorklistModel,
-                  user_model: _userModel ,
+            //print("ontap  : ${_sqLiteWorklistModel.remark}");
+            //print("ontap  userID : ${_userModel.userID}");
+            if (checkSatatusModel.result[index].jobStatus == "4") {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CloseList(
+                    user_model: _userModel,
+                    checkStatusModel: checkSatatusModel,
+                  ),
                 ),
-              ),
-            );
+              );
+            } else {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MainList(
+                    sqLiteWorklistModel: _sqLiteWorklistModel,
+                    user_model: _userModel,
+                  ),
+                ),
+              );
+            }
           },
           child: Card(
             color: Colors.grey,
@@ -105,7 +125,9 @@ class _CheckWorkState extends State<CheckWork> {
                 child: Column(
                   children: [
                     ShowTitle(
-                      title: "WSI2021OZ0000000001",
+                      title: checkSatatusModel.result == null
+                          ? ""
+                          : checkSatatusModel.result[index].reqNo,
                       index: 4,
                     ),
                     ShowTitle(
@@ -119,7 +141,9 @@ class _CheckWorkState extends State<CheckWork> {
                       index: 2,
                     ),
                     ShowTitle(
-                      title: "ตรวจสอบแล้วรอปิดงาน",
+                      title: checkSatatusModel.result == null
+                          ? ""
+                          : checkSatatusModel.result[index].jobStatusName,
                       index: 4,
                     )
                   ],
@@ -133,69 +157,51 @@ class _CheckWorkState extends State<CheckWork> {
   }
 
   Future<Null> readWorklist() async {
-    print("#### readWorklist()");
+    
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    String _user = preferences.getString('USER');
 
-    SQLiteWorklistModel sqLiteWorklistModel;
-    List<SQLiteWorklistModel> models = [];
-    await SQLiteHelper().readWorkDatabase().then((result) {
-      if (result == null) {
-      } else {
-        models = result;
-        print("#### CHECK readWorklist()   models size  : ${models.length}");
-        for (var item in models) {
-           if (item.id == models.length) {
-            print("CHECK()  #####  id ${item.id}");
-            print("CHECK()  #####  id ${item.id}");
-            print("CHECK()  #####  workID ${item.workID}");
-            print("CHECK()  #####  region ${item.workRegion}");
-            print("CHECK()  #####  region ${item.workRegion}");
-            print("CHECK()  #####  Province ${item.workProvince}");
-            print("CHECK()  #####  Station  ${item.workStation}");
+    //print("###### -- >  user : $_user");
+    try {
+      final client = HttpClient();
+      final request = await client
+          .postUrl(Uri.parse("${MyConstant.webService}WeSafe_CheckStatus"));
+      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+      request.write('{"empID": "$_user"}');
+      final response = await request.close();
 
-            sqLiteWorklistModel = SQLiteWorklistModel(
-              checklistID: item.checklistID,
-              createDate: item.createDate,
-              isChoice: 0,
-              userID: "",
-              lat: "",
-              lng: "",
-              workDoc: item.workDoc,
-              workID: 1,
-              workPerform: item.workPerform,
-              workProvince: item.workProvince,
-              workRegion: item.workRegion,
-              workStation: item.workStation,
-              workType: item.workType,
-              remark: "9",
-            );
-            _sqLiteWorklistModel = sqLiteWorklistModel;
-           }
-        } //for
-        
-      }
-    });
-
-   
-
-   
-    tt = "TEST";
+      response.transform(utf8.decoder).listen(
+        (contents) {
+          //print("###### -- >  contents : $contents");
+          if (contents.contains('Error')) {
+            contents = contents.replaceAll("[", "").replaceAll("]", "");
+            normalDialog(context, 'Error', contents);
+          } else {
+            setState(() {
+              checkSatatusModel =
+                  CheckStatusModel.fromJson(json.decode(contents));
+            });
+          } //else
+        },
+      );
+    } catch (e) {
+      print("###### -- >  readWorklist Error : ${e.toString()}");
+    }
   }
 
   Future<Null> readUserInfo() async {
-    print("#### readWorklist()");
-
     SQLiteUserModel sqLiteUserModel;
     List<SQLiteUserModel> models = [];
     await SQLiteHelper().readUserDatabase().then((result) {
       if (result == null) {
       } else {
         models = result;
-        print("#### readUserInfo()   models size  : ${models.length}");
+       
         for (var item in models) {
-          print("CHECK()  #####  id ${item.userID}");
-          print("CHECK()  #####  id ${item.firstName}");
-          print("CHECK()  #####  region ${item.ownerID}");
-          print("CHECK()  #####  region ${item.ownerName}");
+          // print("CHECK()  #####  id ${item.userID}");
+          // print("CHECK()  #####  id ${item.firstName}");
+          // print("CHECK()  #####  region ${item.ownerID}");
+          // print("CHECK()  #####  region ${item.ownerName}");
 
           sqLiteUserModel = SQLiteUserModel(
             userID: item.userID,
@@ -209,8 +215,9 @@ class _CheckWorkState extends State<CheckWork> {
         } //for
       }
     });
-    _userModel = sqLiteUserModel;
-    tt = "TEST";
+    setState(() {
+      _userModel = sqLiteUserModel;
+    });
   }
 
 /************ LEFT MENU */

@@ -16,7 +16,7 @@ class SQLiteWorklistModel {
   int isChoice;
   String reason;
   String msgFromWeb;
-  bool isComplete;
+  int isComplete;
   String createDate;
   String uploadDate;
 
@@ -27,6 +27,13 @@ class SQLiteWorklistModel {
   String workDoc;
 
   String imgList;
+
+  String reqNo;
+
+  String isSortGND;
+  String gNDReason;
+  String isOffElect;
+  String offElectReason;
 
   SQLiteWorklistModel({
     this.id,
@@ -53,6 +60,11 @@ class SQLiteWorklistModel {
     this.workType,
     this.workDoc,
     this.imgList,
+    this.reqNo,
+    this.isSortGND,
+    this.gNDReason,
+    this.isOffElect,
+    this.offElectReason,
   });
 
   SQLiteWorklistModel copyWith({
@@ -71,7 +83,7 @@ class SQLiteWorklistModel {
     int isChoice,
     String reason,
     String msgFromWeb,
-    bool isComplete,
+    int isComplete,
     String createDate,
     String uploadDate,
     String workRegion,
@@ -80,6 +92,11 @@ class SQLiteWorklistModel {
     String workType,
     String workDoc,
     String imgList,
+    String reqNo,
+    String isSortGND,
+    String gNDReason,
+    String isOffElect,
+    String offElectReason,
   }) {
     return SQLiteWorklistModel(
       id: id ?? this.id,
@@ -106,6 +123,11 @@ class SQLiteWorklistModel {
       workType: workType ?? this.workType,
       workDoc: workDoc ?? this.workDoc,
       imgList: imgList ?? this.imgList,
+      reqNo: reqNo ?? this.reqNo,
+      isSortGND: isSortGND ?? this.isSortGND,
+      gNDReason: gNDReason ?? this.gNDReason,
+      isOffElect: reqNo ?? this.isOffElect,
+      offElectReason: reqNo ?? this.offElectReason,
     );
   }
 
@@ -126,7 +148,7 @@ class SQLiteWorklistModel {
       'isChoice': isChoice,
       'reason': reason,
       'msgFromWeb': msgFromWeb,
-      'isComplete' : isComplete,
+      'isComplete': isComplete,
       'createDate': createDate,
       'uploadDate': uploadDate,
       'workRegion': workRegion,
@@ -135,7 +157,11 @@ class SQLiteWorklistModel {
       'workType': workType,
       'workDoc': workDoc,
       'imgList': imgList,
-      
+      'reqNo': reqNo,
+      'isSortGND': isSortGND,
+      'gNDReason': gNDReason,
+      'isOffElect': isOffElect,
+      'offElectReason': offElectReason,
     };
   }
 
@@ -156,7 +182,7 @@ class SQLiteWorklistModel {
       isChoice: map['isChoice'],
       reason: map['reason'],
       msgFromWeb: map['msgFromWeb'],
-      isComplete:map['isComplete'],
+      isComplete: map['isComplete'],
       createDate: map['createDate'],
       uploadDate: map['uploadDate'],
       workRegion: map['workRegion'],
@@ -164,7 +190,12 @@ class SQLiteWorklistModel {
       workStation: map['workStation'],
       workType: map['workType'],
       workDoc: map['workDoc'],
-       imgList: map['imgList'],
+      imgList: map['imgList'],
+      reqNo: map['reqNo'],
+      isSortGND: map['isSortGND'],
+      gNDReason: map['gNDReason'],
+      isOffElect: map['isOffElect'],
+      offElectReason: map['offElectReason'],
     );
   }
 
@@ -200,7 +231,12 @@ class SQLiteWorklistModel {
         other.workProvince == workProvince &&
         other.workStation == workStation &&
         other.workType == workType &&
-        other.workDoc == workDoc&&
+        other.workDoc == workDoc &&
+        other.reqNo == reqNo &&
+        other.isSortGND == isSortGND &&
+        other.gNDReason == gNDReason &&
+        other.isOffElect == isOffElect &&
+        other.offElectReason == offElectReason &&
         other.imgList == imgList;
   }
 
@@ -228,7 +264,12 @@ class SQLiteWorklistModel {
         workProvince.hashCode ^
         workStation.hashCode ^
         workType.hashCode ^
-        workDoc.hashCode^
+        workDoc.hashCode ^
+        reqNo.hashCode ^
+        isSortGND.hashCode ^
+        gNDReason.hashCode ^
+        isOffElect.hashCode ^
+        offElectReason.hashCode ^
         imgList.hashCode;
   }
 } //class
