@@ -9,14 +9,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wesafe/models/insertWorklistModel.dart';
 import 'package:wesafe/models/checkStatusModel.dart';
+import 'package:wesafe/models/mastMainMenuModel.dart';
 import 'package:wesafe/models/sqlitePercelModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
 import 'package:wesafe/models/responeModel.dart';
 import 'package:wesafe/states/authen.dart';
-import 'package:wesafe/states/closeRecord.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/states/workRecord.dart';
+import 'package:wesafe/utility/dialog.dart';
 
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
@@ -51,6 +52,7 @@ class _CloseListState extends State<CloseList> {
   double lat, lng;
   bool locationServiceEnable, load = true, denieBool = false;
   LocationPermission locationPermission;
+  List<String> lineToken;
   @override
   void initState() {
     super.initState();
@@ -144,15 +146,15 @@ class _CloseListState extends State<CloseList> {
         ElevatedButton(
           onPressed: () {
             insertDataTOServer();
-            // Navigator.push(
-            //   context,
-            //   MaterialPageRoute(
-            //     builder: (context) => MainMenu(
-            //       userModel: userModel,
-            //       ownerId: userModel.ownerID,
-            //     ),
-            //   ),
-            // );
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => MainMenu(
+                  userModel: userModel,
+                  ownerId: userModel.ownerID,
+                ),
+              ),
+            );
           },
           child: Text("ปิดงาน"),
         ),
@@ -168,7 +170,7 @@ class _CloseListState extends State<CloseList> {
 
     try {
       InsertWorklistModel insertWorklistModel = InsertWorklistModel(
-        reqNo: _sqLitePercelModel.reqNo,
+        reqNo: "WSZ2021Z0000100070",
         deptName: userModel.deptName == null ? "" : userModel.deptName,
         dateTimeWorkFinish: "",
         docRequire: _sqLiteWorklistModel.workDoc == null
@@ -177,7 +179,7 @@ class _CloseListState extends State<CloseList> {
         empLeaderID: userModel.leaderId == null ? "" : userModel.leaderId,
         employeeID: userModel.userID == null ? "" : userModel.userID,
         iPAddress: "",
-        image: [],
+        image: [""],
         isOffElect: _sqLiteWorklistModel.isOffElect == null
             ? ""
             : _sqLiteWorklistModel.isOffElect,
@@ -197,7 +199,7 @@ class _CloseListState extends State<CloseList> {
         menuMainID: "300",
         menuSubID: "2",
         ownerID: "Z",
-        parcel: _sqLitePercelModel.item,
+        parcel: _sqLitePercelModel.item==null?"": _sqLitePercelModel.item,
         sender: userModel.userID == null ? "" : userModel.userID,
         workStatus: "5",
         province: "",
@@ -210,13 +212,14 @@ class _CloseListState extends State<CloseList> {
         workPerform: "",
         workType: "",
       );
-      print("#######----> reqNO  ${_sqLitePercelModel.reqNo}");
+      print("#######----> reqNO  ${_sqLiteWorklistModel.reqNo}");
       print("######-----> sub menu  ${insertWorklistModel.menuSubID}");
       _strJson = json.encode(insertWorklistModel);
       listValues.add(_strJson);
 
+      print("############ --->  ${listValues.toString()}");
       final response = await http.post(
-        Uri.parse('${MyConstant.webService}WeSafe_InsertTransaction'),
+        Uri.parse('${MyConstant.webService}WeSafe_Insert_TransactionWork_Close'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -225,12 +228,12 @@ class _CloseListState extends State<CloseList> {
 
       ResponeModel responeModel =
           ResponeModel.fromJson(jsonDecode(response.body));
-      SQLiteHelper()
-          .updateWorkReqNo(responeModel.result.reply.toString(), workId);
+      // SQLiteHelper()
+      //     .updateWorkReqNo(responeModel.result.reply.toString(), workId);
 
       print("Insert success  req_no = ${responeModel.result.reply.toString()}");
 
-      setLine(responeModel.result.reply.toString());
+      setLine("WSZ2021Z0000100070");
     } catch (E) {
       print("PREPair Error : $E");
     }
@@ -249,7 +252,7 @@ class _CloseListState extends State<CloseList> {
         .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
     String msg = "📣 ปิดงาน : $reqNo" +
         "\n" +
-        "การปฏิบัติงานภายในสถานีและระบบไฟฟ้า :  ก่อนปฏิบัติงาน " +
+        "การปฏิบัติงานภายในสถานีและระบบไฟฟ้า :  หลังปฏิบัติงาน " +
         "\n" +
         "\n" +
         "สถานี  : " +
@@ -283,7 +286,7 @@ class _CloseListState extends State<CloseList> {
     request.headers.contentType =
         new ContentType("application", "json", charset: "utf-8");
     request.write(
-        '{"strMsg": "$msg",   "strToken": "6Yjnn2gWWRU5oloUt1guihtMiL9BIZjYQBtYkvUH5SK"}');
+        '{"strMsg": "$msg",   "strToken": "cUvKLaq5ueQijCa7uFRK6Xp2z2dEPL7AcBwARfTUPHU"}');
 
     final response = await request.close();
     response.transform(utf8.decoder).listen((contents) {
@@ -589,5 +592,35 @@ class _CloseListState extends State<CloseList> {
     }
 
     return position;
+  }
+
+  Future<Null> getWorkMenu(String ownerID, String rsg) async {
+    MastMainMenuModel _mainMenuModel;
+    try {
+      final client = HttpClient();
+
+      final request = await client
+          .postUrl(Uri.parse("${MyConstant.webService}WeSafeCheckMainMenu"));
+      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+      request.write('{"Owner_ID": "$ownerID",   "REGION_CODE": "$rsg"}');
+      final response = await request.close();
+
+      response.transform(utf8.decoder).listen(
+        (contents) {
+          if (contents.contains('Error')) {
+            contents = contents.replaceAll("[", "").replaceAll("]", "");
+            normalDialog(context, 'Error', contents);
+          } else {
+            _mainMenuModel = MastMainMenuModel.fromJson(json.decode(contents));
+
+            for (int i = 0; i < 1; i++) {
+              lineToken = _mainMenuModel.result[i].lineToken;
+            }
+          } //else
+        },
+      );
+    } catch (e) {
+      normalDialog(context, "Error", e.toString());
+    }
   }
 }

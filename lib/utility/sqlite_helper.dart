@@ -46,12 +46,10 @@ class SQLiteHelper {
               ' ${MyConstainWorklistDB.columnWorkStation} TEXT, ' +
               ' ${MyConstainWorklistDB.columnWorkType} TEXT, ' +
               ' ${MyConstainWorklistDB.columnWorkDoc} TEXT, ' +
-
               ' ${MyConstainWorklistDB.columnIsSortGND} TEXT, ' +
               ' ${MyConstainWorklistDB.columnGNDReason} TEXT, ' +
               ' ${MyConstainWorklistDB.columnIsOffElect} TEXT, ' +
               ' ${MyConstainWorklistDB.columnOffElectReason} TEXT, ' +
-
               ' ${MyConstainWorklistDB.columnImgList} TEXT ' +
               ')');
 
@@ -183,12 +181,37 @@ class SQLiteHelper {
   }
 
   Future<List<SQLiteWorklistModel>> readWorkDatabase() async {
+   // print("readWorkDatabase()");
     Database database = await connectedDatabase();
     List<SQLiteWorklistModel> models = [];
     try {
       List<Map<String, dynamic>> maps =
           await database.query(MyConstainWorklistDB.nameTable);
       for (var item in maps) {
+        //print("####### readWorkDatabase   item ${item.values}");
+        SQLiteWorklistModel model = SQLiteWorklistModel.fromMap(item);
+        models.add(model);
+      }
+    } catch (e) {
+      print("########## readWorkDatabase()  Error : ${e.toString()}");
+    }
+
+    return models;
+  }
+
+  Future<List<SQLiteWorklistModel>> readWorkByReqNo(String reqNo) async {
+    print("##### readWorkByReqNo");
+    Database database = await connectedDatabase();
+    List<SQLiteWorklistModel> models = [];
+    try {
+      List<Map<String, dynamic>> maps = await database.rawQuery(
+          "SELECT *  " +
+              "FROM ${MyConstainWorklistDB.nameTable}  " +
+              "WHERE ${MyConstainWorklistDB.columnReqNo}=?",
+          ['$reqNo']);
+
+      for (var item in maps) {
+        print("readWorkByReqNo() ####-->  ${item.values}");
         SQLiteWorklistModel model = SQLiteWorklistModel.fromMap(item);
         models.add(model);
       }
@@ -203,10 +226,10 @@ class SQLiteHelper {
     Database database = await connectedDatabase();
     try {
       int count = await database.rawUpdate(
-        'UPDATE ${MyConstainWorklistDB.nameTable} ' +
-            'SET ${MyConstainWorklistDB.columnReqNo} = ? , ${MyConstainWorklistDB.columnIsComplete} = ? ' +
-            'WHERE ${MyConstainWorklistDB.columnworkID} = ?',['$reqNo',1,workID ]
-      );
+          'UPDATE ${MyConstainWorklistDB.nameTable} ' +
+              'SET ${MyConstainWorklistDB.columnReqNo} = ? , ${MyConstainWorklistDB.columnIsComplete} = ? ' +
+              'WHERE ${MyConstainWorklistDB.columnworkID} = ?',
+          ['$reqNo', 1, workID]);
 
       //print("###### updateWorkReqNo()  update seccess $count   row");
     } catch (e) {
@@ -227,7 +250,7 @@ class SQLiteHelper {
   Future<Null> insertStation(SQLiteStationModel sqLiteStationModel) async {
     Map<String, dynamic> maps = sqLiteStationModel.toMap();
 
-    print("#### insertWorkDatebase ${maps.values}");
+    //print("#### insertWorkDatebase ${maps.values}");
 
     Database database = await connectedDatabase();
     try {
@@ -236,7 +259,7 @@ class SQLiteHelper {
         sqLiteStationModel.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      print('######## insertWorkDatebase database SQLite success');
+      //print('######## insertWorkDatebase database SQLite success');
     } catch (e) {}
   }
 
@@ -259,7 +282,7 @@ class SQLiteHelper {
     Database database = await connectedDatabase();
     List<SQLiteStationModel> models = [];
     List<Map<String, dynamic>> maps = await database.rawQuery(
-        "SELECT ${MyConstainStationInfoDB.columnProvince}  " +
+        "SELECT distinct ${MyConstainStationInfoDB.columnProvince}  " +
             "FROM ${MyConstainStationInfoDB.nameStationTable}  " +
             "WHERE ${MyConstainStationInfoDB.columnRegionName}=?",
         ['$region']);

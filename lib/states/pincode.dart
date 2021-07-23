@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
@@ -136,7 +137,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       child: ElevatedButton(
         onPressed: () async {
           SharedPreferences preferences = await SharedPreferences.getInstance();
-
+          insertStationInfo();
           if (preferences.getString('PINCODE') == null) {
             preferences.setString(
                 MyConstant.keyPincode, _textEditingController.text);
@@ -167,8 +168,6 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
             SQLiteHelper().insertUserDatebase(sqLiteUserModel);
 
             //SQLiteHelper().insertUserDatebase(userModel);
-
-            insertStationInfo();
 
             if (userModel.result.ownerID.length > 1) {
               routeToMultiOwner(userModel, sqLiteUserModel);
@@ -239,7 +238,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       MaterialPageRoute(
         builder: (context) => MainMenu(
           userModel: userModel,
-          ownerId: userModel.ownerID.substring(0,1),
+          ownerId: userModel.ownerID.substring(0, 1),
         ),
       ),
     );
@@ -260,67 +259,90 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
   Future<void> insertStationInfo() async {
     print("########  insertStationInfo()");
     MastStationModel mastStationModel;
-    //try {
-      /*******
-      * 
 
-      HttpLink link = HttpLink(
-  uri: 'https://api.github.com/graphql',
-  headers: <String, String>{
-    'Authorization': 'Bearer <YOUR_PERSONAL_ACCESS_TOKEN>',
-    'Content-Type': 'application/json; charset=utf-8',
-   },
-);
+    try {
+      // final client = HttpClient();
 
-      */
+      // final request = await client
+      //     .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SelectStation"));
 
-      /*
+      // // request.headers.set(
+      // //   HttpHeaders.contentTypeHeader,
+      // //   "application/json; charset=UTF-8 ",
+      // // );
+      // // request.write('{"strMsg": "Station"}');
+
+      //  request.headers.contentType =
+      //     new ContentType("application", "json", charset: "utf-8");
+      // request.write('{"strMsg": "Station"}');
+
+/*
+
       final client = HttpClient();
-
+      String strStation = "Station";
       final request = await client
           .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SelectStation"));
-      request.headers.set(
-        HttpHeaders.contentTypeHeader,
-        "application/json;charset=UTF-8",
-      );
-      request.write('{"strMsg": "Station"}');
-
+      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+      request.write('{"strMsg": "$strStation"}');
       final response = await request.close();
-      response.transform(utf8.decoder).listen(
-        (contents) {
-          //contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
-          if (contents.contains('Error')) {
-            contents = contents.replaceAll("[", "").replaceAll("]", "");
-            normalDialog(context, 'Error', contents);
-          } else {
-            mastStationModel = MastStationModel.fromJson(json.decode(  contents    ));
-          } //else
-        },
-      );
-    } catch (e) {
-      normalDialog(context, "Error", e.toString());
-    }
 
-    SQLiteStationModel _sqLiteStationModel;
-    int count;
-    for (var item in mastStationModel.result) {
-      count++;
-      _sqLiteStationModel = SQLiteStationModel(
-        id: count,
-        province: item.stationProvince,
-        regionCode: "",
-        regionName: item.stationPEA,
-        stationId: item.stationID,
-        stationName: item.stationName,
-      );
-      //SQLiteHelper().insertStation(_sqLiteStationModel);
-    }
+      print("pincode ######  set station --- > ${request}");
 
 */
 
 
 
+      final response = await http.post(
+        Uri.parse('${MyConstant.webService}WeSafe_SelectStation'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: "{ 'strMsg' : 'Station' }",
+      );
 
+      MastStationModel mastStationModel =
+          MastStationModel.fromJson(jsonDecode(response.body));
+
+      print("####### ---- > lenght : ${mastStationModel.result.length}");
+      SQLiteStationModel sqLiteStationModel;
+      for (int i = 0; i < mastStationModel.result.length; i++) {
+        sqLiteStationModel = SQLiteStationModel(
+          id: i,
+          province: mastStationModel.result[i].stationProvince ,
+          regionCode: ""  ,
+          regionName: mastStationModel.result[i].stationPEA,
+          stationId: mastStationModel.result[i].stationID,
+          stationName: mastStationModel.result[i].stationName,
+        );
+        SQLiteHelper().insertStation(sqLiteStationModel);
+       
+      }
+    } catch (e) {
+      normalDialog(context, "Error", e.toString());
+    }
+
+
+
+    //print("######  --->  ${mastStationModel.result[0].stationID}");
+
+    // SQLiteStationModel _sqLiteStationModel;
+    // int count;
+    // for (var item in mastStationModel.result) {
+    //   count++;
+    //   _sqLiteStationModel = SQLiteStationModel(
+    //     id: count,
+    //     province: item.stationProvince,
+    //     regionCode: "",
+    //     regionName: item.stationPEA,
+    //     stationId: item.stationID,
+    //     stationName: item.stationName,
+    //   );
+    //   //SQLiteHelper().insertStation(_sqLiteStationModel);
+    // }
+
+
+
+/*
     SQLiteStationModel sqLiteStationModel = SQLiteStationModel(
       id: 1,
       province: "นครปฐม",
@@ -366,6 +388,13 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       stationId: "S0007",
       stationName: "สถานีไฟฟ้า ยะลา",
     );
+
     SQLiteHelper().insertStation(sqLiteStationModel);
-  }
+
+   
+    } catch (e) {
+      normalDialog(context, "Error", e.toString());
+    } */
+
+    }
 }

@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:io' as Io;
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wesafe/models/mastWorkListModel_test.dart';
@@ -15,7 +14,6 @@ import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
 
-import 'mainlist.dart';
 
 class CloseRecord extends StatefulWidget {
   final int index;

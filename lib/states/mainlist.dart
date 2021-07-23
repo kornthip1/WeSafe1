@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/models/insertWorklistModel.dart';
+import 'package:wesafe/models/mastMainMenuModel.dart';
 
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
@@ -46,12 +47,15 @@ class _MainListState extends State<MainList> {
   double lat, lng;
   bool locationServiceEnable, load = true, denieBool = false;
   LocationPermission locationPermission;
+  List<String> lineToken;
   @override
   void initState() {
     super.initState();
     userModel = widget.user_model;
     _sqLiteWorklistModel = widget.sqLiteWorklistModel;
     _countList = widget.countList;
+
+    getWorkMenu(userModel.ownerID, userModel.rsg);
 
     //readWorklist();
   }
@@ -132,15 +136,17 @@ class _MainListState extends State<MainList> {
             if (_countList >= 6) {
               insertDataTOServer();
 
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MainMenu(
-                    userModel: userModel,
-                    ownerId: userModel.ownerID,
-                  ),
-                ),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(
+              //     builder: (context) => MainMenu(
+              //       userModel: userModel,
+              //       ownerId: userModel.ownerID,
+              //     ),
+              //   ),
+              // );
+
+
             }
           },
           child: Text("ยืนยัน"),
@@ -166,7 +172,7 @@ class _MainListState extends State<MainList> {
 
           models = result;
           for (var item in models) {
-            workId = item.workID;
+            workId = item.workID==null?"":item.workID;
             insertWorklistModel = InsertWorklistModel(
               deptName: userModel.deptName == null ? "" : userModel.deptName,
               dateTimeWorkFinish: "",
@@ -174,7 +180,7 @@ class _MainListState extends State<MainList> {
               empLeaderID: userModel.leaderId == null ? "" : userModel.leaderId,
               employeeID: userModel.userID == null ? "" : userModel.userID,
               iPAddress: "",
-              image: generateImage(item.imgList),
+              image:  item.imgList==null?[""]:  generateImage(item.imgList),
               isOffElect: item.isOffElect == null ? "" : item.isOffElect,
               offElectReason:
                   item.offElectReason == null ? "" : item.offElectReason,
@@ -187,11 +193,7 @@ class _MainListState extends State<MainList> {
                   item.checklistID == null ? "" : item.checklistID.toString(),
               menuMainID:
                   item.mainWorkID == null ? "" : item.mainWorkID.toString(),
-              menuSubID: item.subWorkID == null
-                  ? "1"
-                  : item.reqNo == null
-                      ? 1
-                      : 2,
+              menuSubID: "1",
               ownerID: item.ownerID == null ? "" : item.ownerID,
               parcel: "",
               province: item.workProvince == null ? "" : item.workProvince,
@@ -205,9 +207,11 @@ class _MainListState extends State<MainList> {
               workPerform: item.workPerform == null ? "" : item.workPerform,
               workStatus: "0",
               workType: item.workType == null ? "" : item.workType,
+              reqNo: "",
+
             );
-            print("#######----> rsg ${userModel.rsg}");
-            print("######-----> sub menu  ${insertWorklistModel.menuSubID}");
+            // print("#######----> rsg ${userModel.rsg}");
+            // print("######-----> sub menu  ${insertWorklistModel.menuSubID}");
             _strJson = json.encode(insertWorklistModel);
             listValues.add(_strJson);
           }
@@ -221,7 +225,7 @@ class _MainListState extends State<MainList> {
         },
         body: utf8.encode(listValues.toString()),
       );
-
+print("#######----> rsg ${userModel.rsg}");
       ResponeModel responeModel =
           ResponeModel.fromJson(jsonDecode(response.body));
       SQLiteHelper()
@@ -236,58 +240,67 @@ class _MainListState extends State<MainList> {
   }
 
   List generateImage(String strImg) {
+
     List arr = new List();
     arr = strImg.split(',');
     return arr;
   }
 
   Future<Null> setLine(String reqNo) async {
+//lineToken
+    print("#######  setLine()   ${lineToken.length} ");
+
     DateTime now = DateTime.now();
     final client = HttpClient();
-    final request = await client
-        .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
-    String msg = "📣 ใบงาน : $reqNo" +
-        "\n" +
-        "การปฏิบัติงานภายในสถานีและระบบไฟฟ้า :  ก่อนปฏิบัติงาน " +
-        "\n" +
-        "\n" +
-        "สถานี  : " +
-        _sqLiteWorklistModel.workStation +
-        "\n" +
-        "จังหวัด" +
-        _sqLiteWorklistModel.workProvince +
-        "\n" +
-        "การไฟฟ้าเขต :" +
-        _sqLiteWorklistModel.workRegion +
-        "\n" +
-        "งานประเภท :" +
-        _sqLiteWorklistModel.workType +
-        "\n" +
-        "\n" +
-        "ผู้ส่งข้อมูล : " +
-        "\n" +
-        userModel.firstName +
-        "  " +
-        userModel.lastName +
-        "\n" +
-        userModel.deptName +
-        "\n" +
-        "รายละเอียดงาน : " +
-        _sqLiteWorklistModel.workPerform +
-        "\n" +
-        now.toString() +
-        "\n" +
-        "\n" +
-        "https://wesafe.pea.co.th/admin/detail.aspx?WebGetReqNO=$reqNo";
-    request.headers.contentType =
-        new ContentType("application", "json", charset: "utf-8");
-    request.write(
-        '{"strMsg": "$msg",   "strToken": "6Yjnn2gWWRU5oloUt1guihtMiL9BIZjYQBtYkvUH5SK"}');
 
-    final response = await request.close();
-    response.transform(utf8.decoder).listen((contents) {
-      print("###### notification reply : $contents");
-    });
+    for (int i = 0; i < lineToken.length; i++) {
+      final request = await client
+          .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
+      String msg = "📣 ใบงาน : $reqNo" +
+          "\n" +
+          "การปฏิบัติงานภายในสถานีและระบบไฟฟ้า :  ก่อนปฏิบัติงาน " +
+          "\n" +
+          "\n" +
+          "สถานี  : " +
+          _sqLiteWorklistModel.workStation +
+          "\n" +
+          "จังหวัด" +
+          _sqLiteWorklistModel.workProvince +
+          "\n" +
+          "การไฟฟ้าเขต :" +
+          _sqLiteWorklistModel.workRegion +
+          "\n" +
+          "งานประเภท :" +
+          _sqLiteWorklistModel.workType +
+          "\n" +
+          "\n" +
+          "ผู้ส่งข้อมูล : " +
+          "\n" +
+          userModel.firstName +
+          "  " +
+          userModel.lastName +
+          "\n" +
+          userModel.deptName +
+          "\n" +
+          "รายละเอียดงาน : " +
+          _sqLiteWorklistModel.workPerform +
+          "\n" +
+          now.toString() +
+          "\n" +
+          "\n" +
+          "https://wesafe.pea.co.th/admin/detail.aspx?WebGetReqNO=$reqNo";
+
+      print("#######  Token   ${lineToken[i]} ");
+
+      request.headers.contentType =
+          new ContentType("application", "json", charset: "utf-8");
+      request.write('{"strMsg": "$msg",   "strToken": "${lineToken[i]}"}');
+
+      final response = await request.close();
+      response.transform(utf8.decoder).listen((contents) {
+        print("###### notification reply : $contents");
+      });
+    }
   }
 
   Widget buildWorkPerform() {
@@ -386,7 +399,7 @@ class _MainListState extends State<MainList> {
             ListItem("3", "ภาพการตรวจวัดเเรงดัน"),
             ListItem("2", "ภาพเครื่องมือปฏิบัติงาน"),
             ListItem("3", "ภาพการต่อลงดิน"),
-           // ListItem("5", "จำนวน พัสดุ ที่ใช้งาน"),
+            // ListItem("5", "จำนวน พัสดุ ที่ใช้งาน"),
           ]
         : _listwork = [
             ListItem("3", "ลักษณะงาน"), //3
@@ -701,5 +714,45 @@ class _MainListState extends State<MainList> {
     }
 
     return position;
+  } //
+
+  Future<Null> getWorkMenu(String ownerID, String rsg) async {
+    MastMainMenuModel _mainMenuModel;
+    try {
+      final client = HttpClient();
+
+      final request = await client
+          .postUrl(Uri.parse("${MyConstant.webService}WeSafeCheckMainMenu"));
+      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+      request.write('{"Owner_ID": "$ownerID",   "REGION_CODE": "$rsg"}');
+      final response = await request.close();
+
+      response.transform(utf8.decoder).listen(
+        (contents) {
+          if (contents.contains('Error')) {
+            contents = contents.replaceAll("[", "").replaceAll("]", "");
+            normalDialog(context, 'Error', contents);
+          } else {
+            _mainMenuModel = MastMainMenuModel.fromJson(json.decode(contents));
+
+            for (int i = 0; i < 1; i++) {
+              lineToken = _mainMenuModel.result[i].lineToken;
+            }
+            // for (var item in _mainMenuModel.result) {
+            //   if (item.menuMainName != null)
+            //     setState(() {
+            //       print("#### mainMenu  :  ${item.lineToken}");
+
+            //       for (int i = 0; i < item.lineToken.length;i++) {
+            //             lineToken = item[0]];
+            //       }
+            //     });
+            // }
+          } //else
+        },
+      );
+    } catch (e) {
+      normalDialog(context, "Error", e.toString());
+    }
   }
 }

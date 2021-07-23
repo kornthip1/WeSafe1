@@ -3,8 +3,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
-import 'package:wesafe/models/sqliteWorklistModel.dart'; //CheckSatatusModel
+import 'package:wesafe/models/sqliteWorklistModel.dart';
 import 'package:wesafe/models/checkStatusModel.dart';
 import 'package:wesafe/states/CloseList.dart';
 import 'package:wesafe/utility/dialog.dart';
@@ -31,7 +32,10 @@ class _CheckWorkState extends State<CheckWork> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    readWorklist();
+    readWorklist()
+        .then((value) => print("initial readWorklist  value : $value"));
+    readUserInfo()
+        .then((value) => print("initial readUserInfo  value : $value"));
   }
 
   @override
@@ -60,119 +64,101 @@ class _CheckWorkState extends State<CheckWork> {
   }
 
   Widget buildListView() {
-    //print("#### buildListView()");
+    // print("########  checkSatatusModel   ");
 
-    readUserInfo();
+    if (checkSatatusModel != null) {
+      // for (var item in checkSatatusModel.result) {
+      //   print("########  checkSatatusModel  req no : ${item.reqNo} ");
+      // }
 
-    //print("#####--->  ${checkSatatusModel.result[0].jobStatusName}");
-    if (_sqLiteWorklistModel == null) {
-      _sqLiteWorklistModel = SQLiteWorklistModel(
-        checklistID: 1,
-        createDate: "",
-        isChoice: 0,
-        userID: "",
-        lat: "",
-        lng: "",
-        workDoc: "",
-        workID: 1,
-        workPerform: "",
-        workProvince: "กฟฉ.3",
-        workRegion: "กาญจนบุรี",
-        workStation: "สถานีไฟฟ้า C",
-        workType: "PM",
-        remark: "9",
-      );
-    }
-
-    return Container(
-      child: new ListView.builder(
-        itemCount: checkSatatusModel.result == null
-            ? 0
-            : checkSatatusModel.result.length,
-        itemBuilder: (context, index) => GestureDetector(
-          onTap: () {
-            //print("ontap  : $tt");
-
-            //print("ontap  : ${_sqLiteWorklistModel.remark}");
-            //print("ontap  userID : ${_userModel.userID}");
-            if (checkSatatusModel.result[index].jobStatus == "4") {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => CloseList(
-                    user_model: _userModel,
-                    checkStatusModel: checkSatatusModel,
+      return Container(
+        child: new ListView.builder(
+          itemCount: checkSatatusModel.result == null
+              ? 0
+              : checkSatatusModel.result.length,
+          itemBuilder: (context, index) => GestureDetector(
+            onTap: () {
+              if (checkSatatusModel.result[index].jobStatus == "4") {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => CloseList(
+                      user_model: _userModel,
+                      checkStatusModel: checkSatatusModel,
+                    ),
                   ),
-                ),
-              );
-            } else {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => MainList(
-                    sqLiteWorklistModel: _sqLiteWorklistModel,
-                    user_model: _userModel,
+                );
+              } else {
+                // Navigator.push(
+                //   context,
+                //   MaterialPageRoute(
+                //     builder: (context) => MainList(
+                //       sqLiteWorklistModel: _sqLiteWorklistModel,
+                //       user_model: _userModel,
+                //     ),
+                //   ),
+                // );
+
+              }
+            },
+            child: Card(
+              color: Colors.grey[300],
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                  child: Column(
+                    children: [
+                      ShowTitle(
+                        title: checkSatatusModel.result == null
+                            ? ""
+                            : checkSatatusModel.result[index].reqNo,
+                        index: 4,
+                      ),
+                      ShowTitle(
+                        title: "การปฏิบัติงานภายในสถานีไฟฟ้าและระบบไฟฟ้า",
+                        index: 2,
+                      ),
+                      ShowTitle(
+                        title: "workRegion",
+                        // title: _sqLiteWorklistModel.workRegion +
+                        //     " " +
+                        //     _sqLiteWorklistModel.workStation,
+                        index: 2,
+                      ),
+                      ShowTitle(
+                        title: checkSatatusModel.result == null
+                            ? ""
+                            : checkSatatusModel.result[index].jobStatusName,
+                        index: 4,
+                      )
+                    ],
                   ),
-                ),
-              );
-            }
-          },
-          child: Card(
-            color: Colors.grey,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: Column(
-                  children: [
-                    ShowTitle(
-                      title: checkSatatusModel.result == null
-                          ? ""
-                          : checkSatatusModel.result[index].reqNo,
-                      index: 4,
-                    ),
-                    ShowTitle(
-                      title: "การปฏิบัติงานภายในสถานีไฟฟ้าและระบบไฟฟ้า",
-                      index: 2,
-                    ),
-                    ShowTitle(
-                      title: _sqLiteWorklistModel.workRegion +
-                          " " +
-                          _sqLiteWorklistModel.workStation,
-                      index: 2,
-                    ),
-                    ShowTitle(
-                      title: checkSatatusModel.result == null
-                          ? ""
-                          : checkSatatusModel.result[index].jobStatusName,
-                      index: 4,
-                    )
-                  ],
                 ),
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
+    }
   }
 
   Future<Null> readWorklist() async {
-    
     SharedPreferences preferences = await SharedPreferences.getInstance();
     String _user = preferences.getString('USER');
 
-    //print("###### -- >  user : $_user");
+    print("######## readWorklist()  user  :  $_user");
     try {
       final client = HttpClient();
       final request = await client
           .postUrl(Uri.parse("${MyConstant.webService}WeSafe_CheckStatus"));
-      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+      request.headers.set(
+          HttpHeaders.contentTypeHeader, "application/json; charset=utf-8");
       request.write('{"empID": "$_user"}');
       final response = await request.close();
 
       response.transform(utf8.decoder).listen(
         (contents) {
-          //print("###### -- >  contents : $contents");
+          print("###### -- >  contents : $contents");
           if (contents.contains('Error')) {
             contents = contents.replaceAll("[", "").replaceAll("]", "");
             normalDialog(context, 'Error', contents);
@@ -196,7 +182,7 @@ class _CheckWorkState extends State<CheckWork> {
       if (result == null) {
       } else {
         models = result;
-       
+
         for (var item in models) {
           // print("CHECK()  #####  id ${item.userID}");
           // print("CHECK()  #####  id ${item.firstName}");
@@ -246,7 +232,8 @@ class _CheckWorkState extends State<CheckWork> {
         index: 1,
       ),
       onTap: () {
-        setState(() {
+        
+         setState(() {
           index = 0;
         });
         //Navigator.pop(context);

@@ -412,10 +412,13 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         models = result;
 
         for (var item in models) {
-          setState(() {
+         
             listStation.add(item.stationName);
-          });
+
         }
+         setState(() {
+              listStation.add("อื่นๆ");
+        });
       }
     });
   }
@@ -503,7 +506,9 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
                   } else if (_selectedProviceItem == null) {
                     normalDialog(
                         context, "กรุณาเลือก", "จังหวัดที่ต้องการปฏิบัติงาน");
-                  } else if (_selectedStationItem == null || (_selectedStationItem.name.contains("อื่น") && _otherStation.text == "" ) ) {
+                  } else if (_selectedStationItem == null ||
+                      (_selectedStationItem.name.contains("อื่น") &&
+                          _otherStation.text == "")) {
                     normalDialog(
                         context, "กรุณาเลือก", "สถานีที่ต้องการปฏิบัติงาน");
                   } else if (choose == null) {
@@ -527,7 +532,9 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
                       workPerform: null,
                       workProvince: _selectedProviceItem.name,
                       workRegion: _selectedRegionItem.name,
-                      workStation: _selectedStationItem.name.contains("อื่น")? _otherStation.text : _selectedStationItem.name,
+                      workStation: _selectedStationItem.name.contains("อื่น")
+                          ? _otherStation.text
+                          : _selectedStationItem.name,
                       workType: choose,
                       remark: null,
                     );

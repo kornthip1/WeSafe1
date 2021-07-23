@@ -119,7 +119,7 @@ class _WorkRecordState extends State<WorkRecord> {
                 Column(
                   children: [
                     RadioListTile(
-                      value: '0',
+                      value: '1',
                       groupValue: choose,
                       onChanged: (value) {
                         setState(() {
@@ -133,7 +133,7 @@ class _WorkRecordState extends State<WorkRecord> {
                 Column(
                   children: [
                     RadioListTile(
-                      value: '1',
+                      value: '2',
                       groupValue: choose,
                       onChanged: (value) {
                         setState(() {
@@ -165,14 +165,14 @@ class _WorkRecordState extends State<WorkRecord> {
                 Column(
                   children: [
                     RadioListTile(
-                      value: '2',
+                      value: '0',
                       groupValue: choose,
                       onChanged: (value) {
                         setState(() {
                           choose = value;
                         });
                       },
-                      title: Text('ไม่ $workListname'),
+                      title: Text('ไม่มีการดับไฟสถานีไฟฟ้า'),
                     ),
                   ],
                 ),
@@ -196,7 +196,7 @@ class _WorkRecordState extends State<WorkRecord> {
                 Column(
                   children: [
                     RadioListTile(
-                      value: '0',
+                      value: '1',
                       groupValue: choose,
                       onChanged: (value) {
                         setState(() {
@@ -205,10 +205,52 @@ class _WorkRecordState extends State<WorkRecord> {
                       },
                       title: Text(workListname),
                     ),
-                    Container(
-                      child: IconButton(
-                        icon: Icon(Icons.add_a_photo),
-                        onPressed: () => createImage(0, ImageSource.camera),
+                    ListView.builder(
+                      shrinkWrap: true,
+                      physics: ScrollPhysics(),
+                      itemCount: rows, //files.length,
+                      itemBuilder: (context, index) => Column(
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Container(
+                                width: 120,
+                                height: 120,
+                                child: files[index] == null
+                                    ? ShowIconImage(
+                                        fromMenu: "image",
+                                      )
+                                    : Image.file(files[index]),
+                              ),
+                              Column(
+                                children: [
+                                  IconButton(
+                                    icon: Icon(Icons.add_a_photo),
+                                    onPressed: () =>
+                                        createImage(index, ImageSource.camera),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(Icons.add_photo_alternate),
+                                    onPressed: () =>
+                                        createImage(index, ImageSource.gallery),
+                                  ),
+                                ],
+                              ),
+                              ElevatedButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      rows = rows + 1;
+                                      files.add(null);
+                                    });
+                                  },
+                                  child: Text("เพิ่มรูปถ่าย"))
+                            ],
+                          ),
+                          Divider(
+                            thickness: 1,
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -216,7 +258,7 @@ class _WorkRecordState extends State<WorkRecord> {
                 Column(
                   children: [
                     RadioListTile(
-                      value: '1',
+                      value: '0',
                       groupValue: choose,
                       onChanged: (value) {
                         setState(() {
@@ -541,11 +583,12 @@ class _WorkRecordState extends State<WorkRecord> {
                 onPressed: () {
                   SQLiteWorklistModel sqLiteWorklistModel;
                   List<String> base64Strs = [];
+
+                  print("RECORD  >>> ");
+                  print("Workperform  :  ${_sqLiteWorklistModel.workPerform}");
+                  print("doc  :  ${_sqLiteWorklistModel.workDoc}");
+
                   if (_index != 7) {
-                    print("RECORD  >>> ");
-                    print(
-                        "Workperform  :  ${_sqLiteWorklistModel.workPerform}");
-                    print("doc  :  ${_sqLiteWorklistModel.workDoc}");
                     bool canSave = false;
                     String remark = "1";
                     if (_index == 7 || _sqLiteWorklistModel.remark == "9") {
@@ -623,51 +666,24 @@ class _WorkRecordState extends State<WorkRecord> {
                       routeToMainList(sqLiteWorklistModel);
                     }
                   } else {
-                    //close
-                    sqLiteWorklistModel = SQLiteWorklistModel(
-                      workPerform: _sqLiteWorklistModel.workPerform,
-                      workDoc: _sqLiteWorklistModel.workDoc,
-                      reqNo: _sqLiteWorklistModel.reqNo,
-                    );
-                    if (listPercel.length == 0) {
-                      if (percelController != null) {
-                        listPercel.add(percelController.text);
-                        listAmount.add(amounrController.text);
-                      }
-                    }
-                    print("##### listpercel size  :  ${listPercel.length}");
-                    print("##### listamount size  :  ${listAmount.length}");
-                    SQLitePercelModel sqLitePercelModel;
-
-                    String strPercel = "";
-                    List<String> list = [];
-                    for (int i = 0; i < listPercel.length; i++) {
-                      print('#####---> ${listPercel[i]}  :  ${listAmount[i]}');
-                      list.add(listPercel[i] + ":" + listAmount[i]);
-                    }
-
-                    sqLitePercelModel = SQLitePercelModel(
-                      reqNo: _sqLiteWorklistModel.reqNo,
-                      checklistID: 7,
-                      isComplete: 1,
-                      mainWorkID: "300",
+                    String percel = "[" +
+                        "${percelController.text} : ${amounrController.text}" +
+                        "]";
+                    CheckStatusModel checkStatusModel;
+                    SQLitePercelModel percelModel = SQLitePercelModel(
+                     
                       amount: 0,
-                      item: list.toString(),
-                      subWorkID: 2,
+                      checklistID: 7,
+                      item: percel
                     );
-
-                    sqLiteWorklistModel = SQLiteWorklistModel(
-                        reqNo: _sqLiteWorklistModel.reqNo,
-                        workDoc: _sqLiteWorklistModel.workDoc,
-                        workPerform: _sqLiteWorklistModel.workPerform);
-
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => CloseList(
                           user_model: userModel,
-                          sqLitePercelModel: sqLitePercelModel,
-                          sqLiteWorklistModel: sqLiteWorklistModel,
+                          checkStatusModel: checkStatusModel,
+                          sqLitePercelModel: percelModel,
+                          sqLiteWorklistModel: _sqLiteWorklistModel,
                         ),
                       ),
                     );
