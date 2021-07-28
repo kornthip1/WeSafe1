@@ -148,7 +148,7 @@ class _MyserviceState extends State<Myservice> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => MainMenu(userModel: widget.sqliteeUserModel, ownerId: ownerID),
+        builder: (context) => MainMenu(),
       ),
     );
   }

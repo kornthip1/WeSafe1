@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
 import 'package:wesafe/models/checkStatusModel.dart';
@@ -15,7 +14,6 @@ import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 import 'mainMenu.dart';
-import 'mainlist.dart';
 
 class CheckWork extends StatefulWidget {
   @override
@@ -30,7 +28,6 @@ class _CheckWorkState extends State<CheckWork> {
   CheckStatusModel checkSatatusModel;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     readWorklist()
         .then((value) => print("initial readWorklist  value : $value"));
@@ -84,7 +81,7 @@ class _CheckWorkState extends State<CheckWork> {
                   MaterialPageRoute(
                     builder: (context) => CloseList(
                       user_model: _userModel,
-                      checkStatusModel: checkSatatusModel,
+                      reqNo : checkSatatusModel.result[index].reqNo
                     ),
                   ),
                 );
@@ -119,7 +116,7 @@ class _CheckWorkState extends State<CheckWork> {
                         index: 2,
                       ),
                       ShowTitle(
-                        title: "workRegion",
+                        title: "",
                         // title: _sqLiteWorklistModel.workRegion +
                         //     " " +
                         //     _sqLiteWorklistModel.workStation,
@@ -170,6 +167,21 @@ class _CheckWorkState extends State<CheckWork> {
           } //else
         },
       );
+
+      // SQLiteWorklistModel sqlIteWorkModel;
+      // for (int i = 0; i < checkSatatusModel.result.length; i++) {
+      //   getWorkInfo(checkSatatusModel.result[i].reqNo);
+      //   sqlIteWorkModel = SQLiteWorklistModel(
+      //     reqNo: checkSatatusModel.result[i].reqNo,
+      //     workProvince: _sqLiteWorklistModel.workProvince,
+      //     workRegion: _sqLiteWorklistModel.workRegion,
+      //     workStation: _sqLiteWorklistModel.workStation,
+      //   );
+      // }
+
+      // setState(() {
+      //   _sqLiteWorklistModel = sqlIteWorkModel;
+      // });
     } catch (e) {
       print("###### -- >  readWorklist Error : ${e.toString()}");
     }
@@ -206,6 +218,14 @@ class _CheckWorkState extends State<CheckWork> {
     });
   }
 
+  Future<Null> getWorkInfo(String reqNo) async {
+    await SQLiteHelper().readWorkByReqNoModel(reqNo).then((result) {
+      setState(() {
+        _sqLiteWorklistModel = result;
+      });
+    });
+  }
+
 /************ LEFT MENU */
   UserAccountsDrawerHeader buildUserAccountsDrawerHeader() {
     return UserAccountsDrawerHeader(
@@ -232,8 +252,7 @@ class _CheckWorkState extends State<CheckWork> {
         index: 1,
       ),
       onTap: () {
-        
-         setState(() {
+        setState(() {
           index = 0;
         });
         //Navigator.pop(context);
@@ -241,9 +260,9 @@ class _CheckWorkState extends State<CheckWork> {
           context,
           MaterialPageRoute(
             builder: (context) => MainMenu(
-              userModel: _userModel,
-              ownerId: _userModel.ownerID,
-            ),
+                //userModel: _userModel,
+                //  ownerId: _userModel.ownerID,
+                ),
           ),
         );
       },

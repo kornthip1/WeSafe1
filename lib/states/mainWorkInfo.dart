@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
@@ -9,13 +8,10 @@ import 'package:wesafe/utility/dialog.dart';
 
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
-import 'package:wesafe/widgets/showMan.dart';
+import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 import 'package:wesafe/utility/Test.dart';
-import 'package:wesafe/states/checkWork.dart';
-
-import 'mainMenu.dart';
 
 class MainWorkInfo extends StatefulWidget {
   final SQLiteUserModel user_model;
@@ -57,20 +53,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
       appBar: AppBar(
         title: ShowTitle(title: 'MAIN INFO', index: 1),
       ),
-      drawer: Drawer(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                buildUserAccountsDrawerHeader(),
-                buildNewJob(context),
-                buildCheckStatus(context),
-              ],
-            ),
-            buildSignOut()
-          ],
-        ),
-      ),
+      drawer: ShowDrawer(userModel: userModel),
       body: Stack(
         children: [
           buildBodyContent(),
@@ -412,12 +395,10 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         models = result;
 
         for (var item in models) {
-         
-            listStation.add(item.stationName);
-
+          listStation.add(item.stationName);
         }
-         setState(() {
-              listStation.add("อื่นๆ");
+        setState(() {
+          listStation.add("อื่นๆ");
         });
       }
     });
@@ -433,59 +414,6 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
           sqLiteWorklistModel: sqLiteWorklistModel,
         ),
       ),
-    );
-  }
-
-  ListTile buildCheckStatus(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        Icons.check_circle_outline,
-        size: 36,
-        color: MyConstant.primart,
-      ),
-      title: ShowTitle(
-        title: MyConstant.listMenu[1],
-        index: 1,
-      ),
-      onTap: () {
-        setState(() {
-          index = 0;
-        });
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CheckWork(),
-          ),
-        );
-      },
-    );
-  }
-
-  ListTile buildNewJob(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        Icons.date_range,
-        size: 36,
-        color: MyConstant.primart,
-      ),
-      title: ShowTitle(
-        title: MyConstant.listMenu[0],
-        index: 1,
-      ),
-      onTap: () {
-        setState(() {
-          index = 0;
-        });
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainMenu(
-              userModel: userModel,
-              ownerId: userModel.ownerID,
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -550,47 +478,6 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
           ],
         )
       ],
-    );
-  }
-
-  Column buildSignOut() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        ListTile(
-          onTap: () async {
-            SharedPreferences preferences =
-                await SharedPreferences.getInstance();
-            preferences.clear();
-            SQLiteHelper().deleteStationAll();
-            Navigator.pushNamedAndRemoveUntil(
-                context, '/authen', (route) => false);
-          },
-          tileColor: Colors.red[900],
-          leading: Icon(
-            Icons.exit_to_app,
-            size: 36,
-            color: Colors.white,
-          ),
-          title: ShowTitle(
-            title: 'Sign out',
-            index: 3,
-          ),
-        ),
-      ],
-    );
-  }
-
-  UserAccountsDrawerHeader buildUserAccountsDrawerHeader() {
-    return UserAccountsDrawerHeader(
-      decoration: BoxDecoration(color: MyConstant.primart),
-      currentAccountPicture: ShowMan(),
-      accountName: userModel == null
-          ? Text('Name')
-          : Text('${userModel.firstName}  ${userModel.lastName}'),
-      accountEmail: userModel == null
-          ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.deptName}'),
     );
   }
 

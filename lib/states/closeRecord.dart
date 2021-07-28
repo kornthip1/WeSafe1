@@ -346,7 +346,7 @@ class _CloseRecordState extends State<CloseRecord> {
                     for (int i = 0; i < listPercel.length; i++) {
                       print('#####---> ${listPercel[i]}  :  ${listAmount[i]}');
                       sqLitePercelModel = SQLitePercelModel(
-                        reqNo: _sqLiteWorklistModel.reqNo,
+                       // reqNo: _sqLiteWorklistModel.reqNo,
                         checklistID: 7,
                         isComplete: 1,
                         mainWorkID: "300",
@@ -361,7 +361,7 @@ class _CloseRecordState extends State<CloseRecord> {
                       MaterialPageRoute(
                         builder: (context) => CloseList(
                           user_model: userModel,
-                          sqLitePercelModel: sqLitePercelModel,
+                          reqNo: sqLiteWorklistModel.reqNo,
                         ),
                       ),
                     );

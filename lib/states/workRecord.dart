@@ -4,13 +4,13 @@ import 'dart:io';
 import 'dart:io' as Io;
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wesafe/models/checkStatusModel.dart';
 import 'package:wesafe/models/mastWorkListModel_test.dart';
 import 'package:wesafe/models/sqlitePercelModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistModel.dart';
-import 'package:wesafe/states/closeRecord.dart';
 import 'package:wesafe/states/closelist.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
@@ -67,6 +67,8 @@ class _WorkRecordState extends State<WorkRecord> {
 
     for (var i = 0; i < rows; i++) {
       files.add(null);
+      listPercel.add(null);
+      listAmount.add(null);
     }
 
     amountPic = files.length;
@@ -74,8 +76,6 @@ class _WorkRecordState extends State<WorkRecord> {
     userModel = widget.sqLiteUserModel;
     _sqLiteWorklistModel = widget.sqLiteWorklistModel;
     _index = widget.index;
-
-    rows = 1;
   }
 
   @override
@@ -362,16 +362,17 @@ class _WorkRecordState extends State<WorkRecord> {
                     children: [
                       Container(child: Text('${index + 1}')),
                       buildPercel(index),
-                      buildAmountPercel(),
+                      buildAmountPercel(index),
                       ElevatedButton.icon(
                         onPressed: () {
-                          listPercel.add(percelController.text);
-                          listAmount.add(amounrController.text);
-
                           setState(() {
+                            //listPercel[index] = percelController.text;
                             rows = rows + 1;
-                            percelController.clear();
-                            amounrController.clear();
+                            listPercel.add(null);
+                            listAmount.add(null);
+
+                            // listPercel.add(percelController.text);
+                            // listAmount.add(amounrController.text);
                           });
                         },
                         icon: Icon(Icons.add),
@@ -394,12 +395,18 @@ class _WorkRecordState extends State<WorkRecord> {
   }
 
   Container buildPercel(int index) {
+    //print("#### Percel lenght : ${listPercel.length}");
+    // for (int x = 0; x < listPercel.length; x++) {
+    //   print("#### Percel  : ${listPercel[x]}");
+    // }
+    //print("#### Percel index : ${listPercel[index]}");
+
     return Container(
       // margin: EdgeInsets.only(top: 5),
       width: size * 0.5,
       height: 50.0,
       child: TextFormField(
-        controller: percelController,
+        controller: rows - 1 > index ? null : percelController,
         validator: (value) {
           if (value.isEmpty) {
             return 'Please fill ...';
@@ -408,20 +415,33 @@ class _WorkRecordState extends State<WorkRecord> {
           }
         },
         decoration: InputDecoration(
-          labelText: 'อุปกรณ์ :',
+          labelText: listPercel.length == 0
+              ? "อุปกรณ์"
+              : listPercel[index] == null
+                  ? "อุปกรณ์"
+                  : rows > index
+                      ? "อุปกรณ์"
+                      : listPercel[index],
           border: OutlineInputBorder(),
         ),
+        onChanged: (value) {
+          listPercel[index] = value;
+        },
       ),
     );
   }
 
-  Container buildAmountPercel() {
+  Container buildAmountPercel(int index) {
     return Container(
       // margin: EdgeInsets.only(top: 5),
       width: size * 0.3,
       height: 50.0,
       child: TextFormField(
-        controller: amounrController,
+        keyboardType: TextInputType.number,
+        inputFormatters: <TextInputFormatter>[
+          FilteringTextInputFormatter.digitsOnly
+        ],
+        controller: rows - 1 > index ? null : amounrController,
         validator: (value) {
           if (value.isEmpty) {
             return 'Please fill ...';
@@ -430,9 +450,18 @@ class _WorkRecordState extends State<WorkRecord> {
           }
         },
         decoration: InputDecoration(
-          labelText: 'จำนวน :',
+          labelText: listAmount.length == 0
+              ? "จำนวน"
+              : listAmount[index] == null
+                  ? "จำนวน"
+                  : rows > index
+                      ? "จำนวน"
+                      : listAmount[index],
           border: OutlineInputBorder(),
         ),
+        onChanged: (value) {
+          listAmount[index] = value;
+        },
       ),
     );
   }
@@ -587,9 +616,9 @@ class _WorkRecordState extends State<WorkRecord> {
                   print("RECORD  >>> ");
                   print("Workperform  :  ${_sqLiteWorklistModel.workPerform}");
                   print("doc  :  ${_sqLiteWorklistModel.workDoc}");
-
+                  print("_index  :  $_index");
+                  bool canSave = false;
                   if (_index != 7) {
-                    bool canSave = false;
                     String remark = "1";
                     if (_index == 7 || _sqLiteWorklistModel.remark == "9") {
                       remark = "11";
@@ -611,9 +640,7 @@ class _WorkRecordState extends State<WorkRecord> {
                     if (indexWork == 2 && !canSave) {
                       normalDialog(context, "กรุณา", "ถ่ายภาพอย่างน้อย 1 ภาพ");
                       canSave = false;
-                    }
-
-                    if (indexWork == 3 && choose == null) {
+                    } else if (indexWork == 3 && choose == null) {
                       normalDialog(context, "กรุณา",
                           "เลือกการปฏิบัติการ " + workListname);
                     } else {
@@ -666,27 +693,45 @@ class _WorkRecordState extends State<WorkRecord> {
                       routeToMainList(sqLiteWorklistModel);
                     }
                   } else {
-                    String percel = "[" +
-                        "${percelController.text} : ${amounrController.text}" +
-                        "]";
+                    //if (canSave) {
+                    print("###-------->  save to close");
+                    print(
+                        "###-------->  listPercel leght : ${listPercel.length}");
+                    print(
+                        "###-------->  listAmount leght : ${listAmount.length}");
+                    print("###-------->  save to close");
+                    String strPercel = "";
+                    String strAmount = "";
+                    String percel = "";
+                    for (int i = 0; i < listPercel.length; i++) {
+                      strPercel = listPercel[i];
+                      strAmount = listAmount[i] == null ? "" : listAmount[i];
+                      percel = percel + strPercel + ":" + strAmount + ",";
+                    }
+
+                    percel = "[" + percel + "]";
+                    print("######## ---- > $percel");
+                    // String percel = "[" +
+                    //     "${percelController.text} : ${amounrController.text}" +
+                    //     "]";
                     CheckStatusModel checkStatusModel;
                     SQLitePercelModel percelModel = SQLitePercelModel(
-                     
-                      amount: 0,
-                      checklistID: 7,
-                      item: percel
-                    );
+
+                        workID:  _sqLiteWorklistModel.reqNo.substring(9,_sqLiteWorklistModel.reqNo.length ),
+                        amount: 0, checklistID: 7, item: percel);
+                    SQLiteHelper().insertPercel(percelModel);
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => CloseList(
                           user_model: userModel,
-                          checkStatusModel: checkStatusModel,
-                          sqLitePercelModel: percelModel,
-                          sqLiteWorklistModel: _sqLiteWorklistModel,
+                          reqNo: _sqLiteWorklistModel.reqNo,
                         ),
                       ),
                     );
+
+                    //}
                   }
                 },
                 child: Text("บันทึก")),

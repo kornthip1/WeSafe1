@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 class SQLitePercelModel {
-  int workID;
+  String workID;
   String mainWorkID;
   int subWorkID;
   int checklistID;
@@ -9,7 +9,8 @@ class SQLitePercelModel {
   int amount;
   int isComplete;
   String createDate;
-  String reqNo;
+//  String reqNo;
+
 
   SQLitePercelModel({
     this.workID,
@@ -20,7 +21,7 @@ class SQLitePercelModel {
     this.amount,
     this.createDate,
     this.isComplete,
-    this.reqNo,
+  //  this.reqNo,
   });
 
   SQLitePercelModel copyWith({
@@ -32,7 +33,7 @@ class SQLitePercelModel {
     int amount,
     int isComplete,
     String createDate,
-    String reqNo,
+   // String reqNo,
   }) {
     return SQLitePercelModel(
       workID: workID ?? this.workID,
@@ -43,7 +44,7 @@ class SQLitePercelModel {
       amount: amount ?? this.amount,
       createDate: createDate ?? this.createDate,
       isComplete: isComplete ?? this.isComplete,
-      reqNo: reqNo ?? this.reqNo,
+     // reqNo: reqNo ?? this.reqNo,
     );
   }
 
@@ -57,7 +58,7 @@ class SQLitePercelModel {
       'amount': amount,
       'isComplete': isComplete,
       'createDate': createDate,
-      'reqNo': createDate,
+     // 'reqNo': reqNo,
     };
   }
 
@@ -71,7 +72,7 @@ class SQLitePercelModel {
       amount: map['amount'],
       isComplete: map['isComplete'],
       createDate: map['createDate'],
-      reqNo: map['reqNo'],
+    //  reqNo: map['reqNo'],
     );
   }
 
@@ -92,7 +93,7 @@ class SQLitePercelModel {
         other.item == item &&
         other.amount == amount &&
         other.isComplete == isComplete &&
-        other.reqNo == reqNo &&
+     //   other.reqNo == reqNo &&
         other.createDate == createDate;
   }
 
@@ -105,7 +106,7 @@ class SQLitePercelModel {
         item.hashCode ^
         amount.hashCode ^
         isComplete.hashCode ^
-        reqNo.hashCode^
+     //   reqNo.hashCode^
         createDate.hashCode;
   }
 } //class

@@ -88,3 +88,16 @@ class MyConstainStationInfoDB {
   static final String columnCreateDate = 'createdDate';
   static final String columnUpdatedDate = 'updatedDate';
 }
+
+class MyConstainCheckListDB {
+  static final String nameTable = 'mastCheckList';
+  static final String columnMenuMainID = 'MenuMain_ID';
+  static final String columnMenuSubID = 'MenuSub_ID';
+  static final String columnMenuChecklistID = 'MenuChecklist_ID';
+  static final String columnMenuChecklistName = 'MenuChecklist_Name';
+  static final String columnFlagRequire = 'Flag_Require';
+  static final String columnWaitApprove = 'Wait_Approve';
+  static final String columnMenuChecklistDesc = 'MenuChecklist_Desc';
+  static final String columnType = 'Type';
+  static final String columnQuantityImg = 'Quantity_Img';
+}

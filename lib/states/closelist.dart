@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:wesafe/models/insertWorklistModel.dart';
 import 'package:wesafe/models/checkStatusModel.dart';
@@ -21,20 +20,13 @@ import 'package:wesafe/utility/dialog.dart';
 
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
-import 'package:wesafe/widgets/showMan.dart';
+import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showTitle.dart';
-import 'package:wesafe/states/checkWork.dart';
 
 class CloseList extends StatefulWidget {
   final SQLiteUserModel user_model;
-  final CheckStatusModel checkStatusModel;
-  final SQLitePercelModel sqLitePercelModel;
-  final SQLiteWorklistModel sqLiteWorklistModel;
-  CloseList(
-      {@required this.user_model,
-      this.checkStatusModel,
-      this.sqLitePercelModel,
-      this.sqLiteWorklistModel});
+  final String reqNo;
+  CloseList({@required this.user_model, this.reqNo});
   @override
   _CloseListState createState() => _CloseListState();
 }
@@ -56,31 +48,24 @@ class _CloseListState extends State<CloseList> {
   @override
   void initState() {
     super.initState();
-    _sqLiteWorklistModel = widget.sqLiteWorklistModel;
     readWorklist();
     userModel = widget.user_model;
-    _checkSatatusModel = widget.checkStatusModel;
-    _sqLitePercelModel = widget.sqLitePercelModel;
   }
 
   Future<Null> readWorklist() async {
     print("###closelist   readWorklist()");
     List<SQLiteWorklistModel> models = [];
-    await SQLiteHelper().readWorkDatabase().then((result) {
+    await SQLiteHelper().readWorkByReqNo(widget.reqNo).then((result) {
       if (result == null) {
       } else {
         models = result;
         SQLiteWorklistModel sqLiteWorklistModel;
         for (var item in models) {
-          print("##### workperform : ${item.workPerform}");
-          print("##### work doc: ${item.workDoc}");
+          // print("##### workperform : ${item.workPerform}");
+          // print("##### work doc: ${item.workDoc}");
           sqLiteWorklistModel = SQLiteWorklistModel(
             //.result[index].reqNo
-            reqNo: _checkSatatusModel == null
-                ? _sqLiteWorklistModel.reqNo
-                : _checkSatatusModel.result[index].reqNo == ""
-                    ? _sqLiteWorklistModel.reqNo
-                    : _checkSatatusModel.result[index].reqNo,
+            reqNo: item.reqNo,
             checklistID: item.checklistID,
             createDate: item.createDate,
             isChoice: 0,
@@ -110,20 +95,7 @@ class _CloseListState extends State<CloseList> {
       appBar: AppBar(
         title: ShowTitle(title: 'MAIN LIST', index: 1),
       ),
-      drawer: Drawer(
-        child: Stack(
-          children: [
-            Column(
-              children: [
-                buildUserAccountsDrawerHeader(),
-                buildNewJob(context),
-                buildCheckStatus(context),
-              ],
-            ),
-            buildSignOut()
-          ],
-        ),
-      ),
+      drawer: ShowDrawer(userModel: userModel),
       body: Scrollbar(child: buildBodyContent()),
     );
   }
@@ -150,9 +122,9 @@ class _CloseListState extends State<CloseList> {
               context,
               MaterialPageRoute(
                 builder: (context) => MainMenu(
-                  userModel: userModel,
-                  ownerId: userModel.ownerID,
-                ),
+                    // userModel: userModel,
+                    // ownerId: userModel.ownerID,
+                    ),
               ),
             );
           },
@@ -166,11 +138,25 @@ class _CloseListState extends State<CloseList> {
     List<SQLiteWorklistModel> models = [];
     List<String> listValues = [];
     String _strJson;
-    int workId;
+    String _strPercelItem = "";
+    List<SQLitePercelModel> percelModels = [];
+    await SQLiteHelper().selectPercelByID(widget.reqNo.substring(9, widget.reqNo.length)).then((result) {
+      if (result == null) {
+      } else {
+        percelModels = result;
+        for (var item in percelModels) {
+          print("######## --- > percel  : ${item.item}");
+          print("######## --- > workID  : ${item.workID}");
+          _strPercelItem = item.item;
+        }
+      }
+    });
+
+    //for
 
     try {
       InsertWorklistModel insertWorklistModel = InsertWorklistModel(
-        reqNo: "WSZ2021Z0000100070",
+        reqNo: widget.reqNo,
         deptName: userModel.deptName == null ? "" : userModel.deptName,
         dateTimeWorkFinish: "",
         docRequire: _sqLiteWorklistModel.workDoc == null
@@ -198,8 +184,8 @@ class _CloseListState extends State<CloseList> {
         menuChecklistID: "7",
         menuMainID: "300",
         menuSubID: "2",
-        ownerID: "Z",
-        parcel: _sqLitePercelModel.item==null?"": _sqLitePercelModel.item,
+        ownerID: userModel.ownerID == null ? "" : userModel.ownerID,
+        parcel: _strPercelItem,
         sender: userModel.userID == null ? "" : userModel.userID,
         workStatus: "5",
         province: "",
@@ -212,14 +198,15 @@ class _CloseListState extends State<CloseList> {
         workPerform: "",
         workType: "",
       );
-      print("#######----> reqNO  ${_sqLiteWorklistModel.reqNo}");
-      print("######-----> sub menu  ${insertWorklistModel.menuSubID}");
+      print("#######----> reqNO  ${widget.reqNo}");
+      print("######-----> sub _strPercelItem  $_strPercelItem");
       _strJson = json.encode(insertWorklistModel);
       listValues.add(_strJson);
 
       print("############ --->  ${listValues.toString()}");
       final response = await http.post(
-        Uri.parse('${MyConstant.webService}WeSafe_Insert_TransactionWork_Close'),
+        Uri.parse(
+            '${MyConstant.webService}WeSafe_Insert_TransactionWork_Close'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -231,9 +218,10 @@ class _CloseListState extends State<CloseList> {
       // SQLiteHelper()
       //     .updateWorkReqNo(responeModel.result.reply.toString(), workId);
 
-      print("Insert success  req_no = ${responeModel.result.reply.toString()}");
+      print(
+          "update Close reply = ${responeModel.result.reply.toString()}");
 
-      setLine("WSZ2021Z0000100070");
+      setLine(widget.reqNo,_strPercelItem);
     } catch (E) {
       print("PREPair Error : $E");
     }
@@ -245,7 +233,7 @@ class _CloseListState extends State<CloseList> {
     return arr;
   }
 
-  Future<Null> setLine(String reqNo) async {
+  Future<Null> setLine(String reqNo , String _strPercelItem) async {
     DateTime now = DateTime.now();
     final client = HttpClient();
     final request = await client
@@ -279,6 +267,9 @@ class _CloseListState extends State<CloseList> {
         "รายละเอียดงาน : " +
         _sqLiteWorklistModel.workPerform +
         "\n" +
+        "อุปกรณ์ที่ใช้ไป : " +
+        _strPercelItem +
+        "\n" +
         now.toString() +
         "\n" +
         "\n" +
@@ -286,7 +277,7 @@ class _CloseListState extends State<CloseList> {
     request.headers.contentType =
         new ContentType("application", "json", charset: "utf-8");
     request.write(
-        '{"strMsg": "$msg",   "strToken": "cUvKLaq5ueQijCa7uFRK6Xp2z2dEPL7AcBwARfTUPHU"}');
+        '{"strMsg": "$msg",   "strToken": "m49F7ajqHy0ic6wanQ5VWael9vo8dCFHz4oR1DJhR3q"}');
 
     final response = await request.close();
     response.transform(utf8.decoder).listen((contents) {
@@ -295,7 +286,6 @@ class _CloseListState extends State<CloseList> {
   }
 
   Widget buildWorkPerform() {
-    print("################## - buildWorkPerform() - ##################");
     if (_sqLiteWorklistModel == null) {
       readWorklist();
     }
@@ -406,101 +396,6 @@ class _CloseListState extends State<CloseList> {
           ),
         ),
       ),
-    );
-  }
-
-  ListTile buildCheckStatus(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        Icons.check_circle_outline,
-        size: 36,
-        color: MyConstant.primart,
-      ),
-      title: ShowTitle(
-        title: MyConstant.listMenu[1],
-        index: 1,
-      ),
-      onTap: () {
-        setState(() {
-          index = 0;
-        });
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CheckWork(),
-          ),
-        );
-      },
-    );
-  }
-
-  ListTile buildNewJob(BuildContext context) {
-    return ListTile(
-      leading: Icon(
-        Icons.date_range,
-        size: 36,
-        color: MyConstant.primart,
-      ),
-      title: ShowTitle(
-        title: MyConstant.listMenu[0],
-        index: 1,
-      ),
-      onTap: () {
-        setState(() {
-          index = 0;
-        });
-        //Navigator.pop(context);
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainMenu(
-              userModel: userModel,
-              ownerId: userModel.ownerID,
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Column buildSignOut() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        ListTile(
-          onTap: () async {
-            SharedPreferences preferences =
-                await SharedPreferences.getInstance();
-            preferences.clear();
-            SQLiteHelper().deleteWorkAll();
-            Navigator.pushNamedAndRemoveUntil(
-                context, '/authen', (route) => false);
-          },
-          tileColor: Colors.red[900],
-          leading: Icon(
-            Icons.exit_to_app,
-            size: 36,
-            color: Colors.white,
-          ),
-          title: ShowTitle(
-            title: 'Sign out',
-            index: 3,
-          ),
-        ),
-      ],
-    );
-  }
-
-  UserAccountsDrawerHeader buildUserAccountsDrawerHeader() {
-    return UserAccountsDrawerHeader(
-      decoration: BoxDecoration(color: MyConstant.primart),
-      currentAccountPicture: ShowMan(),
-      accountName: userModel == null
-          ? Text('Name')
-          : Text('${userModel.firstName}  ${userModel.lastName}'),
-      accountEmail: userModel == null
-          ? Text('Position')
-          : Text('ตำแหน่ง  :  ${userModel.deptName}'),
     );
   }
 

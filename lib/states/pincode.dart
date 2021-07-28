@@ -142,6 +142,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
             preferences.setString(
                 MyConstant.keyPincode, _textEditingController.text);
             userModel.result.pincode = _textEditingController.text;
+            print("pincode ######  rsg  : ${userModel.result.rEGIONCODE}");
             DateTime now = new DateTime.now();
             SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
                 deptName: userModel.result.dEPTNAME == null
@@ -175,6 +176,8 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
               routeToMainMenu(sqLiteUserModel);
             }
           } else {
+          
+
             List<SQLiteUserModel> models = [];
             await SQLiteHelper().readUserDatabase().then((result) {
               if (result == null) {
@@ -182,6 +185,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
                 models = result;
                 SQLiteUserModel sqLiteUserModel = SQLiteUserModel();
                 for (var item in models) {
+                   print("pincode ###### 1. rsg  : ${item.rsg}");
                   sqLiteUserModel = SQLiteUserModel(
                     deptName: item.deptName,
                     createdDate: item.createdDate,
@@ -237,9 +241,9 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       context,
       MaterialPageRoute(
         builder: (context) => MainMenu(
-          userModel: userModel,
-          ownerId: userModel.ownerID.substring(0, 1),
-        ),
+            //userModel: userModel,
+            // ownerId: userModel.ownerID.substring(0, 1),
+            ),
       ),
     );
   }
@@ -290,8 +294,6 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
 
 */
 
-
-
       final response = await http.post(
         Uri.parse('${MyConstant.webService}WeSafe_SelectStation'),
         headers: <String, String>{
@@ -303,25 +305,21 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       MastStationModel mastStationModel =
           MastStationModel.fromJson(jsonDecode(response.body));
 
-      print("####### ---- > lenght : ${mastStationModel.result.length}");
       SQLiteStationModel sqLiteStationModel;
       for (int i = 0; i < mastStationModel.result.length; i++) {
         sqLiteStationModel = SQLiteStationModel(
           id: i,
-          province: mastStationModel.result[i].stationProvince ,
-          regionCode: ""  ,
+          province: mastStationModel.result[i].stationProvince,
+          regionCode: "",
           regionName: mastStationModel.result[i].stationPEA,
           stationId: mastStationModel.result[i].stationID,
           stationName: mastStationModel.result[i].stationName,
         );
         SQLiteHelper().insertStation(sqLiteStationModel);
-       
       }
     } catch (e) {
       normalDialog(context, "Error", e.toString());
     }
-
-
 
     //print("######  --->  ${mastStationModel.result[0].stationID}");
 
@@ -339,8 +337,6 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
     //   );
     //   //SQLiteHelper().insertStation(_sqLiteStationModel);
     // }
-
-
 
 /*
     SQLiteStationModel sqLiteStationModel = SQLiteStationModel(
@@ -395,6 +391,5 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
     } catch (e) {
       normalDialog(context, "Error", e.toString());
     } */
-
-    }
+  }
 }
