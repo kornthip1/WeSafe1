@@ -6,7 +6,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:wesafe/models/checkStatusModel.dart';
 import 'package:wesafe/models/mastWorkListModel_test.dart';
 import 'package:wesafe/models/sqlitePercelModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
@@ -63,6 +62,11 @@ class _WorkRecordState extends State<WorkRecord> {
   @override
   void initState() {
     super.initState();
+
+    widget.sqLiteWorklistModel == null
+        ? print("model is null")
+        : print("model is not null");
+
     indexWork = widget.indexWork;
 
     for (var i = 0; i < rows; i++) {
@@ -75,6 +79,7 @@ class _WorkRecordState extends State<WorkRecord> {
     workListname = widget.workListname;
     userModel = widget.sqLiteUserModel;
     _sqLiteWorklistModel = widget.sqLiteWorklistModel;
+
     _index = widget.index;
   }
 
@@ -270,6 +275,7 @@ class _WorkRecordState extends State<WorkRecord> {
                     Container(
                       width: size * 0.6,
                       child: TextField(
+                        controller: dataController,
                         decoration: InputDecoration(
                           prefixIcon: Icon(Icons.notes),
                           labelText: 'เหตุผลที่ไม่ $workListname ',
@@ -613,10 +619,11 @@ class _WorkRecordState extends State<WorkRecord> {
                   SQLiteWorklistModel sqLiteWorklistModel;
                   List<String> base64Strs = [];
 
-                  print("RECORD  >>> ");
-                  print("Workperform  :  ${_sqLiteWorklistModel.workPerform}");
-                  print("doc  :  ${_sqLiteWorklistModel.workDoc}");
-                  print("_index  :  $_index");
+                  // print("RECORD  >>> ");
+                  // print("Workperform  :  ${_sqLiteWorklistModel.workPerform}");
+                  // print("doc  :  ${_sqLiteWorklistModel.workDoc}");
+                  // print("_index  :  $_index");
+
                   bool canSave = false;
                   if (_index != 7) {
                     String remark = "1";
@@ -650,75 +657,84 @@ class _WorkRecordState extends State<WorkRecord> {
                     if (canSave) {
                       int i = Random().nextInt(100000);
                       sqLiteWorklistModel = SQLiteWorklistModel(
-                          id: i,
-                          checklistID: _index,
-                          createDate: _sqLiteWorklistModel.createDate,
-                          isChoice: 0,
-                          userID: "",
-                          lat: "",
-                          lng: "",
-                          workDoc: _sqLiteWorklistModel.workDoc,
-                          workID: _sqLiteWorklistModel.workID,
-                          workPerform: _sqLiteWorklistModel.workPerform,
-                          workProvince: _sqLiteWorklistModel.workProvince,
-                          workRegion: _sqLiteWorklistModel.workRegion,
-                          workStation: _sqLiteWorklistModel.workStation,
-                          workType: _sqLiteWorklistModel.workType,
-                          remark: remark,
-                          imgList: base64Strs
-                              .toString()
-                              .replaceAll("[", "")
-                              .replaceAll("]", ""),
-                          // imgList: base64Strs
-                          //     .toString()
-                          //     .replaceAll('[', "")
-                          //     .replaceAll("]", ""),
-                          isComplete: 1,
-                          mainWorkID: "300",
-                          msgFromWeb: "",
-                          ownerID: _sqLiteWorklistModel.ownerID,
-                          isOffElect: choose == null
-                              ? ""
-                              : _index == 3
-                                  ? ""
-                                  : choose,
-                          offElectReason: dataController.text == null
-                              ? ""
-                              : _index == 3
-                                  ? ""
-                                  : dataController.text);
+                        id: i,
+                        checklistID: _index,
+                        createDate: _sqLiteWorklistModel.createDate,
+                        isChoice: 0,
+                        userID: "",
+                        lat: "",
+                        lng: "",
+                        workDoc: _sqLiteWorklistModel.workDoc,
+                        workID: _sqLiteWorklistModel.workID,
+                        workPerform: _sqLiteWorklistModel.workPerform,
+                        workProvince: _sqLiteWorklistModel.workProvince,
+                        workRegion: _sqLiteWorklistModel.workRegion,
+                        workStation: _sqLiteWorklistModel.workStation,
+                        workType: _sqLiteWorklistModel.workType,
+                        remark: remark,
+                        imgList: base64Strs
+                            .toString()
+                            .replaceAll("[", "")
+                            .replaceAll("]", ""),
+                        // imgList: base64Strs
+                        //     .toString()
+                        //     .replaceAll('[', "")
+                        //     .replaceAll("]", ""),
+                        isComplete: 1,
+                        mainWorkID: "300",
+                        msgFromWeb: "",
+                        ownerID: _sqLiteWorklistModel.ownerID,
+                        isOffElect: choose == null
+                            ? ""
+                            : _index == 1
+                                ? choose
+                                : "",
+                        offElectReason: dataController.text == null
+                            ? ""
+                            : _index == 1
+                                ? dataController.text
+                                : "",
+                        isSortGND: choose == null
+                            ? ""
+                            : _index == 1
+                                ? ""
+                                : choose,
+                                gNDReason: dataController.text == null?"":
+                                _index==1?"":dataController.text
+                      );
 
                       SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
 
                       routeToMainList(sqLiteWorklistModel);
                     }
                   } else {
-                    //if (canSave) {
+                    //if (canSave) { _sqLiteWorklistModel
                     print("###-------->  save to close");
                     print(
                         "###-------->  listPercel leght : ${listPercel.length}");
                     print(
                         "###-------->  listAmount leght : ${listAmount.length}");
-                    print("###-------->  save to close");
+
+                    print(
+                        "###-------->  req_no : ${widget.sqLiteWorklistModel.reqNo}");
+
                     String strPercel = "";
                     String strAmount = "";
                     String percel = "";
                     for (int i = 0; i < listPercel.length; i++) {
                       strPercel = listPercel[i];
                       strAmount = listAmount[i] == null ? "" : listAmount[i];
-                      percel = percel + strPercel + ":" + strAmount + ",";
+                      percel = percel + strPercel + ":" + strAmount + ";";
                     }
 
-                    percel = "[" + percel + "]";
                     print("######## ---- > $percel");
-                    // String percel = "[" +
-                    //     "${percelController.text} : ${amounrController.text}" +
-                    //     "]";
-                    CheckStatusModel checkStatusModel;
-                    SQLitePercelModel percelModel = SQLitePercelModel(
 
-                        workID:  _sqLiteWorklistModel.reqNo.substring(9,_sqLiteWorklistModel.reqNo.length ),
-                        amount: 0, checklistID: 7, item: percel);
+                    SQLitePercelModel percelModel = SQLitePercelModel(
+                        workID: _sqLiteWorklistModel.reqNo
+                            .substring(9, _sqLiteWorklistModel.reqNo.length),
+                        amount: 0,
+                        checklistID: 7,
+                        item: percel);
                     SQLiteHelper().insertPercel(percelModel);
 
                     Navigator.push(
@@ -726,7 +742,8 @@ class _WorkRecordState extends State<WorkRecord> {
                       MaterialPageRoute(
                         builder: (context) => CloseList(
                           user_model: userModel,
-                          reqNo: _sqLiteWorklistModel.reqNo,
+                          reqNo: widget.sqLiteWorklistModel.reqNo,
+                          isComplate: true,
                         ),
                       ),
                     );

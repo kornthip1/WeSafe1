@@ -26,7 +26,8 @@ import 'package:wesafe/widgets/showTitle.dart';
 class CloseList extends StatefulWidget {
   final SQLiteUserModel user_model;
   final String reqNo;
-  CloseList({@required this.user_model, this.reqNo});
+  final bool isComplate;
+  CloseList({@required this.user_model, this.reqNo, this.isComplate});
   @override
   _CloseListState createState() => _CloseListState();
 }
@@ -53,7 +54,7 @@ class _CloseListState extends State<CloseList> {
   }
 
   Future<Null> readWorklist() async {
-    print("###closelist   readWorklist()");
+    //print("###closelist   readWorklist()");
     List<SQLiteWorklistModel> models = [];
     await SQLiteHelper().readWorkByReqNo(widget.reqNo).then((result) {
       if (result == null) {
@@ -62,25 +63,25 @@ class _CloseListState extends State<CloseList> {
         SQLiteWorklistModel sqLiteWorklistModel;
         for (var item in models) {
           // print("##### workperform : ${item.workPerform}");
-          // print("##### work doc: ${item.workDoc}");
+          print("##### region code: ${item.rsg}");
           sqLiteWorklistModel = SQLiteWorklistModel(
-            //.result[index].reqNo
-            reqNo: item.reqNo,
-            checklistID: item.checklistID,
-            createDate: item.createDate,
-            isChoice: 0,
-            userID: "",
-            lat: "",
-            lng: "",
-            workDoc: item.workDoc,
-            workID: item.workID,
-            workPerform: item.workPerform,
-            workProvince: item.workProvince,
-            workRegion: item.workRegion,
-            workStation: item.workStation,
-            workType: item.workType,
-            remark: item.remark,
-          );
+              //.result[index].reqNo
+              reqNo: item.reqNo,
+              checklistID: item.checklistID,
+              createDate: item.createDate,
+              isChoice: 0,
+              userID: "",
+              lat: "",
+              lng: "",
+              workDoc: item.workDoc,
+              workID: item.workID,
+              workPerform: item.workPerform,
+              workProvince: item.workProvince,
+              workRegion: item.workRegion,
+              workStation: item.workStation,
+              workType: item.workType,
+              remark: item.remark,
+              rsg: item.rsg);
         } //for
         setState(() {
           _sqLiteWorklistModel = sqLiteWorklistModel;
@@ -140,7 +141,9 @@ class _CloseListState extends State<CloseList> {
     String _strJson;
     String _strPercelItem = "";
     List<SQLitePercelModel> percelModels = [];
-    await SQLiteHelper().selectPercelByID(widget.reqNo.substring(9, widget.reqNo.length)).then((result) {
+    await SQLiteHelper()
+        .selectPercelByID(widget.reqNo.substring(9, widget.reqNo.length))
+        .then((result) {
       if (result == null) {
       } else {
         percelModels = result;
@@ -155,33 +158,46 @@ class _CloseListState extends State<CloseList> {
     //for
 
     try {
+      //user_model
+
+      print("########### ---- > Region : ${widget.user_model.rsg}");
       InsertWorklistModel insertWorklistModel = InsertWorklistModel(
         reqNo: widget.reqNo,
         deptName: userModel.deptName == null ? "" : userModel.deptName,
         dateTimeWorkFinish: "",
-        docRequire: _sqLiteWorklistModel.workDoc == null
+        docRequire: _sqLiteWorklistModel == null
             ? ""
-            : _sqLiteWorklistModel.workDoc,
+            : _sqLiteWorklistModel.workDoc == null
+                ? ""
+                : _sqLiteWorklistModel.workDoc,
         empLeaderID: userModel.leaderId == null ? "" : userModel.leaderId,
         employeeID: userModel.userID == null ? "" : userModel.userID,
         iPAddress: "",
         image: [""],
-        isOffElect: _sqLiteWorklistModel.isOffElect == null
+        isOffElect: _sqLiteWorklistModel == null
             ? ""
-            : _sqLiteWorklistModel.isOffElect,
-        offElectReason: _sqLiteWorklistModel.offElectReason == null
+            : _sqLiteWorklistModel.isOffElect == null
+                ? ""
+                : _sqLiteWorklistModel.isOffElect,
+        offElectReason: _sqLiteWorklistModel == null
             ? ""
-            : _sqLiteWorklistModel.offElectReason,
-        isSortGND: _sqLiteWorklistModel.isSortGND == null
+            : _sqLiteWorklistModel.offElectReason == null
+                ? ""
+                : _sqLiteWorklistModel.offElectReason,
+        isSortGND: _sqLiteWorklistModel == null
             ? ""
-            : _sqLiteWorklistModel.isSortGND,
-        gNDReason: _sqLiteWorklistModel.gNDReason == null
+            : _sqLiteWorklistModel.isSortGND == null
+                ? ""
+                : _sqLiteWorklistModel.isSortGND,
+        gNDReason: _sqLiteWorklistModel == null
             ? ""
-            : _sqLiteWorklistModel.gNDReason,
+            : _sqLiteWorklistModel.gNDReason == null
+                ? ""
+                : _sqLiteWorklistModel.gNDReason,
         locationLat: "13.886555475448976",
         locationLng: "100.2603517379212",
         macAddress: "",
-        menuChecklistID: "7",
+        menuChecklistID: "1",
         menuMainID: "300",
         menuSubID: "2",
         ownerID: userModel.ownerID == null ? "" : userModel.ownerID,
@@ -189,7 +205,11 @@ class _CloseListState extends State<CloseList> {
         sender: userModel.userID == null ? "" : userModel.userID,
         workStatus: "5",
         province: "",
-        regionCode: "",
+        regionCode: userModel == null
+            ? ""
+            : userModel.rsg == null
+                ? ""
+                : userModel.rsg,
         remark: "",
         station: "",
         tokenNoti: "",
@@ -218,10 +238,10 @@ class _CloseListState extends State<CloseList> {
       // SQLiteHelper()
       //     .updateWorkReqNo(responeModel.result.reply.toString(), workId);
 
-      print(
-          "update Close reply = ${responeModel.result.reply.toString()}");
+      print("update Close reply = ${responeModel.result.reply.toString()}");
+      print("update Close reply  message = ${responeModel.message}");
 
-      setLine(widget.reqNo,_strPercelItem);
+      setLine(widget.reqNo, _strPercelItem);
     } catch (E) {
       print("PREPair Error : $E");
     }
@@ -233,7 +253,7 @@ class _CloseListState extends State<CloseList> {
     return arr;
   }
 
-  Future<Null> setLine(String reqNo , String _strPercelItem) async {
+  Future<Null> setLine(String reqNo, String _strPercelItem) async {
     DateTime now = DateTime.now();
     final client = HttpClient();
     final request = await client
@@ -333,9 +353,11 @@ class _CloseListState extends State<CloseList> {
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: ShowTitle(
-              title: _sqLiteWorklistModel.workDoc == null
+              title: _sqLiteWorklistModel == null
                   ? ""
-                  : _sqLiteWorklistModel.workDoc,
+                  : _sqLiteWorklistModel.workDoc == null
+                      ? ""
+                      : _sqLiteWorklistModel.workDoc,
               index: 4,
             ),
           ),
@@ -356,7 +378,17 @@ class _CloseListState extends State<CloseList> {
           itemCount: 1,
           itemBuilder: (context, index) => GestureDetector(
             onTap: () {
+              SQLiteWorklistModel modelss;
+              if (_sqLiteWorklistModel == null ||
+                  _sqLiteWorklistModel.reqNo == null) {
+                setState(() {
+                  modelss = SQLiteWorklistModel(reqNo: widget.reqNo);
+                });
+              } else {
+                modelss = _sqLiteWorklistModel;
+              }
               print("######## userModel  ${userModel.userID}");
+              print("######## req no  ${modelss.reqNo}");
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -365,18 +397,19 @@ class _CloseListState extends State<CloseList> {
                     index: 7,
                     indexWork: 7,
                     workListname: "จำนวน พัสดุ ที่ใช้งาน",
-                    sqLiteWorklistModel: _sqLiteWorklistModel,
+                    sqLiteWorklistModel: modelss,
                     countList: 6,
                   ),
                 ),
               );
             },
             child: Card(
-              color: _sqLitePercelModel == null
-                  ? Colors.grey
-                  : _sqLitePercelModel.checklistID == 7
-                      ? Colors.green
-                      : Colors.grey,
+              color: widget.isComplate?Colors.green:Colors.grey,
+              // color: _sqLitePercelModel == null
+              //     ? Colors.grey
+              //     : _sqLitePercelModel.checklistID == 7
+              //         ? Colors.green
+              //         : Colors.grey,
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(

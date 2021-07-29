@@ -81,7 +81,10 @@ class _CheckWorkState extends State<CheckWork> {
                   MaterialPageRoute(
                     builder: (context) => CloseList(
                       user_model: _userModel,
-                      reqNo : checkSatatusModel.result[index].reqNo
+                      reqNo : checkSatatusModel.result[index].reqNo,
+                      isComplate: false,
+                      
+                      
                     ),
                   ),
                 );
@@ -209,6 +212,7 @@ class _CheckWorkState extends State<CheckWork> {
             ownerID: item.ownerID,
             ownerName: item.ownerName,
             pincode: item.pincode,
+            rsg: item.rsg,
           );
         } //for
       }

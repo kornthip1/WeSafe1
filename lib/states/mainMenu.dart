@@ -164,6 +164,7 @@ class _MainMenuState extends State<MainMenu> {
           child: ElevatedButton(
             onPressed: () {
               print("main menu  index  : $index");
+              SQLiteHelper().deleteWorkAll();
               getCheckList(index, userModel.ownerID);
               Navigator.push(
                 context,
