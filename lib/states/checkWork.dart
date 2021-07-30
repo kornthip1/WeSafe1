@@ -81,10 +81,8 @@ class _CheckWorkState extends State<CheckWork> {
                   MaterialPageRoute(
                     builder: (context) => CloseList(
                       user_model: _userModel,
-                      reqNo : checkSatatusModel.result[index].reqNo,
+                      reqNo: checkSatatusModel.result[index].reqNo,
                       isComplate: false,
-                      
-                      
                     ),
                   ),
                 );
@@ -102,7 +100,15 @@ class _CheckWorkState extends State<CheckWork> {
               }
             },
             child: Card(
-              color: Colors.grey[300],
+              color: checkSatatusModel == null
+                  ? Colors.grey[300]
+                  : checkSatatusModel.result[index].jobStatus == "4"
+                      ? Colors.green[100]
+                      : checkSatatusModel.result[index].jobStatus == "2"
+                          ? Colors.blue[100]
+                          : checkSatatusModel.result[index].jobStatus == "0"
+                              ? Colors.orange[100]
+                              : Colors.grey[300],
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
@@ -119,7 +125,9 @@ class _CheckWorkState extends State<CheckWork> {
                         index: 2,
                       ),
                       ShowTitle(
-                        title: "",
+                        title: checkSatatusModel == null
+                            ? ""
+                            : checkSatatusModel.result[index].workLocation,
                         // title: _sqLiteWorklistModel.workRegion +
                         //     " " +
                         //     _sqLiteWorklistModel.workStation,

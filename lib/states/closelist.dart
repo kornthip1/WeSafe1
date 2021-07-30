@@ -51,6 +51,7 @@ class _CloseListState extends State<CloseList> {
     super.initState();
     readWorklist();
     userModel = widget.user_model;
+    getWorkMenu(userModel.ownerID, userModel.rsg);
   }
 
   Future<Null> readWorklist() async {
@@ -288,7 +289,8 @@ class _CloseListState extends State<CloseList> {
         _sqLiteWorklistModel.workPerform +
         "\n" +
         "อุปกรณ์ที่ใช้ไป : " +
-        _strPercelItem +
+        "\n" +
+        _strPercelItem.replaceAll(";", "\n") +
         "\n" +
         now.toString() +
         "\n" +
@@ -404,7 +406,7 @@ class _CloseListState extends State<CloseList> {
               );
             },
             child: Card(
-              color: widget.isComplate?Colors.green:Colors.grey,
+              color: widget.isComplate ? Colors.green : Colors.grey,
               // color: _sqLitePercelModel == null
               //     ? Colors.grey
               //     : _sqLitePercelModel.checklistID == 7
@@ -542,7 +544,9 @@ class _CloseListState extends State<CloseList> {
             _mainMenuModel = MastMainMenuModel.fromJson(json.decode(contents));
 
             for (int i = 0; i < 1; i++) {
-              lineToken = _mainMenuModel.result[i].lineToken;
+              setState(() {
+                lineToken = _mainMenuModel.result[i].lineToken;
+              });
             }
           } //else
         },

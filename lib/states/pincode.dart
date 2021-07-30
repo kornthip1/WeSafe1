@@ -58,29 +58,37 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
           backgroundColor: MyConstant.primart,
         ),
         body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ShowTitle(
-                  title: 'PINCODE',
-                  index: 1,
-                ),
+          
+            
+            child:  Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ShowTitle(
+                      title: 'PINCODE',
+                      index: 1,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Column(
+                      children: [buildPinCodeTextField()],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: buildSignIn(),
+                  ),
+                  
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [buildPinCodeTextField()],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: buildSignIn(),
-              ),
-            ],
-          ),
+            
+            
+          
+          
         ),
+        
       ),
     );
   }
@@ -176,8 +184,6 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
               routeToMainMenu(sqLiteUserModel);
             }
           } else {
-          
-
             List<SQLiteUserModel> models = [];
             await SQLiteHelper().readUserDatabase().then((result) {
               if (result == null) {
@@ -185,7 +191,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
                 models = result;
                 SQLiteUserModel sqLiteUserModel = SQLiteUserModel();
                 for (var item in models) {
-                   print("pincode ###### 1. rsg  : ${item.rsg}");
+                  print("pincode ###### 1. rsg  : ${item.rsg}");
                   sqLiteUserModel = SQLiteUserModel(
                     deptName: item.deptName,
                     createdDate: item.createdDate,
@@ -265,35 +271,6 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
     MastStationModel mastStationModel;
 
     try {
-      // final client = HttpClient();
-
-      // final request = await client
-      //     .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SelectStation"));
-
-      // // request.headers.set(
-      // //   HttpHeaders.contentTypeHeader,
-      // //   "application/json; charset=UTF-8 ",
-      // // );
-      // // request.write('{"strMsg": "Station"}');
-
-      //  request.headers.contentType =
-      //     new ContentType("application", "json", charset: "utf-8");
-      // request.write('{"strMsg": "Station"}');
-
-/*
-
-      final client = HttpClient();
-      String strStation = "Station";
-      final request = await client
-          .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SelectStation"));
-      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
-      request.write('{"strMsg": "$strStation"}');
-      final response = await request.close();
-
-      print("pincode ######  set station --- > ${request}");
-
-*/
-
       final response = await http.post(
         Uri.parse('${MyConstant.webService}WeSafe_SelectStation'),
         headers: <String, String>{
@@ -320,76 +297,5 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
     } catch (e) {
       normalDialog(context, "Error", e.toString());
     }
-
-    //print("######  --->  ${mastStationModel.result[0].stationID}");
-
-    // SQLiteStationModel _sqLiteStationModel;
-    // int count;
-    // for (var item in mastStationModel.result) {
-    //   count++;
-    //   _sqLiteStationModel = SQLiteStationModel(
-    //     id: count,
-    //     province: item.stationProvince,
-    //     regionCode: "",
-    //     regionName: item.stationPEA,
-    //     stationId: item.stationID,
-    //     stationName: item.stationName,
-    //   );
-    //   //SQLiteHelper().insertStation(_sqLiteStationModel);
-    // }
-
-/*
-    SQLiteStationModel sqLiteStationModel = SQLiteStationModel(
-      id: 1,
-      province: "นครปฐม",
-      regionCode: "I",
-      regionName: "กฟก.3",
-      stationId: "S0001",
-      stationName: "สถานีไฟฟ้า นครปฐม",
-    );
-    SQLiteHelper().insertStation(sqLiteStationModel);
-    sqLiteStationModel = SQLiteStationModel(
-      id: 2,
-      province: "กาญจนบุรี",
-      regionCode: "I",
-      regionName: "กฟก.3",
-      stationId: "S0002",
-      stationName: "สถานีไฟฟ้า กาญจนบุรี",
-    );
-    SQLiteHelper().insertStation(sqLiteStationModel);
-    sqLiteStationModel = SQLiteStationModel(
-      id: 2,
-      province: "กาญจนบุรี",
-      regionCode: "I",
-      regionName: "กฟก.3",
-      stationId: "S0003",
-      stationName: "อื่นๆ",
-    );
-    SQLiteHelper().insertStation(sqLiteStationModel);
-    sqLiteStationModel = SQLiteStationModel(
-      id: 3,
-      province: "เชียงใหม่",
-      regionCode: "A",
-      regionName: "กฟน.1",
-      stationId: "S0005",
-      stationName: "สถานีไฟฟ้า เชียงใหม่",
-    );
-    SQLiteHelper().insertStation(sqLiteStationModel);
-
-    sqLiteStationModel = SQLiteStationModel(
-      id: 4,
-      province: "ยะลา",
-      regionCode: "L",
-      regionName: "กฟต.1",
-      stationId: "S0007",
-      stationName: "สถานีไฟฟ้า ยะลา",
-    );
-
-    SQLiteHelper().insertStation(sqLiteStationModel);
-
-   
-    } catch (e) {
-      normalDialog(context, "Error", e.toString());
-    } */
   }
 }

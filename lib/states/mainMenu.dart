@@ -144,7 +144,7 @@ class _MainMenuState extends State<MainMenu> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('MAINMENU'),
+        title: Text('เมนูหลัก'),
       ),
       drawer: ShowDrawer(userModel: userModel),
       body: buildGridViewMainMenu(context),
@@ -152,11 +152,12 @@ class _MainMenuState extends State<MainMenu> {
   }
 
   GridView buildGridViewMainMenu(BuildContext context) {
-    double winsize = MediaQuery.of(context).size.width;
+    double widthsize = 0.0;
+    widthsize = MediaQuery.of(context).size.width;
     return GridView.count(
       padding: mainMenuZ.length > 4
           ? const EdgeInsets.only(top: 0.0)
-          : const EdgeInsets.only(left: 100.0, right: 100.0),
+          : const EdgeInsets.only(left: 90.0 , right: 90.0),
       crossAxisCount: mainMenuZ.length > 4 ? 2 : 1,
       children: List.generate(mainMenuZ.length, (index) {
         return Padding(
@@ -198,14 +199,14 @@ class _MainMenuState extends State<MainMenu> {
                         child: Padding(
                           padding: mainMenuZ[index].length > 30
                               ? const EdgeInsets.all(0.0)
-                              : const EdgeInsets.only(top: 18),
+                              : const EdgeInsets.only(top: 19),
                           child: Text(
                             mainMenuZ[index],
                             style: TextStyle(
                                 color: Colors.black,
                                 fontSize: mainMenuZ[index].length > 30
-                                    ? winsize * 0.04
-                                    : winsize * 0.05),
+                                    ? widthsize * 0.04
+                                    : widthsize * 0.05),
                             textAlign: TextAlign.center,
                           ),
                         ),

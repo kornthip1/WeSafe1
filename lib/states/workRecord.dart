@@ -105,8 +105,11 @@ class _WorkRecordState extends State<WorkRecord> {
                           : _index == 7
                               ? buildCloseWork()
                               : buildRadio(),
-          buildSave(),
         ],
+      ),
+      bottomNavigationBar: Container(
+        height: 60,
+        child: buildSave(),
       ),
     );
   }
@@ -657,51 +660,53 @@ class _WorkRecordState extends State<WorkRecord> {
                     if (canSave) {
                       int i = Random().nextInt(100000);
                       sqLiteWorklistModel = SQLiteWorklistModel(
-                        id: i,
-                        checklistID: _index,
-                        createDate: _sqLiteWorklistModel.createDate,
-                        isChoice: 0,
-                        userID: "",
-                        lat: "",
-                        lng: "",
-                        workDoc: _sqLiteWorklistModel.workDoc,
-                        workID: _sqLiteWorklistModel.workID,
-                        workPerform: _sqLiteWorklistModel.workPerform,
-                        workProvince: _sqLiteWorklistModel.workProvince,
-                        workRegion: _sqLiteWorklistModel.workRegion,
-                        workStation: _sqLiteWorklistModel.workStation,
-                        workType: _sqLiteWorklistModel.workType,
-                        remark: remark,
-                        imgList: base64Strs
-                            .toString()
-                            .replaceAll("[", "")
-                            .replaceAll("]", ""),
-                        // imgList: base64Strs
-                        //     .toString()
-                        //     .replaceAll('[', "")
-                        //     .replaceAll("]", ""),
-                        isComplete: 1,
-                        mainWorkID: "300",
-                        msgFromWeb: "",
-                        ownerID: _sqLiteWorklistModel.ownerID,
-                        isOffElect: choose == null
-                            ? ""
-                            : _index == 1
-                                ? choose
-                                : "",
-                        offElectReason: dataController.text == null
-                            ? ""
-                            : _index == 1
-                                ? dataController.text
-                                : "",
-                        isSortGND: choose == null
-                            ? ""
-                            : _index == 1
-                                ? ""
-                                : choose,
-                                gNDReason: dataController.text == null?"":
-                                _index==1?"":dataController.text
-                      );
+                          id: i,
+                          checklistID: _index,
+                          createDate: _sqLiteWorklistModel.createDate,
+                          isChoice: 0,
+                          userID: "",
+                          lat: "",
+                          lng: "",
+                          workDoc: _sqLiteWorklistModel.workDoc,
+                          workID: _sqLiteWorklistModel.workID,
+                          workPerform: _sqLiteWorklistModel.workPerform,
+                          workProvince: _sqLiteWorklistModel.workProvince,
+                          workRegion: _sqLiteWorklistModel.workRegion,
+                          workStation: _sqLiteWorklistModel.workStation,
+                          workType: _sqLiteWorklistModel.workType,
+                          remark: remark,
+                          imgList: base64Strs
+                              .toString()
+                              .replaceAll("[", "")
+                              .replaceAll("]", ""),
+                          // imgList: base64Strs
+                          //     .toString()
+                          //     .replaceAll('[', "")
+                          //     .replaceAll("]", ""),
+                          isComplete: 1,
+                          mainWorkID: "300",
+                          msgFromWeb: "",
+                          ownerID: _sqLiteWorklistModel.ownerID,
+                          isOffElect: choose == null
+                              ? ""
+                              : _index == 1
+                                  ? choose
+                                  : "",
+                          offElectReason: dataController.text == null
+                              ? ""
+                              : _index == 1
+                                  ? dataController.text
+                                  : "",
+                          isSortGND: choose == null
+                              ? ""
+                              : _index == 1
+                                  ? ""
+                                  : choose,
+                          gNDReason: dataController.text == null
+                              ? ""
+                              : _index == 1
+                                  ? ""
+                                  : dataController.text);
 
                       SQLiteHelper().insertWorkDatebase(sqLiteWorklistModel);
 

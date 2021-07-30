@@ -51,7 +51,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
     size = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: ShowTitle(title: 'MAIN INFO', index: 1),
+        title: ShowTitle(title: 'ข้อมูลการปฏิบัติงาน', index: 1),
       ),
       drawer: ShowDrawer(userModel: userModel),
       body: Stack(
@@ -224,29 +224,39 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
             child: DropdownButtonHideUnderline(
               child: ButtonTheme(
                 alignedDropdown: true,
-                child: DropdownButton<String>(
-                  value: _myState,
-                  iconSize: 30,
-                  icon: (null),
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 16,
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.purple[100],
+                      borderRadius: BorderRadius.circular(5.0)),
+                  child: DropdownButton<String>(
+                    iconEnabledColor: Colors.purple[600],
+                    value: _myState,
+                    iconSize: 30,
+                    icon: const Icon(
+                        Icons.arrow_drop_down_outlined), //arrow_drop_down
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                    hint: Text('Select Region'),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        _myState = newValue;
+                        _selectedRegionItem = ListItem("1", _myState);
+                        _getProvinceList();
+                        //print("####  my state : $_myState");
+                      });
+                    },
+                    items: listRegion.map((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Container(
+                          alignment: Alignment.center,
+                          child: Text(value),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                  hint: Text('Select Region'),
-                  onChanged: (String newValue) {
-                    setState(() {
-                      _myState = newValue;
-                      _selectedRegionItem = ListItem("1", _myState);
-                      _getProvinceList();
-                      //print("####  my state : $_myState");
-                    });
-                  },
-                  items: listRegion.map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
                 ),
               ),
             ),
@@ -267,28 +277,37 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
             child: DropdownButtonHideUnderline(
               child: ButtonTheme(
                 alignedDropdown: true,
-                child: DropdownButton<String>(
-                  value: _myProvince,
-                  iconSize: 30,
-                  icon: (null),
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 16,
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.purple[100],
+                      borderRadius: BorderRadius.circular(5.0)),
+                  child: DropdownButton<String>(
+                    iconEnabledColor: Colors.purple[600],
+                    value: _myProvince,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                    hint: Text('Select Province'),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        _myProvince = newValue;
+                        _selectedProviceItem = ListItem("2", _myProvince);
+                        _getStationList();
+                      });
+                    },
+                    items: listProvince.map((String values) {
+                      return DropdownMenuItem<String>(
+                        value: values,
+                        child: Container(
+                          alignment: Alignment.center,
+                          child: Text(values),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                  hint: Text('Select Province'),
-                  onChanged: (String newValue) {
-                    setState(() {
-                      _myProvince = newValue;
-                      _selectedProviceItem = ListItem("2", _myProvince);
-                      _getStationList();
-                    });
-                  },
-                  items: listProvince.map((String values) {
-                    return DropdownMenuItem<String>(
-                      value: values,
-                      child: Text(values),
-                    );
-                  }).toList(),
                 ),
               ),
             ),
@@ -309,32 +328,41 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
             child: DropdownButtonHideUnderline(
               child: ButtonTheme(
                 alignedDropdown: true,
-                child: DropdownButton<String>(
-                  value: _myStation,
-                  iconSize: 30,
-                  icon: (null),
-                  style: TextStyle(
-                    color: Colors.black54,
-                    fontSize: 16,
-                  ),
-                  hint: Text('Select Station'),
-                  onChanged: (String newValue) {
-                    setState(() {
-                      _myStation = newValue;
-                      _selectedStationItem = ListItem("3", _myStation);
-                      _myStation.contains("อื่น")
-                          ? isOtherStation = true
-                          : isOtherStation = false;
-                    });
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.purple[100],
+                      borderRadius: BorderRadius.circular(5.0)),
+                  child: DropdownButton<String>(
+                    iconEnabledColor: Colors.purple[600],
+                    value: _myStation,
+                    iconSize: 30,
+                    icon: (null),
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                    ),
+                    hint: Text('Select Station'),
+                    onChanged: (String newValue) {
+                      setState(() {
+                        _myStation = newValue;
+                        _selectedStationItem = ListItem("3", _myStation);
+                        _myStation.contains("อื่น")
+                            ? isOtherStation = true
+                            : isOtherStation = false;
+                      });
 
-                    print("####   _myStation : $_myStation");
-                  },
-                  items: listStation.map((String values) {
-                    return DropdownMenuItem<String>(
-                      value: values,
-                      child: Text(values),
-                    );
-                  }).toList(),
+                      print("####   _myStation : $_myStation");
+                    },
+                    items: listStation.map((String values) {
+                      return DropdownMenuItem<String>(
+                        value: values,
+                        child: Container(
+                          alignment: Alignment.center,
+                          child: Text(values),
+                        ),
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
             ),
