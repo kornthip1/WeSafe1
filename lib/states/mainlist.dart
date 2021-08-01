@@ -123,32 +123,33 @@ class _MainListState extends State<MainList> {
       ),
       drawer: ShowDrawer(userModel: userModel),
       body: Scrollbar(child: buildBodyContent()),
-      bottomNavigationBar:         Container(
+      bottomNavigationBar: Container(
         height: 40,
         child: ElevatedButton(
-          
-            onPressed: () {
-              if (_countList >= 6) {
-                insertDataTOServer();
+          onPressed: () {
+            if (_countList >= 6) {
+              insertDataTOServer();
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MainMenu(
-                        // userModel: userModel,
-                        //  ownerId: userModel.ownerID,
-                        ),
-                  ),
-                );
-              }
-            },
-            child: ShowTitle(title: "ยืนยัน",index:  _countList >= 6 ?3:4,),
-            style: ButtonStyle(
-                backgroundColor: MaterialStateColor.resolveWith((states) =>
-                    _countList >= 6 ? MyConstant.primart : Colors.grey[200])),
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => MainMenu(
+                      // userModel: userModel,
+                      //  ownerId: userModel.ownerID,
+                      ),
+                ),
+              );
+            }
+          },
+          child: ShowTitle(
+            title: "ยืนยัน",
+            index: _countList >= 6 ? 3 : 4,
           ),
+          style: ButtonStyle(
+              backgroundColor: MaterialStateColor.resolveWith((states) =>
+                  _countList >= 6 ? MyConstant.primart : Colors.grey[200])),
+        ),
       ),
-      
     );
   }
 
@@ -167,9 +168,6 @@ class _MainListState extends State<MainList> {
         ),
         buildDoc(),
         buildListView(),
-
-
-
       ],
     );
   }
@@ -247,7 +245,9 @@ class _MainListState extends State<MainList> {
 
       print("Insert success  req_no = ${responeModel.result.reply.toString()}");
 
-      setLine(responeModel.result.reply.toString());
+      //setLine(responeModel.result.reply.toString());
+
+
     } catch (E) {
       print("PREPair Error : $E");
     }
@@ -304,9 +304,9 @@ class _MainListState extends State<MainList> {
 
       request.headers.contentType =
           new ContentType("application", "json", charset: "utf-8");
-      // request.write(
-      //     '{"strMsg": "$msg",   "strToken": "m49F7ajqHy0ic6wanQ5VWael9vo8dCFHz4oR1DJhR3q"}');
-       request.write('{"strMsg": "$msg",   "strToken": "${lineToken[i]}"}');
+      request.write(
+          '{"strMsg": "$msg",   "strToken": "m49F7ajqHy0ic6wanQ5VWael9vo8dCFHz4oR1DJhR3q"}');
+      //  request.write('{"strMsg": "$msg",   "strToken": "${lineToken[i]}"}');
 
       final response = await request.close();
       response.transform(utf8.decoder).listen((contents) {

@@ -143,7 +143,7 @@ class _AuthenState extends State<Authen> {
 
   Container buildImage() {
     return Container(
-      width: size * 0.7,
+      width: size * 0.5,
       child: ShowImage(),
     );
   }
@@ -173,7 +173,7 @@ class _AuthenState extends State<Authen> {
 
   Container buildUser() {
     return Container(
-      // margin: EdgeInsets.only(top: 5),
+       margin: EdgeInsets.only(top: 10),
       width: size * 0.6,
       child: TextFormField(
         controller: userController,

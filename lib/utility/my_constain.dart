@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class MyConstant {
-  static final String authen = 'images/newLogo.jpg'; //'images/WeSafe.png';
+  static final String authen = 'images/LogoW.png'; //'images/WeSafe.png';
   static final String man = 'images/man.png';
   static final String image = 'images/image.png';
   static final String imageOutage = 'images/hotline.png';

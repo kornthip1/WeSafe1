@@ -2,8 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:numeric_keyboard/numeric_keyboard.dart';
+
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:passcode_screen/keyboard.dart';
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -58,39 +61,50 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
           backgroundColor: MyConstant.primart,
         ),
         body: Center(
-          
-            
-            child:  Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ShowTitle(
-                      title: 'PINCODE',
-                      index: 1,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      children: [buildPinCodeTextField()],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: buildSignIn(),
-                  ),
-                  
-                ],
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ShowTitle(
+                  title: 'PINCODE',
+                  index: 1,
+                ),
               ),
-            
-            
-          
-          
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Column(
+                  children: [
+                    buildPinCodeTextField(),
+                    buildNumericKeyboard(),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: buildSignIn(),
+              ),
+            ],
+          ),
         ),
-        
       ),
     );
+  }
+
+  NumericKeyboard buildNumericKeyboard() {
+    return NumericKeyboard(
+      onKeyboardTap: _onKeyboardTap,
+    );
+  }
+
+  _onKeyboardTap(String value) {
+    if (_textEditingController.text.length < 6) {
+      setState(() {
+        _textEditingController.text = _textEditingController.text + value;
+      });
+    } else {
+      buildNumericKeyboard();
+    }
   }
 
   PasscodeScreen buildPasscodeScreen() {
@@ -110,9 +124,10 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       child: Row(
         children: [
           PinCodeTextField(
+            hideDefaultKeyboard: true,
             pinBoxWidth: winsize * 0.09, //40
             pinBoxHeight: winsize * 0.1,
-            autofocus: true,
+            autofocus: false,
             controller: _textEditingController,
             maxLength: 6,
             highlight: true,
