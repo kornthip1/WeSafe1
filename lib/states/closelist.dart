@@ -39,7 +39,6 @@ class _CloseListState extends State<CloseList> {
   TextEditingController workController = TextEditingController();
   TextEditingController docController = TextEditingController();
   SQLiteWorklistModel _sqLiteWorklistModel;
-  CheckStatusModel _checkSatatusModel;
   SQLitePercelModel _sqLitePercelModel;
   int _countList;
   double lat, lng;
@@ -49,6 +48,9 @@ class _CloseListState extends State<CloseList> {
   @override
   void initState() {
     super.initState();
+
+    findLatLng();
+
     readWorklist();
     userModel = widget.user_model;
     getWorkMenu(userModel.ownerID, userModel.rsg);
@@ -56,6 +58,7 @@ class _CloseListState extends State<CloseList> {
 
   Future<Null> readWorklist() async {
     //print("###closelist   readWorklist()");
+
     List<SQLiteWorklistModel> models = [];
     await SQLiteHelper().readWorkByReqNo(widget.reqNo).then((result) {
       if (result == null) {
@@ -84,11 +87,63 @@ class _CloseListState extends State<CloseList> {
               remark: item.remark,
               rsg: item.rsg);
         } //for
-        setState(() {
-          _sqLiteWorklistModel = sqLiteWorklistModel;
-        });
+
+        if (sqLiteWorklistModel != null) {
+          setState(() {
+            _sqLiteWorklistModel = sqLiteWorklistModel;
+          });
+        } else {
+          selectCloseWork();
+        }
       }
     });
+  }
+
+  Future<Null> selectCloseWork() async {
+    print("######## readWorklist()  user  :  ${userModel.userID}");
+    try {
+      final client = HttpClient();
+      final request = await client
+          .postUrl(Uri.parse("${MyConstant.webService}WeSafe_CheckStatus"));
+      request.headers.set(
+          HttpHeaders.contentTypeHeader, "application/json; charset=utf-8");
+      request.write('{"empID": "${userModel.userID}"}');
+      final response = await request.close();
+
+      response.transform(utf8.decoder).listen(
+        (contents) {
+          print("###### -- >  contents : $contents");
+          if (contents.contains('Error')) {
+            contents = contents.replaceAll("[", "").replaceAll("]", "");
+            normalDialog(context, 'Error', contents);
+          } else {
+            SQLiteWorklistModel _worklistModel;
+            for (var item
+                in CheckStatusModel.fromJson(json.decode(contents)).result) {
+              if (item.reqNo == widget.reqNo) {
+                List arrLocation = item.workLocation.split(" ");
+                _worklistModel = SQLiteWorklistModel(
+                    reqNo: item.reqNo,
+                    workStation: arrLocation.length > 3
+                        ? arrLocation[2] + " " + arrLocation[3]
+                        : arrLocation[2],
+                    workProvince: arrLocation[1],
+                    workRegion: arrLocation[0],
+                    workPerform: item.workPerform,
+                    workDoc: item.workDoc,
+                    workType: item.workType);
+              }
+            }
+
+            setState(() {
+              _sqLiteWorklistModel = _worklistModel;
+            });
+          } //else
+        },
+      );
+    } catch (e) {
+      print("###### -- >  readWorklist Error : ${e.toString()}");
+    }
   }
 
   @override
@@ -137,6 +192,9 @@ class _CloseListState extends State<CloseList> {
   }
 
   Future<void> insertDataTOServer() async {
+    print("######## --- > lat  : $lat");
+    print("######## --- > lng  : $lng");
+
     List<SQLiteWorklistModel> models = [];
     List<String> listValues = [];
     String _strJson;
@@ -195,8 +253,8 @@ class _CloseListState extends State<CloseList> {
             : _sqLiteWorklistModel.gNDReason == null
                 ? ""
                 : _sqLiteWorklistModel.gNDReason,
-        locationLat: "13.886555475448976",
-        locationLng: "100.2603517379212",
+        locationLat: lat.toString(),
+        locationLng: lng.toString(),
         macAddress: "",
         menuChecklistID: "1",
         menuMainID: "300",
@@ -219,12 +277,12 @@ class _CloseListState extends State<CloseList> {
         workPerform: "",
         workType: "",
       );
-      print("#######----> reqNO  ${widget.reqNo}");
-      print("######-----> sub _strPercelItem  $_strPercelItem");
+      // print("#######----> reqNO  ${widget.reqNo}");
+      // print("######-----> sub _strPercelItem  $_strPercelItem");
       _strJson = json.encode(insertWorklistModel);
       listValues.add(_strJson);
 
-      print("############ --->  ${listValues.toString()}");
+      // print("############ --->  ${listValues.toString()}");
       final response = await http.post(
         Uri.parse(
             '${MyConstant.webService}WeSafe_Insert_TransactionWork_Close'),
@@ -236,8 +294,6 @@ class _CloseListState extends State<CloseList> {
 
       ResponeModel responeModel =
           ResponeModel.fromJson(jsonDecode(response.body));
-      // SQLiteHelper()
-      //     .updateWorkReqNo(responeModel.result.reply.toString(), workId);
 
       print("update Close reply = ${responeModel.result.reply.toString()}");
       print("update Close reply  message = ${responeModel.message}");
@@ -257,54 +313,60 @@ class _CloseListState extends State<CloseList> {
   Future<Null> setLine(String reqNo, String _strPercelItem) async {
     DateTime now = DateTime.now();
     final client = HttpClient();
-    final request = await client
-        .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
-    String msg = "📣 ปิดงาน : $reqNo" +
-        "\n" +
-        "การปฏิบัติงานภายในสถานีและระบบไฟฟ้า :  หลังปฏิบัติงาน " +
-        "\n" +
-        "\n" +
-        "สถานี  : " +
-        _sqLiteWorklistModel.workStation +
-        "\n" +
-        "จังหวัด" +
-        _sqLiteWorklistModel.workProvince +
-        "\n" +
-        "การไฟฟ้าเขต :" +
-        _sqLiteWorklistModel.workRegion +
-        "\n" +
-        "งานประเภท :" +
-        _sqLiteWorklistModel.workType +
-        "\n" +
-        "\n" +
-        "ผู้ส่งข้อมูล : " +
-        "\n" +
-        userModel.firstName +
-        "  " +
-        userModel.lastName +
-        "\n" +
-        userModel.deptName +
-        "\n" +
-        "รายละเอียดงาน : " +
-        _sqLiteWorklistModel.workPerform +
-        "\n" +
-        "อุปกรณ์ที่ใช้ไป : " +
-        "\n" +
-        _strPercelItem.replaceAll(";", "\n") +
-        "\n" +
-        now.toString() +
-        "\n" +
-        "\n" +
-        "https://wesafe.pea.co.th/admin/detail.aspx?WebGetReqNO=$reqNo";
-    request.headers.contentType =
-        new ContentType("application", "json", charset: "utf-8");
-    request.write(
-        '{"strMsg": "$msg",   "strToken": "m49F7ajqHy0ic6wanQ5VWael9vo8dCFHz4oR1DJhR3q"}');
 
-    final response = await request.close();
-    response.transform(utf8.decoder).listen((contents) {
-      print("###### notification reply : $contents");
-    });
+    for (int i = 0; i < lineToken.length; i++) {
+      print("Close List ####--->  line Token  :  $lineToken");
+      final request = await client
+          .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
+      String msg = "📣 ปิดงาน : $reqNo" +
+          "\n" +
+          "การปฏิบัติงานภายในสถานีและระบบไฟฟ้า :  หลังปฏิบัติงาน " +
+          "\n" +
+          "\n" +
+          "สถานี  : " +
+          _sqLiteWorklistModel.workStation +
+          "\n" +
+          "จังหวัด" +
+          _sqLiteWorklistModel.workProvince +
+          "\n" +
+          "การไฟฟ้าเขต :" +
+          _sqLiteWorklistModel.workRegion +
+          "\n" +
+          "งานประเภท :" +
+          _sqLiteWorklistModel.workType +
+          "\n" +
+          "\n" +
+          "ผู้ส่งข้อมูล : " +
+          "\n" +
+          userModel.firstName +
+          "  " +
+          userModel.lastName +
+          "\n" +
+          userModel.deptName +
+          "\n" +
+          "รายละเอียดงาน : " +
+          _sqLiteWorklistModel.workPerform +
+          "\n" +
+          "อุปกรณ์ที่ใช้ไป : " +
+          "\n" +
+          _strPercelItem.replaceAll(";", "\n") +
+          "\n" +
+          now.toString() +
+          "\n" +
+          "\n" +
+          "https://wesafe.pea.co.th/admin/detail.aspx?WebGetReqNO=$reqNo";
+      request.headers.contentType =
+          new ContentType("application", "json", charset: "utf-8");
+      // request.write(
+      //     '{"strMsg": "$msg",   "strToken": "m49F7ajqHy0ic6wanQ5VWael9vo8dCFHz4oR1DJhR3q"}');
+
+      request.write('{"strMsg": "$msg",   "strToken": "${lineToken[i]}"}');
+//lineToken
+      final response = await request.close();
+      response.transform(utf8.decoder).listen((contents) {
+        print("###### notification reply : $contents");
+      });
+    }
   }
 
   Widget buildWorkPerform() {
@@ -389,8 +451,7 @@ class _CloseListState extends State<CloseList> {
               } else {
                 modelss = _sqLiteWorklistModel;
               }
-              print("######## userModel  ${userModel.userID}");
-              print("######## req no  ${modelss.reqNo}");
+
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -468,7 +529,10 @@ class _CloseListState extends State<CloseList> {
   Future<Null> findLatLng() async {
     Position position = await Geolocator.getLastKnownPosition();
 
-    print("############# >>>  ${position.latitude}");
+    setState(() {
+      lat = position.latitude;
+      lng = position.longitude;
+    });
     /*
     await Geolocator.isLocationServiceEnabled().then((value) async {
       setState(() {
@@ -546,6 +610,7 @@ class _CloseListState extends State<CloseList> {
             for (int i = 0; i < 1; i++) {
               setState(() {
                 lineToken = _mainMenuModel.result[i].lineToken;
+                print("Cloase   Line Token : $lineToken");
               });
             }
           } //else

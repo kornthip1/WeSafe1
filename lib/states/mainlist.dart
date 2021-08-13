@@ -56,7 +56,7 @@ class _MainListState extends State<MainList> {
     userModel = widget.user_model;
     _sqLiteWorklistModel = widget.sqLiteWorklistModel;
     _countList = widget.countList;
-
+    findLatLng();
     getWorkMenu(userModel.ownerID, userModel.rsg);
     getcheckList();
     readWorklist();
@@ -182,8 +182,6 @@ class _MainListState extends State<MainList> {
       await SQLiteHelper().readWorkDatabase().then((result) {
         if (result == null) {
         } else {
-          double lat, lng;
-
           models = result;
           for (var item in models) {
             workId = item.workID == null ? "" : item.workID;
@@ -200,8 +198,8 @@ class _MainListState extends State<MainList> {
                   item.offElectReason == null ? "" : item.offElectReason,
               isSortGND: item.isSortGND == null ? "" : item.isSortGND,
               gNDReason: item.gNDReason == null ? "" : item.gNDReason,
-              locationLat: "13.886555475448976",
-              locationLng: "100.2603517379212",
+              locationLat: lat.toString(),
+              locationLng: lng.toString(),
               macAddress: "",
               menuChecklistID:
                   item.checklistID == null ? "" : item.checklistID.toString(),
@@ -245,9 +243,7 @@ class _MainListState extends State<MainList> {
 
       print("Insert success  req_no = ${responeModel.result.reply.toString()}");
 
-      //setLine(responeModel.result.reply.toString());
-
-
+      setLine(responeModel.result.reply.toString());
     } catch (E) {
       print("PREPair Error : $E");
     }
@@ -264,6 +260,7 @@ class _MainListState extends State<MainList> {
     final client = HttpClient();
 
     for (int i = 0; i < lineToken.length; i++) {
+      print("####--->  line Token  :  $lineToken");
       final request = await client
           .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
       String msg = "📣 ใบงาน : $reqNo" +
@@ -304,9 +301,11 @@ class _MainListState extends State<MainList> {
 
       request.headers.contentType =
           new ContentType("application", "json", charset: "utf-8");
-      request.write(
-          '{"strMsg": "$msg",   "strToken": "m49F7ajqHy0ic6wanQ5VWael9vo8dCFHz4oR1DJhR3q"}');
-      //  request.write('{"strMsg": "$msg",   "strToken": "${lineToken[i]}"}');
+
+      // request.write(
+      //     '{"strMsg": "$msg",   "strToken": "m49F7ajqHy0ic6wanQ5VWael9vo8dCFHz4oR1DJhR3q"}');
+
+        request.write('{"strMsg": "$msg",   "strToken": "${lineToken[i]}"}');
 
       final response = await request.close();
       response.transform(utf8.decoder).listen((contents) {
@@ -600,49 +599,10 @@ class _MainListState extends State<MainList> {
   Future<Null> findLatLng() async {
     Position position = await Geolocator.getLastKnownPosition();
 
-    print("############# >>>  ${position.latitude}");
-    /*
-    await Geolocator.isLocationServiceEnabled().then((value) async {
-      setState(() {
-        load = false;
-      });
-      locationServiceEnable = value;
-
-      if (locationServiceEnable) {
-        locationPermission = await Geolocator.checkPermission();
-        print(
-            '######### your permission ==>  ${locationPermission.toString()}');
-        if (locationPermission == LocationPermission.deniedForever) {
-          normalDialog(
-              context, 'หาพิกัดไม่ได้', 'กรุณาเปิดอนุญาติการหาพิกัดก่อน');
-          setState(() {
-            denieBool = true;
-          });
-        } else if (locationPermission == LocationPermission.denied) {
-          locationPermission = await Geolocator.requestPermission();
-          denieBool = true;
-
-          if (locationPermission == LocationPermission.deniedForever) {
-            normalDialog(
-                context, 'หาพิกัดไม่ได้', 'กรุณาเปิดอนุญาติการหาพิกัดก่อน');
-            setState(() {
-              denieBool = true;
-            });
-          }
-        } else {
-          print('#### else');
-          Position position = await findLatLng();
-          setState(() {
-            lat = position.latitude;
-            lng = position.longitude;
-            print('############  lat = $lat   lng == $lng');
-          });
-        }
-      } else {
-        normalDialog(
-            context, 'location service off', 'Please Open location service');
-      }
-    });\\*/
+    setState(() {
+      lat = position.latitude;
+      lng = position.longitude;
+    });
   }
 
   Future<Position> findPosition() async {

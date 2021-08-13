@@ -10,6 +10,7 @@ import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showTitle.dart';
+import 'package:wesafe/widgets/showProgress.dart';
 
 import 'package:wesafe/utility/Test.dart';
 
@@ -28,6 +29,7 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
   List<String> titles = MyConstant.listMenu;
   String choose;
   double size;
+  bool load=true;
   ListItem _selectedRegionItem;
   ListItem _selectedProviceItem;
   ListItem _selectedStationItem;
@@ -54,12 +56,12 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         title: ShowTitle(title: 'ข้อมูลการปฏิบัติงาน', index: 1),
       ),
       drawer: ShowDrawer(userModel: userModel),
-      body: Stack(
+      body: load? Stack(
         children: [
           buildBodyContent(),
           buildNext(),
         ],
-      )
+      ): ShowProgress()
 
       //Stack(child: buildBodyContent()),
       ,
@@ -513,12 +515,16 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
     List<SQLiteStationModel> models = [];
     await SQLiteHelper().readStation().then((result) {
       if (result == null) {
+        setState(() {
+          load = false;
+        });
       } else {
         models = result;
         SQLiteStationModel sqLiteStationModel;
         _dropdownItems = [];
         for (var item in models) {
           setState(() {
+            load = true;
             _dropdownItems.add(ListItem(item.regionCode, item.regionName));
           });
         }

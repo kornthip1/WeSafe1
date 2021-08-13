@@ -46,6 +46,11 @@ class _AuthenState extends State<Authen> {
           ),
         ),
       ),
+      bottomNavigationBar: Container(
+         margin: EdgeInsets.only(bottom: 10,left: 150),
+         width: size * 0.6,
+        child: Text("WeSafe Version 1.0.2"),
+      ),
     );
   }
 
@@ -173,7 +178,7 @@ class _AuthenState extends State<Authen> {
 
   Container buildUser() {
     return Container(
-       margin: EdgeInsets.only(top: 10),
+      margin: EdgeInsets.only(top: 10),
       width: size * 0.6,
       child: TextFormField(
         controller: userController,

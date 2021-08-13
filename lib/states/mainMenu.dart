@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
+
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:wesafe/models/mainListModel.dart';
+
 import 'package:wesafe/models/mastcheckListModel.dart';
 import 'package:wesafe/models/sqliteChecklistModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
@@ -167,6 +167,8 @@ class _MainMenuState extends State<MainMenu> {
               print("main menu  index  : $index");
               SQLiteHelper().deleteWorkAll();
               getCheckList(index, userModel.ownerID);
+
+              if( !mainMenuZ[index].contains("อื่นๆ")){
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -174,8 +176,10 @@ class _MainMenuState extends State<MainMenu> {
                     user_model: userModel,
                     workID: workID,
                   ),
+                  
                 ),
               );
+              }
             },
             child: Column(
               children: [

@@ -623,6 +623,9 @@ class _WorkRecordState extends State<WorkRecord> {
                   List<String> base64Strs = [];
 
                   // print("RECORD  >>> ");
+                  // print("_indexwork  :  $indexWork");
+                  // print("choose  >>> $choose ");
+
                   // print("Workperform  :  ${_sqLiteWorklistModel.workPerform}");
                   // print("doc  :  ${_sqLiteWorklistModel.workDoc}");
                   // print("_index  :  $_index");
@@ -646,13 +649,25 @@ class _WorkRecordState extends State<WorkRecord> {
                       }
                     }
 
+                    //print("files.length  >>> ${base64Strs.length} ");
                     //indexWork
                     if (indexWork == 2 && !canSave) {
                       normalDialog(context, "กรุณา", "ถ่ายภาพอย่างน้อย 1 ภาพ");
                       canSave = false;
-                    } else if (indexWork == 3 && choose == null) {
+                    } else if (indexWork == 4 && choose == null) {
                       normalDialog(context, "กรุณา",
                           "เลือกการปฏิบัติการ " + workListname);
+                    } else if (choose == '0' || choose == '2') {
+                      if (dataController.text == "") {
+                        normalDialog(
+                            context, "กรุณา", "ระบุรายละเอียด " + workListname);
+                        canSave = false;
+                      } else {
+                        canSave = true;
+                      }
+                    } else if (_index >1 && choose == '1' && base64Strs.length == 0) {
+                      normalDialog(context, "กรุณา", "ถ่ายภาพอย่างน้อย 1 ภาพ");
+                      canSave = false;
                     } else {
                       canSave = true;
                     }

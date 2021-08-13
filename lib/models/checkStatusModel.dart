@@ -36,6 +36,7 @@ class Result {
   String workPerform;
   String workDoc;
   String workLocation;
+  String workType;
 
   Result(
       {this.reqNo,
@@ -45,7 +46,8 @@ class Result {
       this.checklistName,
       this.workPerform,
       this.workDoc,
-      this.workLocation});
+      this.workLocation,
+      this.workType});
 
   Result.fromJson(Map<String, dynamic> json) {
     reqNo = json['req_no'];
@@ -56,6 +58,7 @@ class Result {
     workPerform = json['workPerform'];
     workDoc = json['workDoc'];
     workLocation = json['workLocation'];
+    workType = json['WorkType'];
   }
 
   Map<String, dynamic> toJson() {
@@ -68,6 +71,7 @@ class Result {
     data['workPerform'] = this.workPerform;
     data['workDoc'] = this.workDoc;
     data['workLocation'] = this.workLocation;
+    data['WorkType'] = this.workType;
     return data;
   }
 }

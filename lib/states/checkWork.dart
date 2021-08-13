@@ -12,6 +12,7 @@ import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
+import 'package:wesafe/widgets/showProgress.dart';
 
 import 'mainMenu.dart';
 
@@ -26,6 +27,7 @@ class _CheckWorkState extends State<CheckWork> {
   SQLiteWorklistModel _sqLiteWorklistModel;
   String tt = "";
   CheckStatusModel checkSatatusModel;
+  bool load = true;
   @override
   void initState() {
     super.initState();
@@ -56,7 +58,7 @@ class _CheckWorkState extends State<CheckWork> {
           ],
         ),
       ),
-      body: buildListView(),
+      body: load? buildListView() : ShowProgress(),
     );
   }
 
@@ -171,6 +173,23 @@ class _CheckWorkState extends State<CheckWork> {
             contents = contents.replaceAll("[", "").replaceAll("]", "");
             normalDialog(context, 'Error', contents);
           } else {
+            // SQLiteWorklistModel _sqliteWorklistModel;
+            // for (var item in CheckStatusModel.fromJson(json.decode(contents)).result) {
+            //   List arrLocation = item.workLocation.split(" ");
+            //   _sqliteWorklistModel = SQLiteWorklistModel(
+            //       reqNo: item.reqNo,
+            //       workStation: arrLocation.length > 3
+            //           ? arrLocation[2] + " " + arrLocation[3]
+            //           : arrLocation[2],
+            //       workProvince: arrLocation[1],
+            //       workRegion: arrLocation[0],
+            //       workPerform: item.workPerform,
+            //       workDoc: item.workDoc,
+            //       workType: "" );
+            // }
+
+            //SQLiteHelper().insertWorkDatebase(_sqliteWorklistModel);
+
             setState(() {
               checkSatatusModel =
                   CheckStatusModel.fromJson(json.decode(contents));
@@ -203,15 +222,16 @@ class _CheckWorkState extends State<CheckWork> {
     List<SQLiteUserModel> models = [];
     await SQLiteHelper().readUserDatabase().then((result) {
       if (result == null) {
+        setState(() {
+          load = false;
+        });
       } else {
+        setState(() {
+          load = true;
+        });
         models = result;
 
         for (var item in models) {
-          // print("CHECK()  #####  id ${item.userID}");
-          // print("CHECK()  #####  id ${item.firstName}");
-          // print("CHECK()  #####  region ${item.ownerID}");
-          // print("CHECK()  #####  region ${item.ownerName}");
-
           sqLiteUserModel = SQLiteUserModel(
             userID: item.userID,
             firstName: item.firstName,
