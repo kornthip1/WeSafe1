@@ -520,7 +520,6 @@ class _MainWorkInfoState extends State<MainWorkInfo> {
         });
       } else {
         models = result;
-        SQLiteStationModel sqLiteStationModel;
         _dropdownItems = [];
         for (var item in models) {
           setState(() {

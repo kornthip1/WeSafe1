@@ -1,12 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:numeric_keyboard/numeric_keyboard.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:passcode_screen/keyboard.dart';
 import 'package:passcode_screen/passcode_screen.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -21,10 +19,11 @@ import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 import 'myservice.dart';
+import 'outageMainMenu.dart';
 
 class PinCodeAuthen extends StatefulWidget {
-  final UserModel user_model;
-  PinCodeAuthen({@required this.user_model});
+  final UserModel userModels;
+  PinCodeAuthen({@required this.userModels});
   @override
   _PinCodeAuthenState createState() => _PinCodeAuthenState();
 }
@@ -43,9 +42,8 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    userModel = widget.user_model;
+    userModel = widget.userModels;
   }
 
   @override
@@ -196,7 +194,13 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
             if (userModel.result.ownerID.length > 1) {
               routeToMultiOwner(userModel, sqLiteUserModel);
             } else {
-              routeToMainMenu(sqLiteUserModel);
+              if (sqLiteUserModel.ownerID.contains("O")) {
+                routeToMainMenuOutage(sqLiteUserModel);
+              } else {
+                routeToMainMenu(sqLiteUserModel);
+              }
+              //
+
             }
           } else {
             List<SQLiteUserModel> models = [];
@@ -229,7 +233,11 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
 
                 if (sqLiteUserModel.pincode.trim() ==
                     _textEditingController.text.trim()) {
-                  routeToMainMenu(sqLiteUserModel);
+                  if (sqLiteUserModel.ownerID.contains("O")) {
+                    routeToMainMenuOutage(sqLiteUserModel);
+                  } else {
+                    routeToMainMenu(sqLiteUserModel);
+                  }
                 } else {
                   normalDialog(context, "เตือน", "PINCODE ไม่ถูกต้อง");
                 }
@@ -265,6 +273,17 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
             //userModel: userModel,
             // ownerId: userModel.ownerID.substring(0, 1),
             ),
+      ),
+    );
+  }
+
+  void routeToMainMenuOutage(SQLiteUserModel userModel) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OutageMainMenu(
+          userModel: userModel,
+        ),
       ),
     );
   }

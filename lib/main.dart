@@ -9,7 +9,7 @@ UserModel _userModel;
 final Map<String, WidgetBuilder> map = {
   '/authen': (BuildContext context) => Authen(),
   '/mainMenu': (BuildContext context) => PinCodeAuthen(
-        user_model: _userModel,
+        userModels: _userModel,
       ),
 };
 
@@ -18,7 +18,7 @@ String initialRoute;
 void main() async {
   SQLiteHelper sqLiteHelperWorkList = new SQLiteHelper();
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   SharedPreferences preferences = await SharedPreferences.getInstance();
   String pincode = preferences.getString('PINCODE');
   if (pincode == null) {
@@ -36,6 +36,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       routes: map,
       initialRoute: initialRoute,
       theme: ThemeData(primarySwatch: Colors.purple, fontFamily: 'kanit'),

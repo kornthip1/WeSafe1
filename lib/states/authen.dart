@@ -8,7 +8,6 @@ import 'package:wesafe/states/myservice.dart';
 import 'package:wesafe/states/pincode.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
-import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showImage.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
@@ -47,8 +46,8 @@ class _AuthenState extends State<Authen> {
         ),
       ),
       bottomNavigationBar: Container(
-         margin: EdgeInsets.only(bottom: 10,left: 150),
-         width: size * 0.6,
+        margin: EdgeInsets.only(bottom: 10, left: 150),
+        width: size * 0.6,
         child: Text("WeSafe Version 1.0.2"),
       ),
     );
@@ -101,6 +100,7 @@ class _AuthenState extends State<Authen> {
           await SharedPreferences.getInstance();
       UserModel userModel;
 
+      // error  status
       response.transform(utf8.decoder).listen(
         (contents) {
           contents = contents.replaceAll("[{", "{").replaceAll("}]", "}");
@@ -135,7 +135,7 @@ class _AuthenState extends State<Authen> {
       context,
       MaterialPageRoute(
         builder: (context) => PinCodeAuthen(
-          user_model: userModel,
+          userModels: userModel,
         ),
       ),
     );

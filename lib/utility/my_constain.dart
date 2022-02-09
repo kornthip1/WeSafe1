@@ -8,6 +8,10 @@ class MyConstant {
   static final String imageHotline = 'images/outage.png';
   static final String imageOtherWork = 'images/other.png';
 
+  static final String imageMenuO_2 = 'images/Outage2.png';
+  static final String imageMenuO_3 = 'images/Outage3.png';
+  static final String imageMenuO_4 = 'images/Outage4.png';
+
   static final String keyPincode = "PINCODE";
   static final String keyUser = "USER";
 
@@ -26,6 +30,17 @@ class MyConstant {
   //Color
   static final Color primart = Color.fromARGB(255, 112, 55, 133);
   static final Color floralWhite = Color.fromARGB(255, 255, 249, 244);
+
+  static final Color outageMenu1 = Color.fromARGB(255, 240, 162, 143);
+  static final Color outageMenu2 = Color.fromARGB(255, 247, 186, 136);
+  static final Color outageMenu3 = Color.fromARGB(255, 114, 218, 205);
+  static final Color outageMenu4 = Color.fromARGB(255, 133, 180, 199);
+
+  static final String imgIconCheckList1 = "images/search.png";
+  static final String imgIconCheckList2 = "images/camera.png";
+  static final String imgIconCheckList3 = "images/pressure.png";
+  static final String imgIconCheckList4 = "images/grounding.png";
+  static final String imgIconCheckList5 = "images/traffic-cone.png";
 
   static final strDateNow = getDateNow();
 }

@@ -15,6 +15,12 @@ class ShowIconImage extends StatelessWidget {
                 ? Image.asset(MyConstant.imageOtherWork)
                 : fromMenu == "image"
                     ? Image.asset(MyConstant.image)
-                    : Image.asset(MyConstant.man);
+                    : fromMenu == "mainO2"
+                        ? Image.asset(MyConstant.imageMenuO_2)
+                        : fromMenu == "mainO3"
+                            ? Image.asset(MyConstant.imageMenuO_3)
+                            : fromMenu == "mainO4"
+                                ? Image.asset(MyConstant.imageMenuO_4)
+                                : Image.asset(MyConstant.man);
   }
 }

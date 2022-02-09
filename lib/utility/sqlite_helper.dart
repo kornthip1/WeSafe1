@@ -126,6 +126,28 @@ class SQLiteHelper {
               ' ${MyConstainCheckListDB.columnType} TEXT,' +
               ' ${MyConstainCheckListDB.columnQuantityImg} TEXT' +
               ')');
+
+      //-------- for new Outage Hotline
+      await database.execute('CREATE TABLE WORKLIST ( ' +
+          ' id INTEGER PRIMARY KEY,' +
+          ' REQNO TEXT,' +
+          ' USER TEXT,' +
+          ' REGION TEXT,' +
+          ' MAINMENU TEXT ,' +
+          ' SUBMENU TEXT,' +
+          ' CHECKLIST INTEGER,' +
+          ' LATITUDE INTEGER,' +
+          ' LONGTITUDE INTEGER,' +
+          ' DOORNOT INTEGER,' +
+          ' RESEANNOT TEXT, ' +
+          ' WORKPERFORM TEXT, ' +
+          ' REMARK TEXT, ' +
+          ' ISMAINLINE INTEGER, ' +
+          ' IMGLIST TEXT, ' +
+          ' WORKSTATUS INTEGER, ' +
+          ' ISCOMPLATE INTEGER, ' +
+          ' DATECREATE TEXT' +
+          ')');
     });
   }
 
@@ -305,8 +327,6 @@ class SQLiteHelper {
 //*********  STATION  *************************************/
 
   Future<Null> insertStation(SQLiteStationModel sqLiteStationModel) async {
-    Map<String, dynamic> maps = sqLiteStationModel.toMap();
-
     //print("#### insertWorkDatebase ${maps.values}");
 
     Database database = await connectedDatabase();

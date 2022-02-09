@@ -4,6 +4,7 @@ import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/checkWork.dart';
 import 'package:wesafe/states/mainMenu.dart';
+import 'package:wesafe/states/outageMainMenu.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
@@ -57,15 +58,28 @@ class ShowDrawer extends StatelessWidget {
         index: 1,
       ),
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => MainMenu(
-                //  userModel: userModel,
-                // ownerId: userModel.ownerID,
-                ),
-          ),
-        );
+        if (userModel.ownerID.contains("O")) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OutageMainMenu(
+                userModel: userModel,
+                  //  userModel: userModel,
+                  // ownerId: userModel.ownerID,
+                  ),
+            ),
+          );
+        } else if(userModel.ownerID.contains("Z")) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MainMenu(
+                  //  userModel: userModel,
+                  // ownerId: userModel.ownerID,
+                  ),
+            ),
+          );
+        }
       },
     );
   }
