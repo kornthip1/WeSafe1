@@ -36,7 +36,9 @@ dependencies:
   passcode_screen: ^2.0.0
   http: ^0.13.3
   geolocator: ^7.2.0+1
+  flutter_easyloading: ^3.0.3
 
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

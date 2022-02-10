@@ -100,7 +100,7 @@ class _OutageWorkListState extends State<OutageWorkList> {
               if (checklistmodel.result[index].type.contains("1")) {
                 print("insert db and update work status");
               } else {
-                if (checklistmodel.result[index].waitApprove == '66') {
+                //if (checklistmodel.result[index].waitApprove == '66') {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -109,10 +109,12 @@ class _OutageWorkListState extends State<OutageWorkList> {
                         workType: checklistmodel.result[index].type,
                         workName:
                             checklistmodel.result[index].menuChecklistName,
+                            mainID: widget.mainID,
+                            mainName: widget.mainName,
                       ),
                     ),
                   );
-                }
+                //}
               }
             },
             child: Card(
