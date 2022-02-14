@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:wesafe/models/mastOutageWorkingModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/outageWorklist.dart';
 import 'package:wesafe/utility/dialog.dart';
+import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
@@ -36,10 +39,31 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
   @override
   void initState() {
     super.initState();
+
+    readWorkList();
     userModel = widget.userModel;
     for (var i = 0; i < rows; i++) {
       files.add(null);
     }
+  }
+
+  Future<Null> readWorkList() async {
+    List<MastOutageWorkingModel> models = [];
+    await SQLiteHelperOutage().selectLastWorking().then((result) {
+      if (result == null) {
+      } else {
+        models = result;
+        for (var item in models) {
+          // print("------->Rec :" +
+
+          //     item.mainmenu.toString() +
+          //     "  " +
+          //     item.submenu.toString() +
+          //     "    " +
+          //     item.checklist.toString());
+        }
+      }
+    });
   }
 
   @override
@@ -95,7 +119,7 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
               } else if (choose == "1") {
                 //ไม่ปฏิบัติ ต้องระบุเหตุผล
                 print("value Text : " + workController.text);
-                if (workController.text.trim()=="") {
+                if (workController.text.trim() == "") {
                   normalDialog(context, "เตือน", "กรุณาระบุเหตุผล");
                 } else {
                   canSave = true;
@@ -120,7 +144,7 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
     );
   }
 
-  Widget expandPanel(String word, String value) {
+  Widget expandPanel(String word, String values) {
     return Card(
       child: Container(
         child: Padding(
@@ -129,12 +153,21 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
             children: <Widget>[
               SizedBox(height: 20.0),
               ExpansionTile(
+                onExpansionChanged: (value) {
+                  setState(() {
+                    if (values.contains("0")) {
+                      choose = "0";
+                    } else {
+                      choose = "1";
+                    }
+                  });
+                },
                 title: Row(
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Radio(
-                        value: value,
+                        value: values,
                         groupValue: choose,
                         onChanged: (value) {
                           print("Radio values  : " + value);
@@ -155,7 +188,7 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
                   ListTile(
                     title: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: value == "0"
+                      child: values == "0"
                           ? buildPicture()
                           : TextFormField(
                               controller: workController,
@@ -342,9 +375,21 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
         maxHeight: 800,
       );
 
-      setState(() {
-        files[index] = File(object.path);
-      });
+      // setState(() {
+      //   files[index] = File(object.path);
+      // });
+
+      _cropImage(object.path, index);
     } catch (e) {}
+  }
+
+  void _cropImage(filepath, int index) async {
+    File croppedImage = await ImageCropper.cropImage(
+        sourcePath: filepath, maxWidth: 800, maxHeight: 800);
+    if (null != croppedImage) {
+      setState(() {
+        files[index] = croppedImage;
+      });
+    }
   }
 } //class

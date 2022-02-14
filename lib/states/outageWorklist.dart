@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:wesafe/models/mastOutageWorkingModel.dart';
 import 'package:wesafe/models/mastcheckListModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/outageWorkRec.dart';
 import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
@@ -43,7 +45,25 @@ class _OutageWorkListState extends State<OutageWorkList> {
       checklistmodel = MastCheckListModel.fromJson(jsonDecode(response.body));
     });
 
-    print("### getCheckList  = ${checklistmodel.result.length}");
+    // int lastID = 1;
+    // await SQLiteHelperOutage().selectLastID().then((result) {
+    //   if (result == null) {
+    //   } else {
+    //     lastID = result;
+    //   }
+    // });
+
+    // print("### getCheckList  = ${checklistmodel.result.length}");
+    // for (int i = 0; i < checklistmodel.result.length; i++) {
+    //   MastOutageWorkingModel model = MastOutageWorkingModel(
+    //     checklist: checklistmodel.result[i].menuChecklistID,
+    //     mainmenu: checklistmodel.result[i].menuMainID,
+    //     submenu: checklistmodel.result[i].menuSubID,
+    //     region: userModel.rsg,
+    //     reqno: lastID.toString(),
+    //   );
+    //   SQLiteHelperOutage().insertWorking(model);
+    // }
   }
 
   @override
@@ -69,7 +89,8 @@ class _OutageWorkListState extends State<OutageWorkList> {
                   indent: 4.0,
                   endIndent: 4.0,
                 ),
-                buildListView()
+                buildListView(),
+                expandPanel("เพิ่มเติม")
               ],
             ),
           ),
@@ -79,8 +100,13 @@ class _OutageWorkListState extends State<OutageWorkList> {
               child: ShowTitle(
                 title: "ยืนยัน",
                 index: 3,
+                
               ),
               onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                primary: Colors.grey[400],
+              ),
+              
             ),
           )),
     );
@@ -101,19 +127,18 @@ class _OutageWorkListState extends State<OutageWorkList> {
                 print("insert db and update work status");
               } else {
                 //if (checklistmodel.result[index].waitApprove == '66') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => OutageWorkRecord(
-                        userModel: userModel,
-                        workType: checklistmodel.result[index].type,
-                        workName:
-                            checklistmodel.result[index].menuChecklistName,
-                            mainID: widget.mainID,
-                            mainName: widget.mainName,
-                      ),
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => OutageWorkRecord(
+                      userModel: userModel,
+                      workType: checklistmodel.result[index].type,
+                      workName: checklistmodel.result[index].menuChecklistName,
+                      mainID: widget.mainID,
+                      mainName: widget.mainName,
                     ),
-                  );
+                  ),
+                );
                 //}
               }
             },
@@ -124,11 +149,11 @@ class _OutageWorkListState extends State<OutageWorkList> {
                   width: size * 0.13,
                   child: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: showIconList(index,0),
+                    child: showIconList(index, 0),
                   ),
                 ),
                 title: Text(
-                  checklistmodel.result[index].menuChecklistName ,
+                  checklistmodel.result[index].menuChecklistName,
                   style: TextStyle(
                     fontSize: size * 0.045,
                     fontWeight: FontWeight.bold,
@@ -142,8 +167,76 @@ class _OutageWorkListState extends State<OutageWorkList> {
     );
   } //build
 
+  Widget expandPanel(String word) {
+    double size = MediaQuery.of(context).size.width;
+    return Card(
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(5),
+          side: BorderSide(color: Colors.grey[300], width: 1)),
+      child: Container(
+        width: size * 0.875,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30.0),
+          child: Column(
+            children: <Widget>[
+              SizedBox(
+                height: 5.0,
+              ),
+              ExpansionTile(
+                title: Row(
+                  children: [
+                    Text(
+                      word,
+                      style: TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                children: <Widget>[
+                  ListTile(
+                    title: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: TextFormField(
+                        controller: workController,
+                        validator: (value) {
+                          if (value.isEmpty) {
+                            return 'กรุณาระบุเหตุผล';
+                          } else {
+                            return null;
+                          }
+                        },
+                        decoration: InputDecoration(
+                          fillColor: Colors.white,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.blue[800], width: 2.0),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide:
+                                BorderSide(color: Colors.blue[800], width: 2.0),
+                          ),
+                          prefixIcon: Icon(
+                            Icons.description,
+                            color: Colors.blue[700],
+                          ),
+                          labelText: 'เหตุผล',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Image showIconList(int index, int status) {
-    
     return checklistmodel.result[index].isChoice.contains("1")
         ? Image.asset(
             MyConstant.imgIconCheckList2,
