@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class MyConstant {
   static final String authen = 'images/LogoW.png'; //'images/WeSafe.png';
@@ -19,6 +20,9 @@ class MyConstant {
   static final String appName = 'WeSafe';
   static final String webService =
       "https://wesafe.pea.co.th/webservicemobile/api/wesafe/";
+
+  static final String newService =
+      "https://wesafe.pea.co.th/api_wesafe/index.php/";
 
   static final List<String> listMenu = [
     'บันทึกงานใหม่',
@@ -47,5 +51,6 @@ class MyConstant {
 
 String getDateNow() {
   final DateTime now = DateTime.now();
-  return now.toString();
+  String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+  return formattedDate.toString();
 }

@@ -1,12 +1,15 @@
+import 'dart:convert';
 import 'dart:io';
-
+import 'dart:io' as Io;
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:wesafe/models/mastOutageWorkingModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/models/sqliteWorklistOutageModel.dart';
 import 'package:wesafe/states/outageWorklist.dart';
 import 'package:wesafe/utility/dialog.dart';
+import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showTitle.dart';
@@ -18,12 +21,22 @@ class OutageWorkRecord extends StatefulWidget {
   final SQLiteUserModel userModel;
   final String mainID;
   final String mainName;
+  final int workID;
+  final int workList;
+  final int listStatus;
+  final String workPerform;
+  final String isMainLine;
   OutageWorkRecord(
       {@required this.workType,
       this.workName,
       this.userModel,
       this.mainID,
-      this.mainName});
+      this.mainName,
+      this.workID,
+      this.workList,
+      this.listStatus,
+      this.workPerform,
+      this.isMainLine});
 
   @override
   _OutageWorkRecordState createState() => _OutageWorkRecordState();
@@ -31,15 +44,18 @@ class OutageWorkRecord extends StatefulWidget {
 
 class _OutageWorkRecordState extends State<OutageWorkRecord> {
   TextEditingController workController = TextEditingController();
+  TextEditingController TextOtetController = TextEditingController();
   SQLiteUserModel userModel;
   List<File> files = [];
   int rows = 1;
-  String choose = "0";
+  String choose = "1";
+  int workID;
+  List<SQLiteWorklistOutageModel> workingModels = [];
 
   @override
   void initState() {
     super.initState();
-
+    workID = widget.workID;
     readWorkList();
     userModel = widget.userModel;
     for (var i = 0; i < rows; i++) {
@@ -48,20 +64,13 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
   }
 
   Future<Null> readWorkList() async {
-    List<MastOutageWorkingModel> models = [];
-    await SQLiteHelperOutage().selectLastWorking().then((result) {
+    SQLiteHelperOutage().selectWorkList(workID.toString(), "1").then((result) {
       if (result == null) {
+        print("Error : " + result.toString());
       } else {
-        models = result;
-        for (var item in models) {
-          // print("------->Rec :" +
-
-          //     item.mainmenu.toString() +
-          //     "  " +
-          //     item.submenu.toString() +
-          //     "    " +
-          //     item.checklist.toString());
-        }
+        setState(() {
+          workingModels = result;
+        });
       }
     });
   }
@@ -92,12 +101,14 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
                   ? buildPicture()
                   : widget.workType == "4"
                       ? expandPanel(widget.workName,
-                          "0") //buildRadio(widget.workName,'1')
+                          "1") //buildRadio(widget.workName,'1')
                       : Text(""),
               widget.workType == "4"
                   ? expandPanel("ไม่" + widget.workName,
-                      "1") //buildRadio("ไม่"+ widget.workName,'0')
-                  : Text(""),
+                      "0") //buildRadio("ไม่"+ widget.workName,'0')
+                  : widget.workType == "3"
+                      ? buildOtherText()
+                      : Text(""),
             ],
           ),
         ),
@@ -105,41 +116,166 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
           height: 40,
           child: ElevatedButton(
             child: ShowTitle(title: "ยืนยัน"),
-            onPressed: () {
-              print("choose : " + choose);
-              bool canSave = false;
-              if (choose == "0") {
-                //ต้องถ่ายภาพ
-                print("files : " + files[0].toString());
-                if (null == files[0]) {
-                  normalDialog(context, "เตือน", "กรุณาถ่ายภาพอย่างน้อย 1 ภาพ");
+            onPressed: () async {
+              try {
+                print("choose : " + choose);
+                bool canSave = false;
+                if (widget.mainID == "999") {
+                  if (widget.workType == "2") {
+                    if (null == files[0]) {
+                      normalDialog(
+                          context, "เตือน", "กรุณาถ่ายภาพอย่างน้อย 1 ภาพ");
+                    } else {
+                      canSave = true;
+                    }
+                  } else {
+                    if (TextOtetController.text.trim() == "") {
+                      normalDialog(context, "เตือน", "กรุณาระบุรายละเอียด");
+                    } else {
+                      canSave = true;
+                    }
+                  }
                 } else {
-                  canSave = true;
+                  if (choose == "1") {
+                    //ต้องถ่ายภาพ
+                    print("files : " + files[0].toString());
+                    if (null == files[0]) {
+                      normalDialog(
+                          context, "เตือน", "กรุณาถ่ายภาพอย่างน้อย 1 ภาพ");
+                    } else {
+                      canSave = true;
+                    }
+                  } else if (choose == "0") {
+                    //ไม่ปฏิบัติ ต้องระบุเหตุผล
+                    print("value Text : " + workController.text);
+                    if (workController.text.trim() == "") {
+                      normalDialog(context, "เตือน", "กรุณาระบุเหตุผล");
+                    } else {
+                      canSave = true;
+                    }
+                  }
                 }
-              } else if (choose == "1") {
-                //ไม่ปฏิบัติ ต้องระบุเหตุผล
-                print("value Text : " + workController.text);
-                if (workController.text.trim() == "") {
-                  normalDialog(context, "เตือน", "กรุณาระบุเหตุผล");
-                } else {
-                  canSave = true;
-                }
-              }
 
-              if (canSave) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => OutageWorkList(
-                            userModel: userModel,
-                            mainName: widget.mainName,
-                            mainID: widget.mainID,
-                          )),
+                if (canSave) {
+                  List<String> base64Strs = [];
+                  for (var item in files) {
+                    if (item != null) {
+                      List<int> imageBytes =
+                          Io.File(item.path).readAsBytesSync();
+                      String base64Str = base64Encode(imageBytes);
+                      base64Strs.add(base64Str);
+                    }
+                  }
+                  // print('base64Strs lenght : ' + base64Strs.length.toString());
+
+                  // SQLiteHelperOutage.updateWorkList(
+                  //     1, workID.toString(), widget.workList);
+                  print('before save  $workID , ${widget.workList}');
+                  SQLiteHelperOutage().updateWorkList(
+                    2,
+                    workID.toString(),
+                    "1",
+                    widget.workList,
+                    base64Strs
+                        .toString()
+                        .replaceAll("[", "")
+                        .replaceAll("]", ""),
+                    int.parse(choose),
+                    workController.text,
+                    widget.mainID == "999"
+                        ? TextOtetController.text
+                        : widget.workPerform,
+                    int.parse(widget.isMainLine),
+                  );
+                  if (widget.listStatus != 2) {
+                    SQLiteHelperOutage().updateWorkList(
+                        1,
+                        workID.toString(),
+                        "1",
+                        widget.workList + 1,
+                        base64Strs
+                            .toString()
+                            .replaceAll("[", "")
+                            .replaceAll("]", ""),
+                        int.parse(choose),
+                        workController.text,
+                        widget.mainID == "999"
+                            ? TextOtetController.text
+                            : widget.workPerform,
+                        int.parse(widget.isMainLine));
+                  }
+
+                  //***** Get Image************ */
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => OutageWorkList(
+                              userModel: userModel,
+                              mainName: widget.mainName,
+                              mainID: widget.mainID,
+                              workId: workID,
+                              isMainLine: widget.isMainLine,
+                              workPerform: widget.mainID == "999"
+                                  ? TextOtetController.text
+                                  : widget.workPerform,
+                            )),
+                  );
+                }
+              } catch (e) {
+                await http.post(
+                  Uri.parse('${MyConstant.newService}log/create_error'),
+                  headers: <String, String>{
+                    'Content-Type': 'application/json; charset=UTF-8',
+                  },
+                  body:
+                      '[{"Req_no": "${workingModels[0].reqNo}",   "Error": "${e.toString()}" , "CodeFrom":"mobile " , "DateTimeError":"${MyConstant.strDateNow}" }]',
                 );
+
+                //+++++++++++ alert Line++++++++++++++++++++++++++++++++
+                final client = HttpClient();
+                final request = await client.postUrl(
+                    Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
+                String msg =
+                    'workrecord  ## ReqNO = ${workingModels[0].reqNo}   send to server error  : ${e.toString()}';
+                request.headers.contentType =
+                    new ContentType("application", "json", charset: "utf-8");
+                request.write(
+                    '{"strMsg": "$msg",   "strToken": "gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz"}');
+                await request.close();
+                //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
               }
             },
           ),
         ),
+      ),
+    );
+  }
+
+  Widget buildOtherText() {
+    return TextFormField(
+      maxLines: 5,
+      controller: TextOtetController,
+      validator: (value) {
+        if (value.isEmpty) {
+          return 'กรุณาระบุรายละเอียด';
+        } else {
+          return null;
+        }
+      },
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.blue[800], width: 2.0),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.blue[800], width: 2.0),
+        ),
+        prefixIcon: Icon(
+          Icons.description,
+          color: Colors.blue[700],
+        ),
+        labelText: 'รายละเอียด',
+        border: OutlineInputBorder(),
       ),
     );
   }
@@ -188,7 +324,7 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
                   ListTile(
                     title: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: values == "0"
+                      child: values == "1"
                           ? buildPicture()
                           : TextFormField(
                               controller: workController,
@@ -256,10 +392,12 @@ class _OutageWorkRecordState extends State<OutageWorkRecord> {
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Center(
-                      child: Text(
-                    widget.workType + "  : " + widget.workName,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  )),
+                    child: Text(
+                      widget.workList.toString() + "  : " + widget.workName,
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                 ),
               ),
             ),

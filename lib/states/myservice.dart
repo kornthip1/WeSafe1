@@ -5,6 +5,8 @@ import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/states/mainlist.dart';
+import 'package:wesafe/states/outageMainMenu.dart';
+import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
@@ -14,7 +16,7 @@ import 'package:wesafe/states/checkWork.dart';
 class Myservice extends StatefulWidget {
   final UserModel user_model;
   final SQLiteUserModel sqliteeUserModel;
-  Myservice({@required this.user_model,this.sqliteeUserModel});
+  Myservice({@required this.user_model, this.sqliteeUserModel});
 
   @override
   _MyserviceState createState() => _MyserviceState();
@@ -66,9 +68,6 @@ class _MyserviceState extends State<Myservice> {
     );
   }
 
-
-  
-
   Widget menu() {
     return Center(
       child: Column(
@@ -84,7 +83,9 @@ class _MyserviceState extends State<Myservice> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(primary: Colors.grey[100]),
                     onPressed: () {
-                      routeToWorkMainMenu(userModel, listOwnerID[0].toString());
+                      normalDialog(context, "ไม่สามารถใช้งานได้'",
+                          "ขณะนี้ระบบยังไม่เปิดให้สามารถใช้งานด้าน Hotline ได้");
+                      // routeToWorkMainMenu(userModel, listOwnerID[0].toString());
                     },
                     child: Column(
                       children: [
@@ -114,14 +115,17 @@ class _MyserviceState extends State<Myservice> {
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(primary: Colors.grey[100]),
                     onPressed: () {
-                      routeToWorkMainMenu(userModel, listOwnerID[1].toString());
+                      listOwnerID[1].contains("O")
+                          ? routeToWorkMainMenuOutage()
+                          : routeToWorkMainMenu(
+                              userModel, listOwnerID[1].toString());
                     },
                     child: Column(
                       children: [
                         Text(''),
                         Container(
                           width: size * 0.2,
-                           child: ShowIconImage(
+                          child: ShowIconImage(
                             fromMenu: "mainO",
                           ),
                         ),
@@ -149,6 +153,17 @@ class _MyserviceState extends State<Myservice> {
       context,
       MaterialPageRoute(
         builder: (context) => MainMenu(),
+      ),
+    );
+  }
+
+  void routeToWorkMainMenuOutage() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => OutageMainMenu(
+          userModel: sqliteeUserModel,
+        ),
       ),
     );
   }
@@ -234,14 +249,12 @@ class _MyserviceState extends State<Myservice> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) =>
-               CheckWork(),
+            builder: (context) => CheckWork(),
           ),
         );
       },
     );
   }
-  
 
   Column buildSignOut() {
     return Column(

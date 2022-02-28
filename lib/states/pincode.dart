@@ -9,12 +9,15 @@ import 'package:passcode_screen/passcode_screen.dart';
 import 'package:pin_code_text_field/pin_code_text_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/UserModel.dart';
+import 'package:wesafe/models/labelsModel.dart';
+import 'package:wesafe/models/mastLables.dart';
 import 'package:wesafe/models/sqliteStationModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/mastStation.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
@@ -44,6 +47,36 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
   void initState() {
     super.initState();
     userModel = widget.userModels;
+    saveLabels();
+  }
+
+  Future<Null> saveLabels() async {
+    final response = await http.post(
+      Uri.parse('${MyConstant.newService}+label/manage'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body:
+          '{"Activity": "1",   "Seq": "all" , "Label":"","LabelDesc":"","DateTimeUpdated":"","":"EmpID"}',
+    );
+
+    LabelsModel lblModel;
+    lblModel = LabelsModel.fromJson(jsonDecode(response.body));
+    for (int i = 0; i < lblModel.result.length; i++) {
+      MastLabelsModel mastModel = MastLabelsModel(
+        dateTimeUpdated: MyConstant.strDateNow,
+        empID: null == userModel.result.eMPLOYEEID
+            ? ""
+            : userModel.result.eMPLOYEEID,
+        label: null == lblModel.result[i].label ? "" : lblModel.result[i].label,
+        labelDesc: null == lblModel.result[i].labelDesc
+            ? ""
+            : lblModel.result[i].labelDesc,
+        seq: null == lblModel.result[i].seq ? "" : lblModel.result[i].seq,
+      );
+      print("pincode insert label : " + mastModel.label);
+      SQLiteHelperOutage().insertLabels(mastModel);
+    }
   }
 
   @override
@@ -302,7 +335,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
 
   Future<void> insertStationInfo() async {
     print("########  insertStationInfo()");
-    MastStationModel mastStationModel;
+    //MastStationModel mastStationModel;
 
     try {
       final response = await http.post(

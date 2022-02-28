@@ -148,6 +148,30 @@ class SQLiteHelper {
           ' ISCOMPLATE INTEGER, ' +
           ' DATECREATE TEXT' +
           ')');
+
+      await database.execute('CREATE TABLE LISTMENU ( ' +
+          ' MENUMAIN_ID INTEGER,' +
+          ' MENUMAIN_NAME TEXT,' +
+          ' MENUSUB_ID INTEGER,' +
+          ' MENUSUB_NAME TEXT,' +
+          ' MENUCHECKLIST_ID INTEGER ,' +
+          ' MENUCHECKLIST_NAME TEXT,' +
+          ' DATECREATE TEXT,' +
+
+          ' TYPE TEXT,' +
+          ' QUANTITY_IMG INTEGER,' +
+          ' IS_CHOICE TEXT,' +
+
+          ' PRIMARY KEY (MENUMAIN_ID, MENUSUB_ID,MENUCHECKLIST_ID)'
+              ')');
+
+      await database.execute('CREATE TABLE LABELS ( ' +
+          ' Seq INTEGER PRIMARY KEY,' +
+          ' Label TEXT,' +
+          ' LabelDesc TEXT,' +
+          ' DateTimeUpdated TEXT,' +
+          ' EmpID TEXT ' +
+          ')');
     });
   }
 

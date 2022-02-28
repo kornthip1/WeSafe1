@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:get_ip_address/get_ip_address.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/UserModel.dart';
 import 'package:wesafe/states/myservice.dart';
@@ -19,6 +21,7 @@ class Authen extends StatefulWidget {
 class _AuthenState extends State<Authen> {
   double size;
   bool remember = false;
+  String ip;
   final formKey = GlobalKey<FormState>();
   TextEditingController userController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -46,9 +49,9 @@ class _AuthenState extends State<Authen> {
         ),
       ),
       bottomNavigationBar: Container(
-        margin: EdgeInsets.only(bottom: 10, left: 150),
+        margin: EdgeInsets.only(bottom: 10, left: 110),
         width: size * 0.6,
-        child: Text("WeSafe Version 1.0.2"),
+        child: Text("WeSafe Version 1.2.0   28/02/2022"),
       ),
     );
   }
@@ -108,8 +111,10 @@ class _AuthenState extends State<Authen> {
             contents = contents.replaceAll("[", "").replaceAll("]", "");
             normalDialog(context, 'Error', contents);
           } else {
+            // getIp();
             userModel = UserModel.fromJson(json.decode(contents));
             preferences.setString(MyConstant.keyUser, userController.text);
+            insertLog(userModel);
             routeToCreatePinCode(userModel);
           } //else
         },
@@ -139,6 +144,40 @@ class _AuthenState extends State<Authen> {
         ),
       ),
     );
+  }
+
+  Future<Null> insertLog(UserModel userModel) async {
+    try {
+      var ipAddress = IpAddress(type: RequestType.json);
+      dynamic data = await ipAddress.getIpAddress();
+      print("#----------> IP : " +
+          data
+              .toString()
+              .replaceAll("{", "")
+              .replaceAll("}", "")
+              .replaceAll(":", "")
+              .replaceAll("ip", "")
+              .trim());
+      ip = data
+          .toString()
+          .replaceAll("{", "")
+          .replaceAll("}", "")
+          .replaceAll(":", "")
+          .replaceAll("ip", "")
+          .trim();
+
+      final response = await http.post(
+        Uri.parse('${MyConstant.newService}log/create'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body:
+            '[{"Employee_ID": "${userModel.result.eMPLOYEEID}",   "IPAddress": "$ip" , "Activity":"log login" , "Desc":"เข้าใช้งาน Application wesafe" }]',
+      );
+      print('insert log : ${response.statusCode}');
+    } catch (e) {
+      print("insert log  error : " + e.toString());
+    }
   }
 
   // ShowTitle buildShowTitle() => ShowTitle(
@@ -196,5 +235,35 @@ class _AuthenState extends State<Authen> {
         ),
       ),
     );
+  }
+
+  Future<String> getIp() async {
+    var ipAddress = IpAddress(type: RequestType.json);
+    dynamic data = await ipAddress.getIpAddress();
+    print("#----------> IP : " +
+        data
+            .toString()
+            .replaceAll("{", "")
+            .replaceAll("}", "")
+            .replaceAll(":", "")
+            .replaceAll("ip", "")
+            .trim());
+    setState(() {
+      ip = data
+          .toString()
+          .replaceAll("{", "")
+          .replaceAll("}", "")
+          .replaceAll(":", "")
+          .replaceAll("ip", "")
+          .trim();
+    });
+
+    return data
+        .toString()
+        .replaceAll("{", "")
+        .replaceAll("}", "")
+        .replaceAll(":", "")
+        .replaceAll("ip", "")
+        .trim();
   }
 }

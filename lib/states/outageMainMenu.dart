@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:wesafe/models/mastMainMenuModel.dart';
+import 'package:wesafe/models/mastOutageAllList.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistOutageModel.dart';
 import 'package:wesafe/states/outageWorklist.dart';
@@ -10,8 +10,12 @@ import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
+import 'package:wesafe/widgets/showProgress.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 import 'package:wesafe/widgets/show_icon_image.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
+import '../models/MastOutageMenuModel.dart';
+import 'package:http/http.dart' as http;
 
 class OutageMainMenu extends StatefulWidget {
   final SQLiteUserModel userModel;
@@ -24,79 +28,102 @@ class _OutageMainMenuState extends State<OutageMainMenu> {
   TextEditingController workController = TextEditingController();
 
   SQLiteUserModel userModel;
-  MastMainMenuModel _mainMenuModel;
   String choose;
   List<SQLiteWorklistOutageModel> models = [];
+  List<MastOutageMenuModel> listMenu = [];
+  bool isConnected = false;
+  String lblHeader;
+  bool load = true;
   @override
   void initState() {
     super.initState();
     userModel = widget.userModel;
     readWorkList();
+    checkConnection(context);
   }
 
   Future<Null> readWorkList() async {
     try {
-      final client = HttpClient();
-      final request = await client.postUrl(
-          Uri.parse("${MyConstant.webService}WeSafeCheckMainMenu")); //CheckEmp
-      request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
-      request.write(
-          '{"Owner_ID": "${userModel.ownerID}",   "REGION_CODE": "${userModel.rsg}"}');
-      final response = await request.close();
+      final bool isConn = await InternetConnectionChecker().hasConnection;
+      if (isConn) {
+        final response = await http.get(
+          Uri.parse('${MyConstant.newService}workmenu/list_all'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          //body: '{"mainMenu": "${widget.mainID}",   "subMenu": "1"}',
+        );
 
-      response.transform(utf8.decoder).listen((contents) {
-        print("worklist content return  : " + contents);
-        if (contents.contains('Error')) {
-          contents = contents.replaceAll("[", "").replaceAll("]", "");
-          normalDialog(context, 'Error', contents);
+        MastOutageAllListModel checklistmodel =
+            MastOutageAllListModel.fromJson(jsonDecode(response.body));
+
+        if (!checklistmodel.isSuccess) {
+          normalDialog(context, 'Error', checklistmodel.message);
+        } else {
+          MastOutageAllListModel listAllModel;
+          listAllModel = checklistmodel;
+          for (int j = 0; j < listAllModel.result.length; j++) {
+            MastOutageMenuModel menuModel = MastOutageMenuModel(
+                dateCreated: MyConstant.strDateNow,
+                menuMainID: listAllModel.result[j].menuMainID,
+                menuMainName: listAllModel.result[j].menuMainName,
+                menuSubID: listAllModel.result[j].menuSubID,
+                menuSubName: listAllModel.result[j].menuSubName,
+                menuListID: listAllModel.result[j].menuChecklistID,
+                menuListName: listAllModel.result[j].menuChecklistName,
+                type: listAllModel.result[j].type,
+                isChoice: listAllModel.result[j].isChoice,
+                quantityImg: listAllModel.result[j].quantityImg);
+            SQLiteHelperOutage().insertMenu(menuModel);
+          }
+        } //else
+      }
+
+      SQLiteHelperOutage().selectMainMenu(2).then((result) {
+        if (result == null) {
+          normalDialog(context, "Error", "ไม่มีข้อมูล");
         } else {
           setState(() {
-            print("set state 1");
-            print("contents.length  : " + contents.length.toString());
-            if (contents.length >= 10) {
-              _mainMenuModel = MastMainMenuModel.fromJson(jsonDecode(contents));
-              for (int i = 0; i < _mainMenuModel.result.length; i++) {
-                SQLiteWorklistOutageModel model = SQLiteWorklistOutageModel(
-                  id: i,
-                  user: userModel.userID,
-                  region: userModel.rsg,
-                  mainmenu: _mainMenuModel.result[i].menuMainID,
-                  submenU: _mainMenuModel.result[i].menuMainName,
-                  checklist: i + 1,
-                  reqNo: null,
-                  doOrNot: null,
-                  reseanNOT: null,
-                  workperform: null,
-                  workstatus: 0,
-                  isComplete: null,
-                  imgList: null,
-                  isMainLine: null,
-                  latitude: null,
-                  longtitude: null,
-                  remark: null,
-                  dateCreated: null,
-                );
-                SQLiteHelperOutage().insertWorkList(model);
-              }
-            } //for loop
-
-            //test read DB
-            // List<SQLiteWorklistOutageModel> models = [];
-            print("model lenght : " + models.length.toString());
-            SQLiteHelperOutage().readWorkList().then((result) {
-              if (result == null) {
-                normalDialog(context, "Error", "ไม่มีข้อมูล");
-              } else {
-                setState(() {
-                  models = result;
-                });
-              }
-            });
+            listMenu = result;
+            load = false;
           });
-        } //else
+        }
       });
+
+      //else
+
+      //---------------> Labels issue
+      // List<MastLabelsModel> models;
+      // SQLiteHelperOutage().selectLables("3").then((result) {
+      //   if (result == null) {
+      //     normalDialog(context, "Error", "ไม่มีข้อมูล");
+      //   } else {
+      //     models = result;
+      //     for (var item in models) {
+      //       setState(() {
+      //         lblHeader = item.label;
+      //       });
+      //     }
+      //   }
+      // });
+
+      //print("######-------------> IP : " + MyConstant.strIP.toString());
     } catch (e) {
-      normalDialog(context, "Error", e.toString());
+      print("MainMenu Error : " + e.toString());
+      if (isConnected) {
+        normalDialog(context, "Error", e.toString());
+      } else {
+        SQLiteHelperOutage().selectMainMenu(2).then((result) {
+          if (result == null) {
+            normalDialog(context, "Error", "ไม่มีข้อมูล");
+          } else {
+            setState(() {
+              listMenu = result;
+              print("listMenu ------>" + listMenu.length.toString());
+            });
+          }
+        });
+      }
     }
   }
 
@@ -110,10 +137,10 @@ class _OutageMainMenuState extends State<OutageMainMenu> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: ShowTitle(title: 'งานปฏิบัติการและบำรุงรักษา', index: 3),
+          title: ShowTitle(title: "งานปฏิบัติการและบำรุงรักษา", index: 3),
         ),
         drawer: ShowDrawer(userModel: userModel),
-        body: buildGridViewMainMenu(context),
+        body: load ? ShowProgress() : buildGridViewMainMenu(context),
       ),
     );
   }
@@ -122,28 +149,32 @@ class _OutageMainMenuState extends State<OutageMainMenu> {
     double widthsize = 0.0;
     widthsize = MediaQuery.of(context).size.width;
     return GridView.count(
-        padding: models.length > 4
+        padding: listMenu.length > 4
             ? const EdgeInsets.only(top: 0.0)
             : const EdgeInsets.only(left: 90.0, right: 90.0),
-        crossAxisCount: models.length > 4 ? 2 : 1,
-        children: List.generate(models.length, (index) {
+        crossAxisCount: listMenu.length > 4 ? 2 : 1,
+        children: List.generate(listMenu.length, (index) {
           return Padding(
               padding: const EdgeInsets.all(8.0),
               child: Card(
                 child: ElevatedButton(
                   onPressed: () {
                     print("main Menu " +
-                        models[index].mainmenu +
+                        listMenu[index].menuMainName +
                         "   subMenu :" +
                         (index + 1).toString());
-                    
+                    print('main menu : ${listMenu[index].menuMainID}');
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => OutageWorkList(
                           userModel: userModel,
-                          mainID: models[index].mainmenu,
-                          mainName: models[index].submenU,
+                          mainID: listMenu[index].menuMainID.toString(),
+                          mainName: listMenu[index].menuMainName,
+                          workId: 0,
+                          isMainLine: "1",
+                          workPerform: "",
                         ),
                       ),
                     );
@@ -173,9 +204,9 @@ class _OutageMainMenuState extends State<OutageMainMenu> {
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
-                          models[index].submenU,
+                          listMenu[index].menuMainName,
                           style: TextStyle(
-                            color: index == models.length - 1
+                            color: index == listMenu.length - 1
                                 ? Colors.white
                                 : Colors.black,
                             fontSize: widthsize * 0.05,
@@ -201,6 +232,10 @@ class _OutageMainMenuState extends State<OutageMainMenu> {
         }));
   }
 
-
-  
+  void checkConnection(BuildContext context) async {
+    final bool isConn = await InternetConnectionChecker().hasConnection;
+    setState(() {
+      isConnected = isConn;
+    });
+  }
 }

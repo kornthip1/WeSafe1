@@ -4,8 +4,10 @@ import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/checkWork.dart';
 import 'package:wesafe/states/mainMenu.dart';
+import 'package:wesafe/states/otageCloseAndCheck.dart';
 import 'package:wesafe/states/outageMainMenu.dart';
 import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
@@ -64,12 +66,12 @@ class ShowDrawer extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => OutageMainMenu(
                 userModel: userModel,
-                  //  userModel: userModel,
-                  // ownerId: userModel.ownerID,
-                  ),
+                //  userModel: userModel,
+                // ownerId: userModel.ownerID,
+              ),
             ),
           );
-        } else if(userModel.ownerID.contains("Z")) {
+        } else if (userModel.ownerID.contains("Z")) {
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -96,12 +98,24 @@ class ShowDrawer extends StatelessWidget {
         index: 1,
       ),
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CheckWork(),
-          ),
-        );
+        if (userModel.ownerID.contains("O")) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => OtageCloseAndCheck(
+                userModel: userModel,
+
+              ),
+            ),
+          );
+        } else if (userModel.ownerID.contains("Z")) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CheckWork(),
+            ),
+          );
+        }
       },
     );
   }
@@ -120,6 +134,8 @@ class ShowDrawer extends StatelessWidget {
             SQLiteHelper().deleteStationAll();
             SQLiteHelper().deleteCheckListAll();
             SQLiteHelper().deletePercelAll();
+
+            SQLiteHelperOutage().deleteWorkAllWorkList();
 
             Navigator.push(
               context,

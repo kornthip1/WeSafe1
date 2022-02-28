@@ -8,16 +8,16 @@ class SQLiteWorklistOutageModel {
   String mainmenu;
   String submenU;
   int checklist;
-  String latitude;
-  String longtitude;
-  String doOrNot;
+  int latitude;
+  int longtitude;
+  int doOrNot;
   String reseanNOT;
   String workperform;
   String remark;
-  String isMainLine;
+  int isMainLine;
   String imgList;
   int workstatus;
-  String isComplete;
+  int isComplete;
   String dateCreated;
 
   SQLiteWorklistOutageModel({
@@ -43,23 +43,23 @@ class SQLiteWorklistOutageModel {
 
   SQLiteWorklistOutageModel copyWith({
     int id,
-    String reqNo,
-    String user,
-    String region,
-    String mainmenu,
-    String submenU,
-    int checklist,
-    String latitude,
-    String longtitude,
-    String doOrNot,
-    String reseanNOT,
-    String workperform,
-    String remark,
-    String isMainLine,
-    String imgList,
-    int workstatus,
-    String isComplete,
-    String dateCreated,
+  String reqNo,
+  String user,
+  String region,
+  String mainmenu,
+  String submenU,
+  int checklist,
+  int latitude,
+  int longtitude,
+  int doOrNot,
+  String reseanNOT,
+  String workperform,
+  String remark,
+  int isMainLine,
+  String imgList,
+  int workstatus,
+  int isComplete,
+  String dateCreated,
   }) {
     return SQLiteWorklistOutageModel(
       id: id ?? this.id,

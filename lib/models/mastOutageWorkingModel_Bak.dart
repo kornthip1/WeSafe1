@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-class MastOutageWorkingModel {
+class MastOutageWorkingModel_Bak {
   String reqno;
   String user;
   String region;
@@ -19,7 +19,7 @@ class MastOutageWorkingModel {
   String iscomplate;
   String datecreate;
 
-  MastOutageWorkingModel({
+  MastOutageWorkingModel_Bak({
     this.reqno,
     this.user,
     this.region,
@@ -39,7 +39,7 @@ class MastOutageWorkingModel {
     this.datecreate,
   });
 
-  MastOutageWorkingModel copyWith({
+  MastOutageWorkingModel_Bak copyWith({
     String reqno,
     String user,
     String region,
@@ -58,7 +58,7 @@ class MastOutageWorkingModel {
     String iscomplate,
     String datecreate,
   }) {
-    return MastOutageWorkingModel(
+    return MastOutageWorkingModel_Bak(
       reqno: reqno ?? this.reqno,
       user: user ?? this.user,
       region: region ?? this.region,
@@ -101,8 +101,8 @@ class MastOutageWorkingModel {
     };
   }
 
-  factory MastOutageWorkingModel.fromMap(Map<String, dynamic> map) {
-    return MastOutageWorkingModel(
+  factory MastOutageWorkingModel_Bak.fromMap(Map<String, dynamic> map) {
+    return MastOutageWorkingModel_Bak(
       reqno: map['REQNO'],
       user: map['USER'],
       region: map['REGION'],
@@ -125,14 +125,14 @@ class MastOutageWorkingModel {
 
   String toJson() => json.encode(toMap());
 
-  factory MastOutageWorkingModel.fromJson(String source) =>
-      MastOutageWorkingModel.fromMap(json.decode(source));
+  factory MastOutageWorkingModel_Bak.fromJson(String source) =>
+      MastOutageWorkingModel_Bak.fromMap(json.decode(source));
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is MastOutageWorkingModel &&
+    return other is MastOutageWorkingModel_Bak &&
         other.reqno == reqno &&
         other.user == user &&
         other.region == region &&
