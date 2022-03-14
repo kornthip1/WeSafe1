@@ -68,11 +68,6 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
   }
 
   void getWork() {
-    if (isConnected) {
-      //
-
-    }
-
     SQLiteHelperOutage().selectWorkList(reqNo, "2").then((result) {
       if (result == null) {
         print("Error : " + result.toString());
@@ -114,17 +109,17 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
       });
     }
 
-    prepareWorking();
+    prepareWorking(checkListModels);
 
     SQLiteHelperOutage().selectWorkList(reqNo, "1").then((result) {
       if (result == null) {
         print("Error : " + result.toString());
       } else {
         setState(() {
-          load = false;
           listModels = result;
           print("list : " + listModels.length.toString());
           print('workperform :  ${listModels[0].workperform}');
+          load = false;
         });
       }
     });
@@ -231,7 +226,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
             child: Padding(
               padding: const EdgeInsets.only(left: 10.0),
               child: Text(
-                  'ประเภทงาน :  ${listModels[0].isMainLine == 0 ? "การปฏิบัติงานระบบ จำหน่าย Main Line" : "การปฏิบัติงานหลัง Drop และระบบแรงต่ำ"}',
+                  'ประเภทงาน :  ${null == listModels ? "" : listModels[0].isMainLine == 0 ? "การปฏิบัติงานระบบ จำหน่าย Main Line" : "การปฏิบัติงานหลัง Drop และระบบแรงต่ำ"}',
                   style:
                       TextStyle(fontSize: 17.5, fontWeight: FontWeight.bold)),
             ),
@@ -324,16 +319,17 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
     );
   } //build
 
-  Future<Null> prepareWorking() async {
+  Future<Null> prepareWorking(
+      List<MastOutageMenuModel> _checkListModels) async {
     // insert for transaction working
     //print("### getCheckList  = ${checkListModels.length}");
-    for (int i = 0; i < checkListModels.length; i++) {
+    for (int i = 0; i < _checkListModels.length; i++) {
       SQLiteWorklistOutageModel model = SQLiteWorklistOutageModel(
         reqNo: reqNo,
-        checklist: checkListModels[i].menuListID,
-        mainmenu: checkListModels[i].menuMainID.toString(),
+        checklist: _checkListModels[i].menuListID,
+        mainmenu: _checkListModels[i].menuMainID.toString(),
         dateCreated: MyConstant.strDateNow,
-        submenU: checkListModels[i].menuSubID.toString(),
+        submenU: _checkListModels[i].menuSubID.toString(),
         user: userModel.userID,
         isComplete: 0,
         workperform: "",
@@ -347,7 +343,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
     }
 
     setState(() {
-      load = true;
+      load = false;
     });
   }
 

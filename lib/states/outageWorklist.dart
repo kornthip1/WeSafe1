@@ -158,14 +158,38 @@ class _OutageWorkListState extends State<OutageWorkList> {
                 title: "ยืนยัน",
                 index: 3,
               ),
-              onPressed: () async {
-                ShowProgress();
+
+              onPressed: () {
+                setState(() {
+                  load = true;
+                }); // set loading to true here
                 null != workingModels &&
                         workingModels[workingModels.length - 1].workstatus == 2
-                    ? sendToServer(
-                        workingModels[0].reqNo) //print("insert and send line")
-                    : findLatLng(); //print("cn not insert");
+                    ? sendToServer(workingModels[0].reqNo).then((value) async {
+                        setState(() {
+                          load = false;
+                        }); // set it to false after your operation is done
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OutageMainMenu(
+                              userModel: userModel,
+                              //  userModel: userModel,
+                              // ownerId: userModel.ownerID,
+                            ),
+                          ),
+                        );
+                      })
+                    : findLatLng();
               },
+              // onPressed: () async  {
+              //   ShowProgress();
+              //   null != workingModels &&
+              //           workingModels[workingModels.length - 1].workstatus == 2
+              //       ? sendToServer(
+              //           workingModels[0].reqNo) //print("insert and send line")
+              //       : findLatLng(); //print("cn not insert");
+              // },
               style: ElevatedButton.styleFrom(
                 primary: workingModels.length > 0
                     ? workingModels[workingModels.length - 1].workstatus == 2
@@ -505,8 +529,8 @@ class _OutageWorkListState extends State<OutageWorkList> {
     findLatLng();
 
     //test
-    List<String> lineToken = [];
-    lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+    // List<String> lineToken = [];
+    // lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
 
     final client = HttpClient();
     print('####--->  line Token  :  ${lineToken.length}');
@@ -535,7 +559,6 @@ class _OutageWorkListState extends State<OutageWorkList> {
       request.headers.contentType =
           new ContentType("application", "json", charset: "utf-8");
 
-      //Test gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz
       request.write('{"strMsg": "$msg",   "strToken": "${lineToken[i]}"}');
       // request.write(
       //     '{"strMsg": "$msg",   "strToken": "gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz"}');
@@ -632,16 +655,16 @@ class _OutageWorkListState extends State<OutageWorkList> {
                 .updateWorkListReq(reqNo, responeModel.result.reply.toString());
 
             setLine(responeModel.result.reply.toString());
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => OutageMainMenu(
-                  userModel: userModel,
-                  //  userModel: userModel,
-                  // ownerId: userModel.ownerID,
-                ),
-              ),
-            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(
+            //     builder: (context) => OutageMainMenu(
+            //       userModel: userModel,
+            //       //  userModel: userModel,
+            //       // ownerId: userModel.ownerID,
+            //     ),
+            //   ),
+            // );
           }
         });
       } else {
