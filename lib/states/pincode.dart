@@ -129,6 +129,8 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
   }
 
   _onKeyboardTap(String value) {
+    print('pin #------------------->$_textEditingController.text.length');
+
     if (_textEditingController.text.length < 6) {
       setState(() {
         _textEditingController.text = _textEditingController.text + value;
@@ -190,12 +192,11 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
       padding: const EdgeInsets.all(8.0),
       child: ElevatedButton(
         onPressed: () async {
+          // if(_textEditingController.text.length == 6){
+
           SharedPreferences preferences = await SharedPreferences.getInstance();
           insertStationInfo();
           if (preferences.getString('PINCODE') == null) {
-            preferences.setString(
-                MyConstant.keyPincode, _textEditingController.text);
-            userModel.result.pincode = _textEditingController.text;
             print("pincode ######  rsg  : ${userModel.result.rEGIONCODE}");
             DateTime now = new DateTime.now();
             SQLiteUserModel sqLiteUserModel = SQLiteUserModel(
@@ -223,59 +224,70 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
             SQLiteHelper().insertUserDatebase(sqLiteUserModel);
 
             //SQLiteHelper().insertUserDatebase(userModel);
+            if (_textEditingController.text.length == 6) {
+              preferences.setString(
+                  MyConstant.keyPincode, _textEditingController.text);
+              userModel.result.pincode = _textEditingController.text;
 
-            if (userModel.result.ownerID.length > 1) {
-              routeToMultiOwner(userModel, sqLiteUserModel);
-            } else {
-              if (sqLiteUserModel.ownerID.contains("O")) {
-                routeToMainMenuOutage(sqLiteUserModel);
+              if (userModel.result.ownerID.length > 1) {
+                routeToMultiOwner(userModel, sqLiteUserModel);
               } else {
-                routeToMainMenu(sqLiteUserModel);
-              }
-              //
+                if (sqLiteUserModel.ownerID.contains("O")) {
+                  routeToMainMenuOutage(sqLiteUserModel);
+                } else {
+                  routeToMainMenu(sqLiteUserModel);
+                }
+                //
 
+              }
+            } else {
+              normalDialog(context, "เตือน", "กำหนด PINCODE ให้ครบถ้วน");
             }
           } else {
-            List<SQLiteUserModel> models = [];
-            await SQLiteHelper().readUserDatabase().then((result) {
-              if (result == null) {
-              } else {
-                models = result;
-                SQLiteUserModel sqLiteUserModel = SQLiteUserModel();
-                for (var item in models) {
-                  print("pincode ###### 1. rsg  : ${item.rsg}");
-                  sqLiteUserModel = SQLiteUserModel(
-                    deptName: item.deptName,
-                    createdDate: item.createdDate,
-                    firstName: item.firstName,
-                    lastName: item.lastName,
-                    leaderName: item.leaderName,
-                    ownerID: item.ownerID,
-                    ownerName: item.ownerName,
-                    pincode: item.pincode,
-                    position: item.position,
-                    teamName: item.teamName,
-                    userID: item.userID,
-                    userRole: item.userRole,
-                    rsg: item.rsg,
-                    ownerDesc: item.ownerDesc,
-                    canApprove: item.canApprove,
-                    leaderId: item.leaderId,
-                  );
-                } //for
-
-                if (sqLiteUserModel.pincode.trim() ==
-                    _textEditingController.text.trim()) {
-                  if (sqLiteUserModel.ownerID.contains("O")) {
-                    routeToMainMenuOutage(sqLiteUserModel);
-                  } else {
-                    routeToMainMenu(sqLiteUserModel);
-                  }
+            if (_textEditingController.text.length == 6) {
+              List<SQLiteUserModel> models = [];
+              await SQLiteHelper().readUserDatabase().then((result) {
+                if (result == null) {
                 } else {
-                  normalDialog(context, "เตือน", "PINCODE ไม่ถูกต้อง");
+                  models = result;
+                  SQLiteUserModel sqLiteUserModel = SQLiteUserModel();
+                  for (var item in models) {
+                    print("pincode ###### 1. rsg  : ${item.rsg}");
+                    sqLiteUserModel = SQLiteUserModel(
+                      deptName: item.deptName,
+                      createdDate: item.createdDate,
+                      firstName: item.firstName,
+                      lastName: item.lastName,
+                      leaderName: item.leaderName,
+                      ownerID: item.ownerID,
+                      ownerName: item.ownerName,
+                      pincode: item.pincode,
+                      position: item.position,
+                      teamName: item.teamName,
+                      userID: item.userID,
+                      userRole: item.userRole,
+                      rsg: item.rsg,
+                      ownerDesc: item.ownerDesc,
+                      canApprove: item.canApprove,
+                      leaderId: item.leaderId,
+                    );
+                  } //for
+
+                  if (sqLiteUserModel.pincode.trim() ==
+                      _textEditingController.text.trim()) {
+                    if (sqLiteUserModel.ownerID.contains("O")) {
+                      routeToMainMenuOutage(sqLiteUserModel);
+                    } else {
+                      routeToMainMenu(sqLiteUserModel);
+                    }
+                  } else {
+                    normalDialog(context, "เตือน", "PINCODE ไม่ถูกต้อง");
+                  }
                 }
-              }
-            });
+              });
+            } else {
+              normalDialog(context, "เตือน", "กำหนด PINCODE ให้ครบถ้วน");
+            }
           }
         },
         style: ElevatedButton.styleFrom(primary: MyConstant.primart),

@@ -65,7 +65,6 @@ class _OutageWorkListState extends State<OutageWorkList> {
     userModel = widget.userModel;
     workMain = widget.mainID;
 
-    print("workMain  " + workMain);
     checkConnection(context);
     readWorkList();
     prepareWorking();
@@ -160,6 +159,7 @@ class _OutageWorkListState extends State<OutageWorkList> {
                 index: 3,
               ),
               onPressed: () async {
+                ShowProgress();
                 null != workingModels &&
                         workingModels[workingModels.length - 1].workstatus == 2
                     ? sendToServer(
@@ -503,9 +503,11 @@ class _OutageWorkListState extends State<OutageWorkList> {
 
   Future<Null> setLine(String reqNo) async {
     findLatLng();
-    // List<String> lineToken = [];
+
     //test
-    // lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+    List<String> lineToken = [];
+    lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+
     final client = HttpClient();
     print('####--->  line Token  :  ${lineToken.length}');
     for (int i = 0; i < lineToken.length; i++) {
@@ -551,6 +553,8 @@ class _OutageWorkListState extends State<OutageWorkList> {
       List<String> listValues = [];
       InsertWorklistOutageModel insertWorklistModel;
       print('connecttion   : $isConnected');
+      //test
+      // isConnected = true;
       if (isConnected) {
         SQLiteHelperOutage().selectWorkList(reqNo, "1").then((result) async {
           if (result == null) {

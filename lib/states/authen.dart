@@ -81,7 +81,7 @@ class _AuthenState extends State<Authen> {
       child: ElevatedButton(
         onPressed: () {
           if (formKey.currentState.validate()) {
-            // print('NO space');
+            print('NO space');
             checkLogin(userController.text, passwordController.text);
           }
         },

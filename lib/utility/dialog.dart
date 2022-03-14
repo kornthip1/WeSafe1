@@ -14,7 +14,12 @@ Future<Null> normalDialog(
                 size: 40,
                 color: Colors.red,
               )
-            : ShowImage(),
+            : title.contains("เตือน")
+                ? Icon(
+                    Icons.warning_rounded,
+                    color: Colors.red,
+                  )
+                : ShowImage(),
         title: ShowTitle(
           title: title,
           index: 0,

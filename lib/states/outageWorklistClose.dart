@@ -67,9 +67,12 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
     getToken();
   }
 
-  Future<Null> getWork() {
-    print("##-> " + workStatus.toString());
-    print("Test  Output ----");
+  void getWork() {
+    if (isConnected) {
+      //
+
+    }
+
     SQLiteHelperOutage().selectWorkList(reqNo, "2").then((result) {
       if (result == null) {
         print("Error : " + result.toString());
@@ -228,7 +231,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
             child: Padding(
               padding: const EdgeInsets.only(left: 10.0),
               child: Text(
-                  'ประเภทาน :  ${listModels[0].isMainLine == 0 ? "การปฏิบัติงานระบบ จำหน่าย Main Line" : "การปฏิบัติงานหลัง Drop และระบบแรงต่ำ"}',
+                  'ประเภทงาน :  ${listModels[0].isMainLine == 0 ? "การปฏิบัติงานระบบ จำหน่าย Main Line" : "การปฏิบัติงานหลัง Drop และระบบแรงต่ำ"}',
                   style:
                       TextStyle(fontSize: 17.5, fontWeight: FontWeight.bold)),
             ),
@@ -342,6 +345,10 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
       );
       SQLiteHelperOutage().insertWorkList(model);
     }
+
+    setState(() {
+      load = true;
+    });
   }
 
   //else {
@@ -675,6 +682,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
               for (int i = 0; i < 1; i++) {
                 setState(() {
                   lineToken = _mainMenuModel.result[i].lineToken;
+                  load = true;
                 });
               }
             } //else
