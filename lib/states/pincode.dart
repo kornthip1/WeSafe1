@@ -14,6 +14,7 @@ import 'package:wesafe/models/mastLables.dart';
 import 'package:wesafe/models/sqliteStationModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/mastStation.dart';
+import 'package:wesafe/states/hotLineMainMenu.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
@@ -52,7 +53,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
 
   Future<Null> saveLabels() async {
     final response = await http.post(
-      Uri.parse('${MyConstant.newService}+label/manage'),
+      Uri.parse('${MyConstant.newService}label/manage'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -129,7 +130,7 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
   }
 
   _onKeyboardTap(String value) {
-    print('pin #------------------->$_textEditingController.text.length');
+    //print('pin #------------------->$_textEditingController.text.length');
 
     if (_textEditingController.text.length < 6) {
       setState(() {
@@ -234,6 +235,8 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
               } else {
                 if (sqLiteUserModel.ownerID.contains("O")) {
                   routeToMainMenuOutage(sqLiteUserModel);
+                } else if (sqLiteUserModel.ownerID.contains("H")) {
+                  routeToMainMenuHotline(sqLiteUserModel);
                 } else {
                   routeToMainMenu(sqLiteUserModel);
                 }
@@ -277,6 +280,8 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
                       _textEditingController.text.trim()) {
                     if (sqLiteUserModel.ownerID.contains("O")) {
                       routeToMainMenuOutage(sqLiteUserModel);
+                    } else if (sqLiteUserModel.ownerID.contains("H")) {
+                      routeToMainMenuHotline(sqLiteUserModel);
                     } else {
                       routeToMainMenu(sqLiteUserModel);
                     }
@@ -323,10 +328,23 @@ class _PinCodeAuthenState extends State<PinCodeAuthen> {
   }
 
   void routeToMainMenuOutage(SQLiteUserModel userModel) {
+    userModel.ownerID = "O";
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => OutageMainMenu(
+          userModel: userModel,
+        ),
+      ),
+    );
+  }
+
+  void routeToMainMenuHotline(SQLiteUserModel userModel) {
+    userModel.ownerID = "H";
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HotlineMainMenu(
           userModel: userModel,
         ),
       ),

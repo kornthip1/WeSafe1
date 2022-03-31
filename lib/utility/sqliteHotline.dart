@@ -6,10 +6,10 @@ import 'package:wesafe/utility/my_constain.dart';
 
 import '../models/MastOutageMenuModel.dart';
 
-class SQLiteHelperOutage {
+class SQLiteHotline {
   final int version = 1;
 
-  SQLiteHelperOutage() {
+  SQLiteHotline() {
     initailDatabase();
   }
 
@@ -33,13 +33,10 @@ class SQLiteHelperOutage {
         sqLiteWorklistModel.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      print('######## insert WORKLIST SQLite success : ' +
-          sqLiteWorklistModel.reqNo);
+      print('######## insert WORKLIST SQLite success');
     } catch (e) {
       print('insert error : ' + e);
     }
-
-    // print("#####-----> " + result.length.toString());
   } //insert
 
   Future<List<SQLiteWorklistOutageModel>> readWorkList() async {
@@ -80,7 +77,6 @@ class SQLiteHelperOutage {
 
   Future<List<SQLiteWorklistOutageModel>> selectWorkList(
       String reqNo, String subMenu) async {
-    print('########### selectWorkList : $reqNo ,  $subMenu');
     Database database = await connectedDatabase();
     List<SQLiteWorklistOutageModel> models = [];
     List<Map<String, dynamic>> maps = await database.rawQuery("SELECT * " +
@@ -109,10 +105,8 @@ class SQLiteHelperOutage {
         "     END AS REMARK," +
         "     MAINMENU,"
             "     WORKSTATUS  , WORKPERFORM  " +
-        "     FROM  WORKLIST WHERE ISCOMPLATE  != 1  AND MAINMENU != '999' AND WORKSTATUS != 0 " +
+        "     FROM  WORKLIST  WHERE ISCOMPLATE  != 1 AND  ( WORKSTATUS = 4  OR WORKSTATUS = 5 ) AND MAINMENU != '999' " +
         "     ORDER BY REQNO DESC  ");
-
-    //AND  ( WORKSTATUS = 4  OR WORKSTATUS = 5 )
 
     for (var item in maps) {
       SQLiteWorklistOutageModel model = SQLiteWorklistOutageModel.fromMap(item);
@@ -199,51 +193,15 @@ class SQLiteHelperOutage {
     }
   }
 
-  Future<Null> deleteWorkAllWorkList() async {
-    Database database = await connectedDatabase();
-    try {
-      await database.delete('WORKLIST');
-      print('====> delete work success');
-    } catch (e) {}
-  }
-
-  /////////////----------- MENU
-  Future<Null> insertMenu(MastOutageMenuModel menuModel) async {
-    Database database = await connectedDatabase();
-    try {
-      database.insert(
-        'LISTMENU',
-        menuModel.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-      print('######## insert MENU  success');
-    } catch (e) {
-      print('insert error : ' + e);
-    }
-  } //insert
-
-  Future<List<MastOutageMenuModel>> readMenu() async {
-    Database database = await connectedDatabase();
-    List<MastOutageMenuModel> models = [];
-    List<Map<String, dynamic>> maps = await database.query('LISTMENU');
-
-    for (var item in maps) {
-      MastOutageMenuModel model = MastOutageMenuModel.fromMap(item);
-      models.add(model);
-    }
-
-    return models;
-  }
-
-  Future<List<MastOutageMenuModel>> selectMainMenu(int mainID) async {
+  Future<List<MastOutageMenuModel>> selectSubMenu(int mainID) async {
     Database database = await connectedDatabase();
     List<MastOutageMenuModel> models = [];
     //List<Map<String, dynamic>> maps = await database.query('WORKLIST',orderBy: 'REQNO');
     List<Map<String, dynamic>> maps = await database.rawQuery(
-        "SELECT DISTINCT MENUMAIN_ID,MENUMAIN_NAME " +
+        "SELECT DISTINCT MENUMAIN_ID,MENUMAIN_NAME,MENUSUB_ID,MENUSUB_NAME " +
             "FROM  LISTMENU  " +
-            "WHERE CAST(MENUMAIN_ID AS TEXT) LIKE '$mainID%'  OR MENUMAIN_ID = 999  " +
-            "ORDER BY MENUMAIN_ID ASC ");
+            "WHERE MENUMAIN_ID  = $mainID  " +
+            "ORDER BY MENUMAIN_ID,MENUSUB_ID ASC ");
 
     for (var item in maps) {
       MastOutageMenuModel model = MastOutageMenuModel.fromMap(item);
@@ -260,7 +218,7 @@ class SQLiteHelperOutage {
     //List<Map<String, dynamic>> maps = await database.query('WORKLIST',orderBy: 'REQNO');
     List<Map<String, dynamic>> maps = await database.rawQuery("SELECT * " +
         "FROM  LISTMENU  " +
-        "WHERE MENUMAIN_ID = $mainID  AND MENUSUB_ID = $subID  " +
+        "WHERE MENUMAIN_ID = $mainID  AND MENUSUB_ID = $subID " +
         "ORDER BY MENUCHECKLIST_ID ASC ");
 
     for (var item in maps) {
@@ -271,47 +229,4 @@ class SQLiteHelperOutage {
 
     return models;
   }
-
-  Future<Null> deleteAllList() async {
-    Database database = await connectedDatabase();
-    try {
-      await database.delete('LISTMENU');
-      print('====> delete LISTMENU success');
-    } catch (e) {}
-  }
-
-  ////////----------- LABELS
-  Future<Null> insertLabels(MastLabelsModel model) async {
-    Database database = await connectedDatabase();
-    try {
-      database.insert(
-        'LABELS',
-        model.toMap(),
-        conflictAlgorithm: ConflictAlgorithm.replace,
-      );
-      print('######## insert MastLabelsModel  success');
-    } catch (e) {
-      print('insert error : ' + e);
-    }
-  } //insert
-
-  Future<List<MastLabelsModel>> selectLables(String seq) async {
-    Database database = await connectedDatabase();
-    List<MastLabelsModel> models = [];
-    //List<Map<String, dynamic>> maps = await database.query('WORKLIST',orderBy: 'REQNO');
-    List<Map<String, dynamic>> maps = await database.rawQuery("SELECT * " +
-        "FROM  LABELS  " +
-        "WHERE Seq = '" +
-        seq +
-        "'  " +
-        "ORDER BY Seq ASC ");
-
-    for (var item in maps) {
-      MastLabelsModel model = MastLabelsModel.fromMap(item);
-      models.add(model);
-    }
-
-    return models;
-  } //insert
-
 } //class

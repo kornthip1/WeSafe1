@@ -150,7 +150,7 @@ class _OutageMainMenuState extends State<OutageMainMenu> {
     widthsize = MediaQuery.of(context).size.width;
     return GridView.count(
         padding: listMenu.length > 4
-            ? const EdgeInsets.only(top: 0.0)
+            ? const EdgeInsets.only(top: 10.0)
             : const EdgeInsets.only(left: 90.0, right: 90.0),
         crossAxisCount: listMenu.length > 4 ? 2 : 1,
         children: List.generate(listMenu.length, (index) {

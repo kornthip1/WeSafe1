@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/checkWork.dart';
+import 'package:wesafe/states/hotLineMainMenu.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/states/otageCloseAndCheck.dart';
 import 'package:wesafe/states/outageMainMenu.dart';
@@ -81,6 +82,17 @@ class ShowDrawer extends StatelessWidget {
                   ),
             ),
           );
+        } else if (userModel.ownerID.contains("H")) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HotlineMainMenu(
+                userModel: userModel,
+                //  userModel: userModel,
+                // ownerId: userModel.ownerID,
+              ),
+            ),
+          );
         }
       },
     );
@@ -104,7 +116,6 @@ class ShowDrawer extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => OtageCloseAndCheck(
                 userModel: userModel,
-
               ),
             ),
           );
@@ -113,6 +124,17 @@ class ShowDrawer extends StatelessWidget {
             context,
             MaterialPageRoute(
               builder: (context) => CheckWork(),
+            ),
+          );
+        } else if (userModel.ownerID.contains("H")) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => HotlineMainMenu(
+                userModel: userModel,
+                //  userModel: userModel,
+                // ownerId: userModel.ownerID,
+              ),
             ),
           );
         }
@@ -136,6 +158,7 @@ class ShowDrawer extends StatelessWidget {
             SQLiteHelper().deletePercelAll();
 
             SQLiteHelperOutage().deleteWorkAllWorkList();
+            SQLiteHelperOutage().deleteAllList();
 
             Navigator.push(
               context,

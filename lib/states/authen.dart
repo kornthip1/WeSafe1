@@ -81,7 +81,6 @@ class _AuthenState extends State<Authen> {
       child: ElevatedButton(
         onPressed: () {
           if (formKey.currentState.validate()) {
-            print('NO space');
             checkLogin(userController.text, passwordController.text);
           }
         },
@@ -115,7 +114,15 @@ class _AuthenState extends State<Authen> {
             userModel = UserModel.fromJson(json.decode(contents));
             preferences.setString(MyConstant.keyUser, userController.text);
             insertLog(userModel);
-            routeToCreatePinCode(userModel);
+
+            //4//6
+            if (userModel.result.userRole.contains("4") ||
+                userModel.result.userRole.contains("6")) {
+              routeToCreatePinCode(userModel);
+            } else {
+              normalDialog(context, "ไม่สามารถเข้าระบบได้",
+                  "ไม่มีสิทธิ์เข้าใช้งานระบบ WeSafe");
+            }
           } //else
         },
       );

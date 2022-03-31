@@ -18,6 +18,7 @@ String initialRoute;
 void main() async {
   SQLiteHelper sqLiteHelperWorkList = new SQLiteHelper();
   WidgetsFlutterBinding.ensureInitialized();
+ //
 
   SharedPreferences preferences = await SharedPreferences.getInstance();
   String pincode = preferences.getString('PINCODE');
@@ -35,7 +36,6 @@ void main() async {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    WidgetsFlutterBinding.ensureInitialized();
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       routes: map,

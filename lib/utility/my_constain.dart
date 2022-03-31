@@ -13,6 +13,8 @@ class MyConstant {
   static final String imageMenuO_3 = 'images/Outage3.png';
   static final String imageMenuO_4 = 'images/Outage4.png';
 
+  static final String imageMenuH_1 = 'images/menu2.png';
+
   static final String keyPincode = "PINCODE";
   static final String keyUser = "USER";
 
@@ -45,6 +47,12 @@ class MyConstant {
   static final String imgIconCheckList3 = "images/pressure.png";
   static final String imgIconCheckList4 = "images/grounding.png";
   static final String imgIconCheckList5 = "images/traffic-cone.png";
+
+
+  static final String imgIconHotSub1 = "images/tower.png";
+  static final String imgIconHotSub2 = "images/labor-day.png";
+  static final String imgIconHotSub3 = "images/electric-pole.png";
+  static final String imgIconHotSub4 = "images/pressure.png";
 
   static final strDateNow = getDateNow();
 }
