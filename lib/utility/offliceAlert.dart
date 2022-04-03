@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/states/hotlineMainMenu.dart';
 
 import 'package:wesafe/states/outageMainMenu.dart';
 import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 Future<Null> offilineAlert(BuildContext context, String title, String message,
-    SQLiteUserModel userModel, String reqNo, int status) async {
+    SQLiteUserModel userModel, String reqNo, int status ) async {
   showDialog(
     context: context,
     builder: (context) => SimpleDialog(
@@ -30,18 +31,35 @@ Future<Null> offilineAlert(BuildContext context, String title, String message,
                 child: TextButton(
                     onPressed: () {
                       
-                     
-                      SQLiteHelperOutage().updateWorkListStatus(status, reqNo);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => OutageMainMenu(
-                            userModel: userModel,
-                            //  userModel: userModel,
-                            // ownerId: userModel.ownerID,
+                     if(userModel.ownerID.contains("O")){
+                        SQLiteHelperOutage()
+                            .updateWorkListStatus(status, reqNo);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OutageMainMenu(
+                              userModel: userModel,
+                              //  userModel: userModel,
+                              // ownerId: userModel.ownerID,
+                            ),
                           ),
-                        ),
-                      );
+                        );
+                     }else if(userModel.ownerID.contains("H")){
+                        SQLiteHelperOutage()
+                            .updateWorkListStatus(status, reqNo);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HotlineMainMenu(
+                              userModel: userModel,
+                              //  userModel: userModel,
+                              // ownerId: userModel.ownerID,
+                            ),
+                          ),
+                        );
+                     }
+
+                     
                     },
                     child: Text('ตกลง')),
               ),

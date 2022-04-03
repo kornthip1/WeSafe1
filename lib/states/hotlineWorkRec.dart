@@ -7,6 +7,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistOutageModel.dart';
+import 'package:wesafe/states/hotlineWorklist.dart';
 import 'package:wesafe/states/outageWorklist.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
@@ -20,8 +21,10 @@ class HotlineWorkRec extends StatefulWidget {
   final String workName;
   final SQLiteUserModel userModel;
   final String mainID;
+  final String subID;
   final String mainName;
-  final int workID;
+  final String subName;
+  final String workID;
   final int workList;
   final int listStatus;
   final String isMainLine;
@@ -30,11 +33,13 @@ class HotlineWorkRec extends StatefulWidget {
       this.workName,
       this.userModel,
       this.mainID,
+      this.subID,
       this.mainName,
       this.workID,
       this.workList,
       this.listStatus,
-      this.isMainLine});
+      this.isMainLine,
+      this.subName});
 
   @override
   _HotlineWorkRecState createState() => _HotlineWorkRecState();
@@ -47,13 +52,13 @@ class _HotlineWorkRecState extends State<HotlineWorkRec> {
   List<File> files = [];
   int rows = 1;
   String choose = "1";
-  int workID;
+  String workID;
   List<SQLiteWorklistOutageModel> workingModels = [];
 
   @override
   void initState() {
     super.initState();
-    workID = widget.workID;
+    workID =   widget.workID;
     readWorkList();
     userModel = widget.userModel;
     for (var i = 0; i < rows; i++) {
@@ -134,24 +139,24 @@ class _HotlineWorkRecState extends State<HotlineWorkRec> {
                     }
                   }
                 } else {
-                  if (choose == "1") {
-                    //ต้องถ่ายภาพ
-                    print("files : " + files[0].toString());
-                    if (null == files[0]) {
-                      normalDialog(
-                          context, "เตือน", "กรุณาถ่ายภาพอย่างน้อย 1 ภาพ");
-                    } else {
-                      canSave = true;
-                    }
-                  } else if (choose == "0") {
-                    //ไม่ปฏิบัติ ต้องระบุเหตุผล
-                    print("value Text : " + workController.text);
-                    if (workController.text.trim() == "") {
-                      normalDialog(context, "เตือน", "กรุณาระบุเหตุผล");
-                    } else {
-                      canSave = true;
-                    }
+                  //if (choose == "1") {
+                  //ต้องถ่ายภาพ
+                  print("files : " + files[0].toString());
+                  if (null == files[0]) {
+                    normalDialog(
+                        context, "เตือน", "กรุณาถ่ายภาพอย่างน้อย 1 ภาพ");
+                  } else {
+                    canSave = true;
                   }
+                  // } else if (choose == "0") {
+                  //   //ไม่ปฏิบัติ ต้องระบุเหตุผล
+                  //   print("value Text : " + workController.text);
+                  //   if (workController.text.trim() == "") {
+                  //     normalDialog(context, "เตือน", "กรุณาระบุเหตุผล");
+                  //   } else {
+                  //     canSave = true;
+                  //   }
+                  // }
                 }
 
                 if (canSave) {
@@ -169,10 +174,11 @@ class _HotlineWorkRecState extends State<HotlineWorkRec> {
                   // SQLiteHelperOutage.updateWorkList(
                   //     1, workID.toString(), widget.workList);
                   print('before save  $workID , ${widget.workList}');
-                  SQLiteHelperOutage().updateWorkList(
+                  SQLiteHelperOutage()
+                      .updateWorkList(
                     2,
                     workID.toString(),
-                    "1",
+                    widget.subID,
                     widget.workList,
                     base64Strs
                         .toString()
@@ -181,40 +187,59 @@ class _HotlineWorkRecState extends State<HotlineWorkRec> {
                     int.parse(choose),
                     workController.text,
                     widget.mainID == "999" ? TextOtetController.text : "",
-                    int.parse(widget.isMainLine),
-                  );
-                  if (widget.listStatus != 2) {
-                    SQLiteHelperOutage().updateWorkList(
-                        1,
-                        workID.toString(),
-                        "1",
-                        widget.workList + 1,
-                        base64Strs
-                            .toString()
-                            .replaceAll("[", "")
-                            .replaceAll("]", ""),
-                        int.parse(choose),
-                        workController.text,
-                        widget.mainID == "999" ? TextOtetController.text : "",
-                        int.parse(widget.isMainLine));
-                  }
+                    0,
+                  )
+                      .then(((value) {
+                    print("next....");
+                    SQLiteHelperOutage()
+                        .updateWorkList(
+                            1,
+                            workID.toString(),
+                            widget.subID,
+                            widget.workList + 1,
+                            "",
+                            int.parse(choose),
+                            workController.text,
+                            widget.mainID == "999"
+                                ? TextOtetController.text
+                                : "",
+                            0)
+                        .then((value) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => HotlineWorklist(
+                                  workID: widget.workID.toString(),
+                                  MenuName: widget.mainName,
+                                  MenuID: int.parse(widget.mainID),
+                                  MenuSubID: int.parse(widget.subID),
+                                  MenuSubName: widget.subName,
+                                  userModel: widget.userModel,
+                                )),
+                      );
+                    });
+                  }));
+                  // if (widget.listStatus != 2) {
+
+                  // }
 
                   //***** Get Image************ */
 
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => OutageWorkList(
-                              userModel: userModel,
-                              mainName: widget.mainName,
-                              mainID: widget.mainID,
-                              workId: workID,
-                              isMainLine: widget.isMainLine,
-                              workPerform: widget.mainID == "999"
-                                  ? TextOtetController.text
-                                  : "",
-                            )),
-                  );
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //       builder: (context) => OutageWorkList(
+                  //             userModel: userModel,
+                  //             mainName: widget.mainName,
+                  //             mainID: widget.mainID,
+                  //             workId: workID,
+                  //             isMainLine: widget.isMainLine,
+                  //             workPerform: widget.mainID == "999"
+                  //                 ? TextOtetController.text
+                  //                 : "",
+                  //           )),
+                  // );
+
                 }
               } catch (e) {
                 await http.post(

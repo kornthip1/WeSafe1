@@ -104,6 +104,9 @@ class _OutageWorkListState extends State<OutageWorkList> {
           }
         });
       } //else
+
+
+      
     } catch (e) {
       print("Error : " + e.toString());
       SQLiteHelperOutage()
@@ -218,7 +221,7 @@ class _OutageWorkListState extends State<OutageWorkList> {
               }
 
               if (checkListModels[index].type.contains("1")) {
-                print("insert db and update work status");
+                print("insert db and update work status   - ID : "+workID.toString());
 
                 SQLiteHelperOutage().updateWorkList(
                     2,
@@ -236,6 +239,7 @@ class _OutageWorkListState extends State<OutageWorkList> {
               } else {
                 print('work perform ------->' + workController.text);
                 print('work type ------->' + checkListModels[index].type);
+                print('workID   ------->' + workID.toString());
                 if (workController.text.trim() != "" || workMain == "999") {
                   Navigator.push(
                     context,
@@ -476,7 +480,8 @@ class _OutageWorkListState extends State<OutageWorkList> {
     });
   }
 
-  Future<Null> prepareWorking() async {
+  Future<Null> 
+  prepareWorking() async {
     if (workID == 0) {
       int lastID = 1;
       await SQLiteHelperOutage().selectLastID().then((result) {

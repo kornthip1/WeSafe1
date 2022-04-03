@@ -75,12 +75,11 @@ class SQLiteHotline {
     return lastID;
   }
 
-  Future<List<SQLiteWorklistOutageModel>> selectWorkList(
-      String reqNo, String subMenu) async {
+  Future<List<SQLiteWorklistOutageModel>> selectWorkList(String reqNo) async {
     Database database = await connectedDatabase();
     List<SQLiteWorklistOutageModel> models = [];
     List<Map<String, dynamic>> maps = await database.rawQuery("SELECT * " +
-        "FROM  WORKLIST  WHERE REQNO = '$reqNo' AND  SUBMENU = '$subMenu' " +
+        "FROM  WORKLIST  WHERE REQNO = '$reqNo' " +
         "ORDER BY REQNO DESC  ");
 
     for (var item in maps) {
@@ -103,9 +102,9 @@ class SQLiteHotline {
         "     WHEN WORKSTATUS = 4 THEN 'อนุมัติแล้วยังไม่จบกระบวนการ (รอปิดงาน)'" +
         "     WHEN WORKSTATUS = 5 THEN 'ปิดงาน'" +
         "     END AS REMARK," +
-        "     MAINMENU,"
-            "     WORKSTATUS  , WORKPERFORM  " +
-        "     FROM  WORKLIST  WHERE ISCOMPLATE  != 1 AND  ( WORKSTATUS = 4  OR WORKSTATUS = 5 ) AND MAINMENU != '999' " +
+        "     MAINMENU, SUBMENU,  WORKSTATUS  " +
+        "FROM  WORKLIST WHERE ISCOMPLATE  != 1  AND MAINMENU != '999' AND  WORKSTATUS == 4    " +
+        // "     FROM  WORKLIST  WHERE ISCOMPLATE  != 1 AND  ( WORKSTATUS = 4  OR WORKSTATUS = 5 ) AND MAINMENU != '999' " +
         "     ORDER BY REQNO DESC  ");
 
     for (var item in maps) {

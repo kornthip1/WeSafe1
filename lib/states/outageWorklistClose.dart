@@ -82,20 +82,6 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
             load = false;
           });
 
-          // SQLiteHelperOutage().readWorkList().then((value) {
-          //   // if(value.length>0){
-
-          //   // }
-
-          //   for (var item in value) {
-          //     print(' ********* check value....');
-          //     print(
-          //         '***** -----${item.reqNo} : ${item.checklist} - ${item.submenU} :${item.workstatus} ');
-
-          //     // if(){}
-
-          //   }
-          // });
 
           SQLiteHelperOutage().selectWorkList(reqNo, "2").then((results) {
             print('********** # results : ${results.length} ');
@@ -818,7 +804,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
           .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
       String msg = "📣 ปิดงาน : $newReq"
               "\n" +
-          "widget.mainName" +
+          listModels[0].mainmenu +
           " : หลังปฏิบัติงาน"
               "\n" +
           "\n" +

@@ -41,63 +41,76 @@ class _HotlineMainMenuState extends State<HotlineMainMenu> {
     try {
       //-----step 1
       bool isInSQLite = false;
-      SQLiteHelperOutage().selectMainMenu(1).then((result) {
+      SQLiteHelperOutage().selectMainMenu(1).then((result) async {
         if (result == null) {
           normalDialog(context, "Error", "ไม่มีข้อมูล");
         } else {
+          print('######### Hotline result : ${result.length}');
           if (result.length > 0) {
-            isInSQLite = true;
+            //isInSQLite = true;
             setState(() {
               listMenu = result;
               load = false;
             });
           } else {
-            isInSQLite = false;
+            // isInSQLite = false;
+            listMenu.clear();
+            //test
+            isConnected = true;
+            if (isConnected) {
+              final response = await http.get(
+                Uri.parse('${MyConstant.newService}workmenu/list_all'),
+                headers: <String, String>{
+                  'Content-Type': 'application/json; charset=UTF-8',
+                },
+              );
+              MastOutageAllListModel checklistmodel =
+                  MastOutageAllListModel.fromJson(jsonDecode(response.body));
+              if (!checklistmodel.isSuccess) {
+                normalDialog(context, 'Error', checklistmodel.message);
+              } else {
+                MastOutageAllListModel listAllModel;
+                listAllModel = checklistmodel;
+                for (int j = 0; j < listAllModel.result.length; j++) {
+                  MastOutageMenuModel menuModel = MastOutageMenuModel(
+                      dateCreated: MyConstant.strDateNow,
+                      menuMainID: listAllModel.result[j].menuMainID,
+                      menuMainName: listAllModel.result[j].menuMainName,
+                      menuSubID: listAllModel.result[j].menuSubID,
+                      menuSubName: listAllModel.result[j].menuSubName,
+                      menuListID: listAllModel.result[j].menuChecklistID,
+                      menuListName: listAllModel.result[j].menuChecklistName,
+                      type: listAllModel.result[j].type,
+                      isChoice: listAllModel.result[j].isChoice,
+                      quantityImg: listAllModel.result[j].quantityImg);
+                  SQLiteHelperOutage().insertMenu(menuModel);
+                  workListInfo();
+                  // if ( ( listAllModel.result[j].menuMainID
+                  //         .toString()
+                  //         .contains("10")  ||
+                  //     listAllModel.result[j].menuMainID
+                  //         .toString()
+                  //         .contains("999") ) &&
+                  //     listAllModel.result[j].menuChecklistID
+                  //         .toString()
+                  //         .contains("1")) {
+                  //   setState(() {
+                  //     print('---->    ${listAllModel.result[j].menuMainID}');
+                  //     listMenu.add(menuModel);
+                  //     load = false;
+                  //   });
+                  // }
+                }
+              }
+            }
           }
         }
       });
 
       //---- step 2
-      if (!isInSQLite) {
-        if (isConnected) {
-          final response = await http.get(
-            Uri.parse('${MyConstant.newService}workmenu/list_all'),
-            headers: <String, String>{
-              'Content-Type': 'application/json; charset=UTF-8',
-            },
-          );
-          MastOutageAllListModel checklistmodel =
-              MastOutageAllListModel.fromJson(jsonDecode(response.body));
-          if (!checklistmodel.isSuccess) {
-            normalDialog(context, 'Error', checklistmodel.message);
-          } else {
-            MastOutageAllListModel listAllModel;
-            listAllModel = checklistmodel;
-            for (int j = 0; j < listAllModel.result.length; j++) {
-              MastOutageMenuModel menuModel = MastOutageMenuModel(
-                  dateCreated: MyConstant.strDateNow,
-                  menuMainID: listAllModel.result[j].menuMainID,
-                  menuMainName: listAllModel.result[j].menuMainName,
-                  menuSubID: listAllModel.result[j].menuSubID,
-                  menuSubName: listAllModel.result[j].menuSubName,
-                  menuListID: listAllModel.result[j].menuChecklistID,
-                  menuListName: listAllModel.result[j].menuChecklistName,
-                  type: listAllModel.result[j].type,
-                  isChoice: listAllModel.result[j].isChoice,
-                  quantityImg: listAllModel.result[j].quantityImg);
-              SQLiteHelperOutage().insertMenu(menuModel);
-
-              if (listAllModel.result[j].menuMainID.toString().contains("10") &&
-                  listAllModel.result[j].menuSubID.toString().contains("1")) {
-                setState(() {
-                  listMenu.add(menuModel);
-                  load = false;
-                });
-              }
-            }
-          }
-        } //isConnected
-      }
+      // if (!isInSQLite) {
+      //   //isConnected
+      // }
     } catch (e) {
       AlertDialog(
         title: Title(color: Colors.red, child: Text(e.toString())),

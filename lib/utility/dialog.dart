@@ -24,7 +24,7 @@ Future<Null> normalDialog(
           title: title,
           index: 0,
         ),
-        subtitle: ShowTitle(title: message, index: 1),
+        subtitle: ShowTitle(title: message, index: 1 ,  ),
       ),
       children: [
         TextButton(onPressed: () => Navigator.pop(context), child: Text('OK'))

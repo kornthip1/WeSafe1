@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class ShowTitle extends StatelessWidget {
   String title;
-
   int index;
 
   ShowTitle({@required this.title, this.index});
 
-  TextStyle h1Style() => TextStyle(fontSize: 24, fontWeight: FontWeight.bold);
+  TextStyle h1Style() => TextStyle(
+        fontSize: 24,
+        fontWeight: FontWeight.bold,
+        
+      );
 
   TextStyle h2Style() => TextStyle(fontSize: 16, fontWeight: FontWeight.w700);
 
@@ -42,6 +46,7 @@ class ShowTitle extends StatelessWidget {
     return Text(
       title,
       style: textStyles[index],
+      //textAlign:index==1? TextAlign.center : TextAlign.left,
     );
   }
 }

@@ -4,6 +4,7 @@ import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/checkWork.dart';
 import 'package:wesafe/states/hotLineMainMenu.dart';
+import 'package:wesafe/states/hotlineCloseAndCheck.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/states/otageCloseAndCheck.dart';
 import 'package:wesafe/states/outageMainMenu.dart';
@@ -13,6 +14,7 @@ import 'package:wesafe/utility/sqlite_helper.dart';
 import 'package:wesafe/widgets/showMan.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
+// ignore: must_be_immutable
 class ShowDrawer extends StatelessWidget {
   final SQLiteUserModel userModel;
   ShowDrawer({@required this.userModel});
@@ -130,7 +132,7 @@ class ShowDrawer extends StatelessWidget {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => HotlineMainMenu(
+              builder: (context) => HotlineCheckList(
                 userModel: userModel,
                 //  userModel: userModel,
                 // ownerId: userModel.ownerID,

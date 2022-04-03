@@ -48,7 +48,6 @@ class MyConstant {
   static final String imgIconCheckList4 = "images/grounding.png";
   static final String imgIconCheckList5 = "images/traffic-cone.png";
 
-
   static final String imgIconHotSub1 = "images/tower.png";
   static final String imgIconHotSub2 = "images/labor-day.png";
   static final String imgIconHotSub3 = "images/electric-pole.png";
@@ -59,6 +58,6 @@ class MyConstant {
 
 String getDateNow() {
   final DateTime now = DateTime.now();
-  String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
+  String formattedDate = DateFormat('yyyy-MM-dd   kk:mm').format(now);
   return formattedDate.toString();
 }

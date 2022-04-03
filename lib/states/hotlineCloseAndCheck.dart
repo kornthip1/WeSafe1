@@ -8,76 +8,65 @@ import 'package:wesafe/models/mastCheckWorkListModel.dart';
 import 'package:wesafe/models/mastOutageAllList.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistOutageModel.dart';
-import 'package:wesafe/states/outageWorklistClose.dart';
+import 'package:wesafe/states/hotlineWorkCloseList.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/offlineDialog.dart';
+import 'package:wesafe/utility/sqliteHotline.dart';
 import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showProgress.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
-class OtageCloseAndCheck extends StatefulWidget {
+class HotlineCheckList extends StatefulWidget {
   final SQLiteUserModel userModel;
-  OtageCloseAndCheck({@required this.userModel});
+  HotlineCheckList({@required this.userModel});
 
   @override
-  _OtageCloseAndCheckState createState() => _OtageCloseAndCheckState();
+  State<HotlineCheckList> createState() => _HotlineCheckListState();
 }
 
-class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
-  SQLiteUserModel userModel;
-  MastCheckWorkListModel modelCheck;
+class _HotlineCheckListState extends State<HotlineCheckList> {
   List<SQLiteWorklistOutageModel> models = [];
-  bool isConnected = false;
+  MastCheckWorkListModel modelCheck;
+
+  bool isConnected = true;
   bool load = true;
 
   @override
   // ignore: must_call_super
   void initState() {
-    userModel = widget.userModel;
     checkConnection(context);
     readAllWork();
   }
 
-  void checkConnection(BuildContext context) async {
-    final bool isConn = await InternetConnectionChecker().hasConnection;
-    setState(() {
-      isConnected = isConn;
-    });
-  }
-
   Future<void> readAllWork() async {
-    //final bool isConn = await InternetConnectionChecker().hasConnection;
+    final bool isConnected = await InternetConnectionChecker().hasConnection;
+
     try {
       //isConnected = true;
-      
+
       bool isSqlite = false;
-      SQLiteHelperOutage().selectWorkListForCheck().then((result) async {
+      SQLiteHotline().selectWorkListForCheck().then((result) async {
         if (result == null) {
           print("result error");
         } else {
           setState(() {
             models = result;
+
             isSqlite = models.length > 0 ? true : false;
             load = false;
           });
 
-          if (isConnected) {
+          //  if (isConnected) {
+          if (true) {
             final response = await http.post(
               Uri.parse('${MyConstant.newService}request/check'),
               headers: <String, String>{
                 'Content-Type': 'application/json; charset=UTF-8',
               },
-              body: '{"Region_Code":  "${userModel.rsg}"  }',
+              body: '{"Region_Code":  "${widget.userModel.rsg}"  }',
             );
-
-            // final responseList = await http.get(
-            //   Uri.parse('${MyConstant.newService}workmenu/list_all'),
-            //   headers: <String, String>{
-            //     'Content-Type': 'application/json; charset=UTF-8',
-            //   },
-            // );
 
             if (!isSqlite) {
               setState(() {
@@ -86,8 +75,8 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
                     MastCheckWorkListModel.fromJson(jsonDecode(response.body));
                 for (var item in modelCheck.result) {
                   print(
-                      "check close : ${userModel.userID} :  ${item.employee_ID}  ");
-                  if (userModel.userID.contains(item.employee_ID)) {
+                      "check close : ${widget.userModel.userID} :  ${item.employee_ID}  ");
+                  if (widget.userModel.userID.contains(item.employee_ID)) {
                     SQLiteWorklistOutageModel sqlMpdel =
                         SQLiteWorklistOutageModel(
                       checklist: item.menuChecklistID,
@@ -100,14 +89,14 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
                           : int.parse(item.isMainLine),
                       latitude: null,
                       longtitude: null,
-                      region: userModel.rsg,
+                      region: widget.userModel.rsg,
                       reqNo: item.reqNo,
                       reseanNOT: "",
-                      user: userModel.userID,
+                      user: widget.userModel.userID,
                       workperform: item.workPerform,
                       mainmenu: item.menuMainID.toString(),
                       remark: item.statusDetail,
-                      submenU: "",
+                      submenU: item.menuSubID.toString(),
                       workstatus: int.parse(item.mastStatus),
                     );
                     setState(() {
@@ -118,15 +107,6 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
                   }
                 }
               });
-
-              // List<SQLiteWorklistOutageModel> listAll = [];
-              // SQLiteHelperOutage().readWorkList().then((results) {
-              //   listAll = results;
-              //   for (int i = 0; i < listAll.length; i++) {
-              //     print(
-              //         '#################### ${listAll[i].reqNo}  : ${listAll[i].workstatus}');
-              //   }
-              // });
             }
           }
         }
@@ -138,9 +118,94 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
     }
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: ShowTitle(title: "ตรวจสอบและปิดงาน", index: 3),
+        ),
+        drawer: ShowDrawer(userModel: widget.userModel),
+        body: load ? ShowProgress() : buildListView(),
+      ),
+    );
+  }
+
+  Widget buildListView() {
+    double size = MediaQuery.of(context).size.width;
+    return ListView.builder(
+      itemCount: models.length,
+      itemBuilder: (context, index) => GestureDetector(
+        //child: Text('${models[index].reqNo}'),
+        onTap: () {
+          print("#### --- >" +
+              widget.userModel.userID +
+              " , " +
+              models[index].mainmenu +
+              " , " +
+              models[index].reqNo +
+              ' , ${models[index].workstatus}');
+
+          //test
+          isConnected = true;
+          if (models[index].workstatus != 5) {
+            isConnected
+                ? models[index].workstatus != 4
+                    ? print('can not to do')
+                    : Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HotlineWorkCloseList(
+                              userModel: widget.userModel,
+                              reqNo: models[index].reqNo,
+                              workStatus: models[index].workstatus,
+                              mainID: models[index].mainmenu,
+                              subID: models[index].submenU),
+                        ),
+                      )
+                : offilineDialog(
+                    context,
+                    "offline",
+                    "ต้องการทำงานแบบออฟไลน์หรือไม่",
+                    models[index].reqNo,
+                    widget.userModel,
+                    models[index].workstatus,
+                    models[index].mainmenu);
+          }
+        },
+        child: Card(
+          color: models[index].workstatus == 4
+              ? Colors.green[200]
+              : Colors.grey[300],
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Center(
+              child: Column(
+                children: [
+                  ShowTitle(
+                    title: models[index].reqNo,
+                    index: 4,
+                  ),
+                  ShowTitle(
+                    title: models[index].remark,
+                    index: 2,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> allList() async {
     try {
       print("##############  allList() start() ");
+      final bool isConnected = await InternetConnectionChecker().hasConnection;
       //isConnected = true;
       if (isConnected) {
         final response = await http.get(
@@ -195,81 +260,10 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return false;
-      },
-      child: Scaffold(
-          appBar: AppBar(
-            title: ShowTitle(title: "ตรวจสอบและปิดงาน", index: 3),
-          ),
-          drawer: ShowDrawer(userModel: userModel),
-          body: load ? ShowProgress() : buildListView()),
-    );
-  }
-
-  ListView buildListView() {
-    double size = MediaQuery.of(context).size.width;
-    return ListView.builder(
-      itemCount: models.length,
-      itemBuilder: (context, index) => GestureDetector(
-        //child: Text('${models[index].reqNo}'),
-        onTap: () {
-          print("continue...." + widget.userModel.userID);
-          print("main...." + models[index].mainmenu);
-          print("req no #------->" + models[index].reqNo);
-          print('workstatus #-------> ${models[index].workstatus}');
-          print('workperform #-------> ${models[index].workperform}');
-          if (models[index].workstatus != 5) {
-            isConnected
-                ? Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => OutageWorklistClose(
-                            userModel: userModel,
-                            reqNo: models[index].reqNo,
-                            workStatus: models[index].workstatus,
-                            mainID: models[index].mainmenu,
-                            workPerform: models[index].workperform,
-                            isMainLine: models[index].isMainLine)),
-                  )
-                : offilineDialog(
-                    context,
-                    "offline",
-                    "ต้องการทำงานแบบออฟไลน์หรือไม่",
-                    models[index].reqNo,
-                    widget.userModel,
-                    models[index].workstatus,
-                    models[index].mainmenu);
-          }
-        },
-        child: Card(
-          color: models[index].workstatus == 2
-              ? Colors.green[200]
-              : Colors.grey[300],
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Column(
-                children: [
-                  ShowTitle(
-                    title: models[index].reqNo +
-                        "   : " +
-                        models[index].workstatus.toString(),
-                    index: 4,
-                  ),
-                  ShowTitle(
-                    title: models[index].remark,
-                    index: 2,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+  void checkConnection(BuildContext context) async {
+    final bool isConn = await InternetConnectionChecker().hasConnection;
+    setState(() {
+      isConnected = isConn;
+    });
   }
 }

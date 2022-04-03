@@ -130,7 +130,7 @@ class SQLiteHelperOutage {
           'UPDATE  WORKLIST  ' + 'SET WORKSTATUS = ?  ' + 'WHERE REQNO = ? ',
           [status, '$reqNo']);
 
-      print("###### updateWorkReqNo()  update seccess $count   row");
+      print("###### updateWorkListStatus()  $status  update seccess $count   row");
     } catch (e) {
       print("########## update working()  Error : ${e.toString()}");
     }
