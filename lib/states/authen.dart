@@ -22,6 +22,7 @@ class _AuthenState extends State<Authen> {
   double size;
   bool remember = false;
   String ip;
+  String currentVersion = "1.3.0";
   final formKey = GlobalKey<FormState>();
   TextEditingController userController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -51,7 +52,7 @@ class _AuthenState extends State<Authen> {
       bottomNavigationBar: Container(
         margin: EdgeInsets.only(bottom: 10, left: 110),
         width: size * 0.6,
-        child: Text("WeSafe Version 1.2.1   1/04/2022"),
+        child: Text("WeSafe Version "+currentVersion+"   4/04/2022"),
       ),
     );
   }
@@ -113,6 +114,7 @@ class _AuthenState extends State<Authen> {
             // getIp();
             userModel = UserModel.fromJson(json.decode(contents));
             preferences.setString(MyConstant.keyUser, userController.text);
+            preferences.setString(MyConstant.appVersion, currentVersion);
             insertLog(userModel);
 
             //4//6

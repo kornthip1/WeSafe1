@@ -15,8 +15,11 @@ class MyConstant {
 
   static final String imageMenuH_1 = 'images/menu2.png';
 
+  static final String imageCharactor = 'images/iconPEAChar.png';
+
   static final String keyPincode = "PINCODE";
   static final String keyUser = "USER";
+  static final String appVersion = "APPVERSION";
 
   static final String nameDatabase = 'wesafe.db';
   static final String appName = 'WeSafe';
@@ -31,6 +34,7 @@ class MyConstant {
     'ตรวจสอบสถานะการทำงาน',
     'ประวัติการทำงาน',
     'แสดงพิกัด',
+    'เวอร์ชัน',
   ];
 
   //Color

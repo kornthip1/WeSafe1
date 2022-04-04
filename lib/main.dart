@@ -22,6 +22,8 @@ void main() async {
 
   SharedPreferences preferences = await SharedPreferences.getInstance();
   String pincode = preferences.getString('PINCODE');
+
+ 
   if (pincode == null) {
     sqLiteHelperWorkList.initailDatabase();
     initialRoute = '/authen';

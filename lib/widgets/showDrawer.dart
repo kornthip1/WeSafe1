@@ -5,6 +5,7 @@ import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/checkWork.dart';
 import 'package:wesafe/states/hotLineMainMenu.dart';
 import 'package:wesafe/states/hotlineCloseAndCheck.dart';
+import 'package:wesafe/states/mainInfo.dart';
 import 'package:wesafe/states/mainMenu.dart';
 import 'package:wesafe/states/otageCloseAndCheck.dart';
 import 'package:wesafe/states/outageMainMenu.dart';
@@ -30,6 +31,7 @@ class ShowDrawer extends StatelessWidget {
               buildUserAccountsDrawerHeader(),
               buildMenuNewJob(context),
               buildMenuCheckStatus(context),
+             // buildMenuCheckInfo(context),
             ],
           ),
           buildSignOut(context),
@@ -140,6 +142,31 @@ class ShowDrawer extends StatelessWidget {
             ),
           );
         }
+      },
+    );
+  }
+
+  ListTile buildMenuCheckInfo(BuildContext context) {
+    return ListTile(
+      leading: Icon(
+        Icons.info_outline,
+        size: 36,
+        color: MyConstant.primart,
+      ),
+      title: ShowTitle(
+        title: titles[4],
+        index: 1,
+      ),
+      onTap: () {
+        print(' show app info');
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MainInfo(
+              userModel: userModel,
+            ),
+          ),
+        );
       },
     );
   }
