@@ -51,7 +51,7 @@ class _AuthenState extends State<Authen> {
       bottomNavigationBar: Container(
         margin: EdgeInsets.only(bottom: 10, left: 110),
         width: size * 0.6,
-        child: Text("WeSafe Version 1.2.0   28/02/2022"),
+        child: Text("WeSafe Version 1.2.1   1/04/2022"),
       ),
     );
   }
