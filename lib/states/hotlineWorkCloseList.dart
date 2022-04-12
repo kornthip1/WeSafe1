@@ -14,10 +14,12 @@ import 'package:wesafe/models/mastOutageCloseWork.dart';
 import 'package:wesafe/models/responeModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistOutageModel.dart';
+import 'package:wesafe/states/hotlineCloseAndCheck.dart';
 import 'package:wesafe/states/hotlineMainMenu.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/offliceAlert.dart';
+import 'package:wesafe/utility/sqliteHotline.dart';
 import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showProgress.dart';
@@ -78,17 +80,17 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
           SQLiteHelperOutage()
               .selectWorkList(widget.reqNo, widget.subID)
               .then((results) {
-            print('********** # results : ${results.length} ');
+            //print('********** # results : ${results.length} ');
             if (results.length > 0) {
               setState(() {
                 listModels = results;
               });
             } else {
-              print('######### checkListModels : ${checkListModels.length} ');
+              //print('######### checkListModels : ${checkListModels.length} ');
               for (var item in checkListModels) {
                 if (item.menuMainID == int.parse(widget.mainID) &&
                     item.menuSubID == int.parse(widget.subID)) {
-                  print("##########  list  : " + item.menuListID.toString());
+                  // print("##########  list  : " + item.menuListID.toString());
                   SQLiteWorklistOutageModel sqlMpdel =
                       SQLiteWorklistOutageModel(
                     checklist: item.menuListID,
@@ -421,6 +423,8 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
   }
 
   Widget buildSaveBtn() {
+    //test
+    //isConnected = true;
     return Container(
       height: 40,
       child: ElevatedButton(
@@ -432,16 +436,30 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
           listModels.isEmpty
               ? print("")
               : files.length > 0
-                  ? files[0] == null
-                      ? normalDialog(
+                  ? files[0] != null
+                      ? isConnected
+                          ? widget.reqNo.length < 5
+                              ? onlineInsert(widget.reqNo)
+                              : sendToServer(widget.reqNo)
+                          : updateStatusOffline()
+                      : normalDialog(
                           context,
                           '',
                           'กรุถ่ายภาพอย่างน้อย 1 ภาพ',
                         )
-                      : widget.reqNo.length < 5
-                          ? onlineInsert(widget.reqNo)
-                          : sendToServer(widget.reqNo)
                   : print("can't insert");
+          // ? files[0] == null
+          //     ? normalDialog(
+          //         context,
+          //         '',
+          //         'กรุถ่ายภาพอย่างน้อย 1 ภาพ',
+          //       )
+          //     : isConnected
+          //         ? widget.reqNo.length < 5
+          //             ? onlineInsert(widget.reqNo)
+          //             : sendToServer(widget.reqNo)
+          //         : print("can't insert")
+          // : SQLiteHelperOutage().updateWorkListStatus(6, widget.reqNo);
         },
         style: ElevatedButton.styleFrom(
           primary: listModels.isEmpty
@@ -454,103 +472,151 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
     );
   }
 
+  void updateStatusOffline() {
+    SQLiteHelperOutage().updateWorkListStatus(6, widget.reqNo).then((value) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HotlineCheckList(
+            userModel: widget.userModel,
+          ),
+        ),
+      );
+    });
+  }
+
   Future<Null> onlineInsert(String reqNo) async {
+    //test
     final bool isConn = await InternetConnectionChecker().hasConnection;
+
     if (isConn) {
       InsertWorklistOutageModel insertWorklistModel;
-      List<SQLiteWorklistOutageModel> listModels = [];
+      //List<SQLiteWorklistOutageModel> listModels = [];
       String _strJson;
       List<String> listValues = [];
 
-      insertWorklistModel = InsertWorklistOutageModel(
-          deptName: widget.userModel.deptName == null
-              ? ""
-              : widget.userModel.deptName,
-          dateTimeWorkFinish: "",
-          docRequire: "",
-          empLeaderID: widget.userModel.leaderId == null
-              ? ""
-              : widget.userModel.leaderId,
-          employeeID:
-              widget.userModel.userID == null ? "" : widget.userModel.userID,
-          iPAddress: "",
-          image: files[0] == null ? [""] : generateImage(),
-          // image: [""],
-          isOffElect: "",
-          offElectReason: "",
-          isSortGND: "",
-          gNDReason: "",
-          locationLat: lat.toString(),
-          locationLng: lng.toString(),
-          macAddress: "",
-          menuChecklistID: checkListModels == null
-              ? ""
-              : (checkListModels.length - 1).toString(),
-          menuMainID: widget.mainID,
-          menuSubID: widget.subID,
-          ownerID: "H",
-          parcel: "",
-          province: "",
-          regionCode: widget.userModel.rsg == null ? "" : widget.userModel.rsg,
-          remark: "",
-          sender:
-              widget.userModel.userID == null ? "" : widget.userModel.userID,
-          station: "",
-          tokenNoti: "",
-          waitApprove: "",
-          workArea: "",
-          workPerform: "",
-          workStatus: "5",
-          workType: "",
-          reqNo: widget.reqNo,
-          doOrNot: "",
-          isMainLine: "",
-          reasonNot: "");
+      int i = 0;
+      SQLiteHotline().selectWorkList(reqNo).then((result) async {
+        if (result != null || result.length > 0) {
+          print(
+              'onlineInsert()    Req No :  $reqNo  ---> size : ${result.length}');
+          for (var item in result) {
+            i++;
 
-      _strJson = json.encode(insertWorklistModel);
-      listValues.add(_strJson);
-      //for
+            // print(
+            //     'onlineInsert()    image :  ${listModels[i].imgList}');
 
-      final response = await http.post(
-        Uri.parse('${MyConstant.webService}WeSafe_InsertTransactionO'),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: utf8.encode(listValues.toString()),
-      );
+            insertWorklistModel = InsertWorklistOutageModel(
+                deptName: widget.userModel.deptName == null
+                    ? ""
+                    : widget.userModel.deptName,
+                dateTimeWorkFinish: "",
+                docRequire: "",
+                empLeaderID: widget.userModel.leaderId == null
+                    ? ""
+                    : widget.userModel.leaderId,
+                employeeID: widget.userModel.userID == null
+                    ? ""
+                    : widget.userModel.userID,
+                iPAddress: "",
+                image: files[0] == null ? [""] : generateImage(item.imgList),
+                // image: [""],
+                isOffElect: "",
+                offElectReason: "",
+                isSortGND: "",
+                gNDReason: "",
+                locationLat: lat.toString(),
+                locationLng: lng.toString(),
+                macAddress: "",
+                menuChecklistID:
+                    checkListModels == null ? "" : item.checklist.toString(),
+                menuMainID: widget.mainID,
+                menuSubID: widget.subID,
+                ownerID: "H",
+                parcel: "",
+                province: "",
+                regionCode:
+                    widget.userModel.rsg == null ? "" : widget.userModel.rsg,
+                remark: "off|",
+                sender: widget.userModel.userID == null
+                    ? ""
+                    : widget.userModel.userID,
+                station: "",
+                tokenNoti: "",
+                waitApprove: "",
+                workArea: "",
+                workPerform: "",
+                workStatus: "4",
+                workType: "",
+                reqNo: widget.reqNo,
+                doOrNot: "",
+                isMainLine: "",
+                reasonNot: "");
 
-      print("respond  : " + response.body);
-      ResponeModel responeModel =
-          ResponeModel.fromJson(jsonDecode(response.body));
+            _strJson = json.encode(insertWorklistModel);
+            listValues.add(_strJson);
+          } //for
+        } //if
+        //
 
-      SQLiteHelperOutage()
-          .updateWorkListReq(reqNo, responeModel.result.reply.toString());
+        print(
+            '######  onlineInsert >  listValues.length : ${listValues.length}');
 
-      //setState(() {
-      //if (responeModel.isSuccess) {
-      setState(() {
-        newReq = responeModel.result.reply.toString();
-        setLine(newReq);
+        final response = await http.post(
+          Uri.parse('${MyConstant.webService}WeSafe_InsertTransactionO'),
+          headers: <String, String>{
+            'Content-Type': 'application/json; charset=UTF-8',
+          },
+          body: utf8.encode(listValues.toString()),
+        );
+
+        print("respond  : " + response.body);
+        ResponeModel responeModel =
+            ResponeModel.fromJson(jsonDecode(response.body));
+
+        SQLiteHelperOutage()
+            .updateWorkListReq(reqNo, responeModel.result.reply.toString(), 1);
+
+        //setState(() {
+        //if (responeModel.isSuccess) {
+        setState(() {
+          newReq = responeModel.result.reply.toString();
+          sendToServer(newReq);
+          //setLine(newReq);
+        });
       });
+    } else {
+      print('Offline insert...');
+      SQLiteHelperOutage().updateWorkListStatus(6, reqNo);
+      offilineAlert(context, "OffLine", "ขณะนี้ทำงานแบบ offline",
+          widget.userModel, reqNo, 6);
     }
   }
 
-  List<String> generateImage() {
-    // String strImg = "";
-    // List<String> arr = new List();
-    // if (files[0] != null) {
-    //   for (int i = 0; i < files.length; i++) {
-    //     strImg = files[i].toString();
-    //     arr.add(strImg);
-    //   }
-    // }
-
+  List<String> generateImage(String strImg) {
+    //strImg equal emtry because list for close
+    print('####--- > generateImage()  strImg : $strImg ');
     List<String> base64Strs = [];
-    for (var item in files) {
-      if (item != null) {
-        List<int> imageBytes = Io.File(item.path).readAsBytesSync();
-        String base64Str = base64Encode(imageBytes);
-        base64Strs.add(base64Str);
+    if (strImg != "") {
+      List arr = new List();
+      arr = strImg.split(',');
+      base64Strs = arr;
+      // List<String> arr = new List();
+      // if (files[0] != null) {
+      //   for (int i = 0; i < files.length; i++) {
+      //     strImg = files[i].toString();
+      //     arr.add(strImg);
+      //   }
+      //   base64Strs = arr;
+      // }
+    } else {
+      //List<String> base64Strs = [];
+      for (var item in files) {
+        if (item != null) {
+          List<int> imageBytes = Io.File(item.path).readAsBytesSync();
+          String base64Str = base64Encode(imageBytes);
+          base64Strs.add(base64Str);
+        }
       }
     }
 
@@ -568,12 +634,15 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
 
   Future<Null> sendToServer(String reqNo) async {
     try {
-      List<SQLiteWorklistOutageModel> listModels = [];
+      //List<SQLiteWorklistOutageModel> listModels = [];
       String _strJson;
       List<String> listValues = [];
       OutageCloseWork closeListModel;
       print('close : sendToServer() :  ${widget.mainID} , ${widget.subID} ');
+
       //test
+      //isConnected = false;
+
       // isConnected = true;
       if (isConnected) {
         closeListModel = OutageCloseWork(
@@ -586,7 +655,7 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
               : widget.userModel.leaderId,
           employeeID:
               widget.userModel.userID == null ? "" : widget.userModel.userID,
-          image: files == null ? [""] : generateImage(),
+          image: files == null ? [""] : generateImage(""),
           isOffElect: "",
           offElectReason: "",
           isSortGND: "",
@@ -617,7 +686,7 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
         listValues.add(_strJson);
         //for
 
-        print("value  : " + listValues.toString());
+        //print("value  : " + listValues.toString());
 
         final response = await http.post(
           Uri.parse(
@@ -635,7 +704,7 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
         print("Close success  reply = ${responeModel.result.reply.toString()}");
 
         //if (responeModel.result.reply.toString().contains("Insert")) {
-        SQLiteHelperOutage().updateWorkListStatus(5, reqNo);
+        SQLiteHotline().updateWorkListStatusClose(5, reqNo, 1);
 
         SQLiteHelperOutage().deleteWorklistByReqNo(reqNo);
 
@@ -653,8 +722,11 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
         // }
 
       } else {
+        print('sendToServer()  Offline insert...');
+        SQLiteHelperOutage().updateWorkListStatus(6, reqNo);
+
         offilineAlert(context, "OffLine", "ขณะนี้ทำงานแบบ offline",
-            widget.userModel, reqNo, 5);
+            widget.userModel, reqNo, 6);
       }
     } catch (E) {
       normalDialog(context, "Error", E.toString());
@@ -735,7 +807,7 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
   }
 
   Future<Null> getToken() async {
-    print("#--------> get line token");
+    //print("#--------> get line token");
     final bool isConnect = await InternetConnectionChecker().hasConnection;
     MastMainMenuModel _mainMenuModel;
     try {

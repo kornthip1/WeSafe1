@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:wesafe/models/mastWorkListModel_test.dart';
 import 'package:path/path.dart';
@@ -18,7 +19,9 @@ class SQLiteHelper {
   }
 
   Future<Null> initailDatabase() async {
+    WidgetsFlutterBinding.ensureInitialized();
     var databasesPath = await getDatabasesPath();
+
     final String path = join(databasesPath, MyConstant.nameDatabase);
     await openDatabase(path, version: 1,
         onCreate: (Database database, int version) async {
@@ -157,11 +160,9 @@ class SQLiteHelper {
           ' MENUCHECKLIST_ID INTEGER ,' +
           ' MENUCHECKLIST_NAME TEXT,' +
           ' DATECREATE TEXT,' +
-
           ' TYPE TEXT,' +
           ' QUANTITY_IMG INTEGER,' +
           ' IS_CHOICE TEXT,' +
-
           ' PRIMARY KEY (MENUMAIN_ID, MENUSUB_ID,MENUCHECKLIST_ID)'
               ')');
 
@@ -171,6 +172,11 @@ class SQLiteHelper {
           ' LabelDesc TEXT,' +
           ' DateTimeUpdated TEXT,' +
           ' EmpID TEXT ' +
+          ')');
+
+      await database.execute('CREATE TABLE tbOFFICE ( ' +
+          ' REGIONGROUP TEXT PRIMARY KEY,' +
+          ' PEA_NAME TEXT' +
           ')');
     });
   }

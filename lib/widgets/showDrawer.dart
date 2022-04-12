@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/checkWork.dart';
@@ -31,7 +32,8 @@ class ShowDrawer extends StatelessWidget {
               buildUserAccountsDrawerHeader(),
               buildMenuNewJob(context),
               buildMenuCheckStatus(context),
-             // buildMenuCheckInfo(context),
+              buildCheckCar(context),
+              buildMenuCheckInfo(context),
             ],
           ),
           buildSignOut(context),
@@ -209,5 +211,28 @@ class ShowDrawer extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  Widget buildCheckCar(BuildContext context) {
+    return ListTile(
+      leading: Icon(
+        Icons.car_repair,
+        size: 36,
+        color: MyConstant.primart,
+      ),
+      title: ShowTitle(
+        title: titles[2],
+        index: 1,
+      ),
+      onTap: () {
+        //test(context);
+      },
+    );
+  }
+
+  // ignore: unused_element
+  _launchURL() {
+    //await launch('https://wesafe.pea.co.th/');
+    print('_launchURL...');
   }
 }

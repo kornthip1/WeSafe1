@@ -6,10 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:get_ip_address/get_ip_address.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wesafe/models/UserModel.dart';
+import 'package:wesafe/models/mastOfficeAddrModel.dart';
+import 'package:wesafe/models/sqliteOfficeAddr.dart';
 import 'package:wesafe/states/myservice.dart';
 import 'package:wesafe/states/pincode.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
+import 'package:wesafe/utility/sqliteHotline.dart';
 import 'package:wesafe/widgets/showImage.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
@@ -52,7 +55,7 @@ class _AuthenState extends State<Authen> {
       bottomNavigationBar: Container(
         margin: EdgeInsets.only(bottom: 10, left: 110),
         width: size * 0.6,
-        child: Text("WeSafe Version "+currentVersion+"   4/04/2022"),
+        child: Text("WeSafe Version " + currentVersion + "   4/04/2022"),
       ),
     );
   }
@@ -119,8 +122,15 @@ class _AuthenState extends State<Authen> {
 
             //4//6
             if (userModel.result.userRole.contains("4") ||
-                userModel.result.userRole.contains("6")) {
-              routeToCreatePinCode(userModel);
+                userModel.result.userRole.contains("6") ||
+                userModel.result.userRole.contains("7")) {
+              //get OFFICE for prepair
+              prepareOfficeAddr(userModel.result.rEGIONCODE).then((value) {
+                print('after prepareOfficeAddr () : value = $value');
+                if (value != null) {
+                  routeToCreatePinCode(userModel);
+                }
+              });
             } else {
               normalDialog(context, "ไม่สามารถเข้าระบบได้",
                   "ไม่มีสิทธิ์เข้าใช้งานระบบ WeSafe");
@@ -274,5 +284,33 @@ class _AuthenState extends State<Authen> {
         .replaceAll(":", "")
         .replaceAll("ip", "")
         .trim();
+  }
+
+  Future<String> prepareOfficeAddr(String area) async {
+    try {
+      area = area.substring(0, 1);
+      //print('prepareOfficeAddr --->  Area = $area');
+      final response = await http.post(
+        Uri.parse('${MyConstant.newService}office/get'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: '{"Area": "$area" }',
+      );
+      // print('####### --> ${response.body}');
+      MastOfficeAddrModel model =
+          MastOfficeAddrModel.fromJson(jsonDecode(response.body));
+      for (var item in model.result) {
+        //print('#######---> ${item.rEGIONGROUP}');
+        SQLiteMastOfficeAddrModel sqlModel = SQLiteMastOfficeAddrModel(
+            peaName: item.pEAName, regionGroup: item.rEGIONGROUP);
+
+        SQLiteHotline().insertOffice(sqlModel);
+      }
+      return "Success";
+    } catch (e) {
+      normalDialog(context, 'Error', e.toString());
+      return null;
+    }
   }
 }

@@ -1,4 +1,5 @@
 //import 'dart:_http';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -30,13 +31,15 @@ class HotlineWorklist extends StatefulWidget {
   final String MenuSubName;
   final SQLiteUserModel userModel;
   final String workID;
+  final String rsg;
   HotlineWorklist(
       {@required this.MenuName,
       this.MenuID,
       this.MenuSubID,
       this.MenuSubName,
       this.userModel,
-      this.workID});
+      this.workID,
+      this.rsg});
 
   @override
   State<HotlineWorklist> createState() => _HotlineWorklistState();
@@ -63,6 +66,13 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
 
     findLatLng();
     getToken();
+
+    // const oneSec = const Duration(seconds: 3);
+
+    // Timer.periodic(oneSec, (Timer timer) {
+    //   print(
+    //       "Repeat task every one second"); // This statement will be printed after every one second
+    // });
   }
 
   void workListInfo() {
@@ -275,22 +285,22 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
                         isMainLine: "",
                         listStatus: 1,
                         mainID: listMenu[index].menuMainID.toString(),
-                        subID: listMenu[index].menuSubID.toString(),
+                        subID: widget.MenuSubID.toString(),
                         mainName: listMenu[index].menuMainName,
                         subName: widget.MenuSubName,
                         userModel: widget.userModel,
                         workID: workID.toString(),
                         workList: listMenu[index].menuListID,
                         workName: listMenu[index].menuListName,
+                        rsg: widget.rsg,
                       )),
                     ),
                   );
                 }
-              } else {
-                //normalDialog(context, ".", "ทำก่นอหน้าก่อนจ้า");
               }
-
-              //HotlineWorkRec
+              // else {
+              //   //normalDialog(context, ".", "ทำก่นอหน้าก่อนจ้า");
+              // }
             },
             child: Card(
               color: listWork[index].workstatus == 2
@@ -331,11 +341,11 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
         .then((value) {
       if (value != null && value.length > 0) {
         setState(() {
-          for (var item in value) {
-            print(
-                '##--------> ${item.reqNo} , ${item.submenU},  ${item.checklist}  status :  ${item.workstatus}');
-            print('img :  ${item.imgList.length}');
-          }
+          // for (var item in value) {
+          //   print(
+          //       '##--------> ${item.reqNo} , ${item.submenU},  ${item.checklist}  status :  ${item.workstatus}');
+          //   print('img :  ${item.imgList.length}');
+          // }
           listWork = value;
         });
       }
@@ -423,11 +433,13 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
       List<String> listValues = [];
       InsertWorklistOutageModel insertWorklistModel;
       final bool isConn = await InternetConnectionChecker().hasConnection;
+
       //test
       //isConnected = true;
+      //isConnected = false;
       if (isConnected) {
         SQLiteHotline().selectWorkList(reqNo).then((result) async {
-          print("#-----> result lenght : " + result.length.toString());
+          //print("#-----> result lenght : " + result.length.toString());
           if (result == null) {
             print("Error : " + result.toString());
           } else {
@@ -467,10 +479,10 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
                   menuMainID: listModels[i].mainmenu == null
                       ? ""
                       : listModels[i].mainmenu,
-                  menuSubID: listModels[i].submenU,
+                  menuSubID: widget.MenuSubID.toString(),
                   ownerID: "H",
                   parcel: "",
-                  province: "",
+                  province: widget.rsg,
                   regionCode:
                       widget.userModel.rsg == null ? "" : widget.userModel.rsg,
                   remark: remarkController.text,
@@ -512,7 +524,7 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
                 "####---> Insert success  req_no = ${responeModel.result.reply.toString()}");
 
             SQLiteHelperOutage()
-                .updateWorkListReq(reqNo, responeModel.result.reply.toString());
+                .updateWorkListReq(reqNo, responeModel.result.reply.toString(),0);
 
             setLine(responeModel.result.reply.toString());
 
@@ -614,20 +626,21 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
   List generateImage(String strImg) {
     List arr = new List();
     arr = strImg.split(',');
-    print('### generateImage --- > ${arr[0].toString()}');
+    //print('### generateImage --- > ${arr[0].toString()}');
     return arr;
   }
 
   Future<Null> getToken() async {
-    print("#--------> get line token");
+    //print("#--------> get line token");
     final bool isConnect = await InternetConnectionChecker().hasConnection;
     MastMainMenuModel _mainMenuModel;
     try {
       if (isConnect) {
-        print("#--------> get line token   : " +
-            isConnect.toString() +
-            "    rsg : " +
-            widget.userModel.rsg);
+        // print("#--------> get line token   : " +
+        //     isConnect.toString() +
+        //     "    rsg : " +
+        //     widget.userModel.rsg);
+
         final client = HttpClient();
 
         final request = await client

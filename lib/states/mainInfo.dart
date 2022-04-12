@@ -1,6 +1,12 @@
+import 'dart:convert';
+import 'dart:io' show Platform; //at the top
+import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:wesafe/models/labelsModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
 import 'package:wesafe/widgets/showTitle.dart';
@@ -17,16 +23,11 @@ class _MainInfoState extends State<MainInfo> {
   // preferences.setString(MyConstant.appVersion, currentVersion);
   String appVersion = "";
   @override
-  // ignore: must_call_super
+  // ignore: must_call_super, missing_return
   Future<void> initState() {
-    // SharedPreferences preferences = await SharedPreferences.getInstance();
-    // appVersion = preferences.getString("APPVERSION") == null
-    //     ? ""
-    //     : preferences.getString("APPVERSION");
-
-    //test
-    appVersion = "1.3.0";
+    getCurrentVersion();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -69,21 +70,22 @@ class _MainInfoState extends State<MainInfo> {
             child: Column(
               children: [
                 Image.asset(
-                  MyConstant.imageMenuH_1,
+                  MyConstant.imageCharactor,
                   height: 150,
-                  width: 150,
+                  width: 170,
                 ),
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(5.0),
                   child: Card(
-                   
                     child: Container(
-                      decoration: new BoxDecoration(borderRadius: BorderRadius.circular(3),color: Colors.deepOrange[400]),
+                      decoration: new BoxDecoration(
+                          borderRadius: BorderRadius.circular(3),
+                          color: Colors.deepOrange[400]),
                       //color: Colors.orange[300],
                       width: size * 0.3,
                       child: Center(
                         child: new Text(
-                          "V. 1.3.0 ",
+                          "V. $appVersion",
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
@@ -104,7 +106,7 @@ class _MainInfoState extends State<MainInfo> {
       padding: const EdgeInsets.only(top: 5),
       child: Card(
         child: Container(
-          width: size*0.95,
+          width: size * 0.95,
           child: Column(
             children: [
               Container(
@@ -123,9 +125,8 @@ class _MainInfoState extends State<MainInfo> {
                       ),
                     ),
                     title: Align(
-                      alignment:Alignment.center,
+                      alignment: Alignment.center,
                       child: Column(
-                        
                         children: [
                           Text(
                             'ตรวจสอบและอัพเดท',
@@ -136,8 +137,39 @@ class _MainInfoState extends State<MainInfo> {
                           ),
                           Text('สามารถตรวจสอบและอัพเดทได้ที่'),
                           ElevatedButton(
-                            onPressed: () {
-                              print('call api and update..');
+                            onPressed: () async {
+                              final response = await http.post(
+                                Uri.parse(
+                                    '${MyConstant.newService}label/manage'),
+                                headers: <String, String>{
+                                  'Content-Type':
+                                      'application/json; charset=UTF-8',
+                                },
+                                body:
+                                    '{ "Activity" : "1", "Seq" : "1", "Label":"","LabelDesc":"","DateTimeUpdated" : "", "EmpID":"" }',
+                              );
+
+                              LabelsModel model = LabelsModel.fromJson(
+                                  jsonDecode(response.body));
+
+                              String strLastVersion = "";
+                              for (var item in model.result) {
+                                strLastVersion = item.labelDesc;
+                              }
+
+                              if (appVersion != strLastVersion) {
+                                String os =
+                                    Platform.operatingSystem; //in your code
+                                //print(os);
+                                if (os.contains('android')) {
+                                  _launchURL('android');
+                                } else {
+                                  _launchURL('ios');
+                                }
+                              } else {
+                                normalDialog(context, '',
+                                    'แอพลิเคชั่นเป็น เวอร์ชันล่าสุด');
+                              }
                             },
                             child: Container(
                               width: size * 0.3,
@@ -165,5 +197,26 @@ class _MainInfoState extends State<MainInfo> {
         ),
       ),
     );
+  }
+
+  _launchURL(String os) async {
+    print('_launchURL  :  $os');
+
+    if (os.contains('android')) {
+      await launch(
+          'https://play.google.com/store/apps/details?id=com.flutterpea.wesafe');
+    } else if (os.contains('ios')) {
+      await launch('https://wesafe.pea.co.th/ios/');
+    }
+  }
+
+  Future<Null> getCurrentVersion() async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+
+    setState(() {
+      appVersion = preferences.getString("APPVERSION") == null
+          ? ""
+          : preferences.getString("APPVERSION");
+    });
   }
 }

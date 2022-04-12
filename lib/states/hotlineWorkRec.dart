@@ -28,6 +28,7 @@ class HotlineWorkRec extends StatefulWidget {
   final int workList;
   final int listStatus;
   final String isMainLine;
+  final String rsg;
   HotlineWorkRec(
       {@required this.workType,
       this.workName,
@@ -39,7 +40,8 @@ class HotlineWorkRec extends StatefulWidget {
       this.workList,
       this.listStatus,
       this.isMainLine,
-      this.subName});
+      this.subName,
+      this.rsg});
 
   @override
   _HotlineWorkRecState createState() => _HotlineWorkRecState();
@@ -58,7 +60,7 @@ class _HotlineWorkRecState extends State<HotlineWorkRec> {
   @override
   void initState() {
     super.initState();
-    workID =   widget.workID;
+    workID = widget.workID;
     readWorkList();
     userModel = widget.userModel;
     for (var i = 0; i < rows; i++) {
@@ -215,6 +217,7 @@ class _HotlineWorkRecState extends State<HotlineWorkRec> {
                                   MenuSubID: int.parse(widget.subID),
                                   MenuSubName: widget.subName,
                                   userModel: widget.userModel,
+                                  rsg: widget.rsg,
                                 )),
                       );
                     });

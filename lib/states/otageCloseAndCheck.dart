@@ -242,7 +242,7 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
                     models[index].reqNo,
                     widget.userModel,
                     models[index].workstatus,
-                    models[index].mainmenu);
+                    models[index].mainmenu,"1");
           }
         },
         child: Card(

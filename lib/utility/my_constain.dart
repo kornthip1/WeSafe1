@@ -14,6 +14,9 @@ class MyConstant {
   static final String imageMenuO_4 = 'images/Outage4.png';
 
   static final String imageMenuH_1 = 'images/menu2.png';
+  static final String imageMenuH_2 = 'images/H1.png';
+  static final String imageMenuH_3 = 'images/H2.png';
+  static final String imageMenuH_4 = 'images/H3.png';
 
   static final String imageCharactor = 'images/iconPEAChar.png';
 
@@ -32,6 +35,7 @@ class MyConstant {
   static final List<String> listMenu = [
     'บันทึกงานใหม่',
     'ตรวจสอบสถานะการทำงาน',
+    'ตรวจสอบยานพาหนะ',
     'ประวัติการทำงาน',
     'แสดงพิกัด',
     'เวอร์ชัน',

@@ -88,9 +88,7 @@ class _OutageWorkListState extends State<OutageWorkList> {
               MastCheckListModel.fromJson(jsonDecode(response.body));
         });
       } else {
-        //select from sqlite
-        // SQLiteHelperOutage().selectMainMenu(mainID)
-        print("#----------> main : " + widget.mainID);
+
         SQLiteHelperOutage()
             .selectChecklist(int.parse(widget.mainID), 1)
             .then((result) {
@@ -104,7 +102,6 @@ class _OutageWorkListState extends State<OutageWorkList> {
           }
         });
       } //else
-
 
       
     } catch (e) {
@@ -657,7 +654,7 @@ class _OutageWorkListState extends State<OutageWorkList> {
                 "Insert success  req_no = ${responeModel.result.reply.toString()}");
 
             SQLiteHelperOutage()
-                .updateWorkListReq(reqNo, responeModel.result.reply.toString());
+                .updateWorkListReq(reqNo, responeModel.result.reply.toString(),0);
 
             setLine(responeModel.result.reply.toString());
             // Navigator.push(

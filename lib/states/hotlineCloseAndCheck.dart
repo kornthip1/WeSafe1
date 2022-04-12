@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:wesafe/models/MastOutageMenuModel.dart';
@@ -45,7 +46,7 @@ class _HotlineCheckListState extends State<HotlineCheckList> {
 
     try {
       //isConnected = true;
-
+      //test
       bool isSqlite = false;
       SQLiteHotline().selectWorkListForCheck().then((result) async {
         if (result == null) {
@@ -54,12 +55,15 @@ class _HotlineCheckListState extends State<HotlineCheckList> {
           setState(() {
             models = result;
 
+            // for (var item in models) {
+            //   print('## >>>> ${item.submenU}   : ${item.workstatus}');
+            // }
             isSqlite = models.length > 0 ? true : false;
             load = false;
           });
-
+          //test
           //  if (isConnected) {
-          if (true) {
+          if (isConnected) {
             final response = await http.post(
               Uri.parse('${MyConstant.newService}request/check'),
               headers: <String, String>{
@@ -67,15 +71,15 @@ class _HotlineCheckListState extends State<HotlineCheckList> {
               },
               body: '{"Region_Code":  "${widget.userModel.rsg}"  }',
             );
-
+            modelCheck =
+                MastCheckWorkListModel.fromJson(jsonDecode(response.body));
             if (!isSqlite) {
               setState(() {
                 load = false;
-                modelCheck =
-                    MastCheckWorkListModel.fromJson(jsonDecode(response.body));
+
                 for (var item in modelCheck.result) {
-                  print(
-                      "check close : ${widget.userModel.userID} :  ${item.employee_ID}  ");
+                  // print(
+                  //     "check close : ${widget.userModel.userID} :  ${item.employee_ID}  ");
                   if (widget.userModel.userID.contains(item.employee_ID)) {
                     SQLiteWorklistOutageModel sqlMpdel =
                         SQLiteWorklistOutageModel(
@@ -107,6 +111,55 @@ class _HotlineCheckListState extends State<HotlineCheckList> {
                   }
                 }
               });
+            } else {
+              //update status from api
+
+              for (var item in modelCheck.result) {
+                // print(
+                //     "check close : ${widget.userModel.userID} :  ${item.employee_ID}  ");
+                if (widget.userModel.userID.contains(item.employee_ID)) {
+                  SQLiteWorklistOutageModel sqlMpdel =
+                      SQLiteWorklistOutageModel(
+                    checklist: item.menuChecklistID,
+                    dateCreated: MyConstant.strDateNow,
+                    doOrNot: 0,
+                    imgList: null,
+                    isComplete: int.parse(item.mastStatus),
+                    isMainLine: null == item.isMainLine
+                        ? 0
+                        : int.parse(item.isMainLine),
+                    latitude: null,
+                    longtitude: null,
+                    region: widget.userModel.rsg,
+                    reqNo: item.reqNo,
+                    reseanNOT: "",
+                    user: widget.userModel.userID,
+                    workperform: item.workPerform,
+                    mainmenu: item.menuMainID.toString(),
+                    remark: item.statusDetail,
+                    submenU: item.menuSubID.toString(),
+                    workstatus: int.parse(item.mastStatus),
+                  );
+                  SQLiteHotline()
+                      .updateWorkListStatus(
+                          item.mastStatus == ""
+                              ? 2
+                              : int.parse(item.mastStatus),
+                          item.reqNo)
+                      .then((value) => value == null ? null : newRander());
+                  setState(() {
+                    models.add(sqlMpdel);
+                    //   for (var items in result) {
+                    //     if(items.reqNo!=item.reqNo){
+                    //         models.add(sqlMpdel);
+                    //     }
+                    //   }
+
+                    load = false;
+                  });
+                  // insert to sqlite
+                }
+              }
             }
           }
         }
@@ -116,6 +169,21 @@ class _HotlineCheckListState extends State<HotlineCheckList> {
     } catch (e) {
       normalDialog(context, "error", e.toString());
     }
+  }
+
+  // ignore: missing_return
+  Future<Null> newRander() {
+    // print('######### ---- newRander()');
+    // SQLiteHotline().selectWorkListForCheck().then((result) async {
+    //   if (result == null) {
+    //     print("result error");
+    //   } else {
+    //     setState(() {
+    //       models = result;
+    //       load = false;
+    //     });
+    //   }
+    // });
   }
 
   @override
@@ -146,16 +214,19 @@ class _HotlineCheckListState extends State<HotlineCheckList> {
               " , " +
               models[index].mainmenu +
               " , " +
+              models[index].submenU +
+              " , " +
               models[index].reqNo +
-              ' , ${models[index].workstatus}');
+              ' , ${models[index].workstatus} , ${models[index].remark} ');
 
           //test
-          isConnected = true;
+          //isConnected = true;
+          //isConnected = false;
+
           if (models[index].workstatus != 5) {
             isConnected
-                ? models[index].workstatus != 4
-                    ? print('can not to do')
-                    : Navigator.push(
+                ? models[index].workstatus == 2
+                    ? Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => HotlineWorkCloseList(
@@ -166,37 +237,96 @@ class _HotlineCheckListState extends State<HotlineCheckList> {
                               subID: models[index].submenU),
                         ),
                       )
-                : offilineDialog(
-                    context,
-                    "offline",
-                    "ต้องการทำงานแบบออฟไลน์หรือไม่",
-                    models[index].reqNo,
-                    widget.userModel,
-                    models[index].workstatus,
-                    models[index].mainmenu);
+                    : models[index].workstatus == 4
+                        ? Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => HotlineWorkCloseList(
+                                  userModel: widget.userModel,
+                                  reqNo: models[index].reqNo,
+                                  workStatus: models[index].workstatus,
+                                  mainID: models[index].mainmenu,
+                                  subID: models[index].submenU),
+                            ),
+                          )
+                        : print('to do something..')
+                : models[index].workstatus == 6
+                    ? print(' wait for update to server...')
+                    : offilineDialog(
+                        context,
+                        "offline",
+                        "ต้องการทำงานแบบออฟไลน์หรือไม่",
+                        models[index].reqNo,
+                        widget.userModel,
+                        models[index].workstatus,
+                        models[index].mainmenu,
+                        models[index].submenU);
           }
         },
-        child: Card(
-          color: models[index].workstatus == 4
-              ? Colors.green[200]
-              : Colors.grey[300],
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Column(
-                children: [
-                  ShowTitle(
-                    title: models[index].reqNo,
-                    index: 4,
+
+        child: Column(
+          children: [
+            Slidable(
+              child: Card(
+                color: models[index].workstatus == 4
+                    ? Colors.green[200]
+                    : Colors.grey[300],
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListTile(
+                    leading: Container(
+                      width: size * 0.13,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: models[index].workstatus == 6
+                            ? Icon(
+                                Icons.access_alarm_outlined,
+                                size: size * 0.09,
+                              )
+                            : Icon(
+                                Icons.check,
+                                size: size * 0.09,
+                              ),
+                      ),
+                    ),
+                    title: Column(
+                      children: [
+                        ShowTitle(
+                          title: models[index].reqNo,
+                          index: 4,
+                        ),
+                        ShowTitle(
+                          title: models[index].remark,
+                          index: 2,
+                        ),
+                      ],
+                    ),
                   ),
-                  ShowTitle(
-                    title: models[index].remark,
-                    index: 2,
+                ),
+              ),
+              key: ValueKey(models[index].reqNo),
+              startActionPane: ActionPane(
+                motion: const ScrollMotion(),
+                dismissible: DismissiblePane(onDismissed: () {
+                  print('###----> pass slide');
+                  SQLiteHotline().deleteWorklistByReqNo(models[index].reqNo);
+                }),
+                children: [
+                  SlidableAction(
+                    onPressed: (context) {
+                      print('delet ReqNo : ${models[index].reqNo}');
+                      SQLiteHotline()
+                          .deleteWorklistByReqNo(models[index].reqNo);
+                    },
+                    backgroundColor: Color(0xFFFE4A49),
+                    foregroundColor: Colors.white,
+                    icon: Icons.delete,
+                    label: 'Delete',
                   ),
                 ],
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

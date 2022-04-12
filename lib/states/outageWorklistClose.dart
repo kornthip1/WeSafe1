@@ -742,7 +742,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
                 ResponeModel.fromJson(jsonDecode(response.body));
 
             SQLiteHelperOutage()
-                .updateWorkListReq(reqNo, responeModel.result.reply.toString());
+                .updateWorkListReq(reqNo, responeModel.result.reply.toString(),1);
 
             setState(() {
               //if (responeModel.isSuccess) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
+import 'package:wesafe/states/hotlineWorkCloseList.dart';
 import 'package:wesafe/states/outageWorklistClose.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
@@ -10,7 +11,8 @@ Future<Null> offilineDialog(
     String reqNo,
     SQLiteUserModel userModel,
     int workStatus,
-    String mainID) async {
+    String mainID,
+    String subID) async {
   showDialog(
     context: context,
     builder: (context) => SimpleDialog(
@@ -34,16 +36,31 @@ Future<Null> offilineDialog(
                 child: TextButton(
                     onPressed: () {
                       print("checklist...." + reqNo);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => OutageWorklistClose(
-                                  userModel: userModel,
-                                  reqNo: reqNo,
-                                  workStatus: workStatus,
-                                  mainID: mainID,
-                                )),
-                      );
+
+                      if (mainID.substring(0, 1) == "2") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => OutageWorklistClose(
+                                    userModel: userModel,
+                                    reqNo: reqNo,
+                                    workStatus: workStatus,
+                                    mainID: mainID,
+                                  )),
+                        );
+                      } else if (mainID.substring(0, 1) == "1") {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => HotlineWorkCloseList(
+                                    userModel: userModel,
+                                    reqNo: reqNo,
+                                    workStatus: workStatus,
+                                    mainID: mainID,
+                                    subID: subID,
+                                  )),
+                        );
+                      }
                     },
                     child: Text('ต้องการ')),
               ),

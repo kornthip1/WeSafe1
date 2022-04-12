@@ -130,7 +130,8 @@ class SQLiteHelperOutage {
           'UPDATE  WORKLIST  ' + 'SET WORKSTATUS = ?  ' + 'WHERE REQNO = ? ',
           [status, '$reqNo']);
 
-      print("###### updateWorkListStatus()  $status  update seccess $count   row");
+      print(
+          "###### updateWorkListStatus()  $status  update seccess $count   row");
     } catch (e) {
       print("########## update working()  Error : ${e.toString()}");
     }
@@ -183,14 +184,15 @@ class SQLiteHelperOutage {
     }
   }
 
-  Future<Null> updateWorkListReq(String oldReq, String newReq) async {
+  Future<Null> updateWorkListReq(
+      String oldReq, String newReq, int isComplete) async {
     Database database = await connectedDatabase();
     try {
       int count = await database.rawUpdate(
           'UPDATE  WORKLIST  ' +
-              'SET REQNO = ? , WORKSTATUS =4  ' +
+              'SET REQNO = ? , WORKSTATUS = 4 , ISCOMPLATE = ?  ' +
               'WHERE REQNO = ? ',
-          ['$newReq', '$oldReq']);
+          ['$newReq', isComplete, '$oldReq']);
 
       print(
           "###### updateWorkReqNo()  update req old -> $oldReq , new -> $newReq :  $count   row");

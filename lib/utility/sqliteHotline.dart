@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:wesafe/models/mastLables.dart';
+import 'package:wesafe/models/sqliteOfficeAddr.dart';
 import 'package:wesafe/models/sqliteWorklistOutageModel.dart';
 import 'package:wesafe/utility/my_constain.dart';
 
@@ -80,11 +81,15 @@ class SQLiteHotline {
     List<SQLiteWorklistOutageModel> models = [];
     List<Map<String, dynamic>> maps = await database.rawQuery("SELECT * " +
         "FROM  WORKLIST  WHERE REQNO = '$reqNo' " +
-        "ORDER BY REQNO DESC  ");
-
+        "ORDER BY CHECKLIST ASC  ");
+    int i = 1;
     for (var item in maps) {
-      SQLiteWorklistOutageModel model = SQLiteWorklistOutageModel.fromMap(item);
-      models.add(model);
+      i++;
+      if (item.length != i) {
+        SQLiteWorklistOutageModel model =
+            SQLiteWorklistOutageModel.fromMap(item);
+        models.add(model);
+      }
     }
 
     return models;
@@ -101,9 +106,10 @@ class SQLiteHotline {
         "     WHEN WORKSTATUS = 3 THEN 'ไม่อนุมัติ'" +
         "     WHEN WORKSTATUS = 4 THEN 'อนุมัติแล้วยังไม่จบกระบวนการ (รอปิดงาน)'" +
         "     WHEN WORKSTATUS = 5 THEN 'ปิดงาน'" +
+        "     WHEN WORKSTATUS = 6 THEN 'ปิดงานแล้ว (รออัพเดทขึ้น Server)'" +
         "     END AS REMARK," +
-        "     MAINMENU, SUBMENU,  WORKSTATUS  " +
-        "FROM  WORKLIST WHERE ISCOMPLATE  != 1  AND MAINMENU != '999' AND  WORKSTATUS == 4    " +
+        "     MAINMENU, SUBMENU ,  WORKSTATUS  " +
+        "FROM  WORKLIST WHERE ISCOMPLATE  != 1  AND MAINMENU != '999'   AND  (  WORKSTATUS == 2 OR WORKSTATUS == 4 OR WORKSTATUS == 6 )   " +
         // "     FROM  WORKLIST  WHERE ISCOMPLATE  != 1 AND  ( WORKSTATUS = 4  OR WORKSTATUS = 5 ) AND MAINMENU != '999' " +
         "     ORDER BY REQNO DESC  ");
 
@@ -116,7 +122,7 @@ class SQLiteHotline {
   }
 
   // update sent complete or not
-  Future<Null> updateWorkListStatus(int status, String reqNo) async {
+  Future<int> updateWorkListStatus(int status, String reqNo) async {
     Database database = await connectedDatabase();
     try {
       int count = await database.rawUpdate(
@@ -124,6 +130,25 @@ class SQLiteHotline {
           [status, '$reqNo']);
 
       print("###### updateWorkReqNo()  update seccess $count   row");
+      return count;
+    } catch (e) {
+      print("########## update working()  Error : ${e.toString()}");
+      return null;
+    }
+  }
+
+  Future<Null> updateWorkListStatusClose(
+      int status, String reqNo, int isComplete) async {
+    Database database = await connectedDatabase();
+    try {
+      int count = await database.rawUpdate(
+          'UPDATE  WORKLIST  ' +
+              'SET WORKSTATUS = ? , ISCOMPLATE = ?  ' +
+              'WHERE REQNO = ? ',
+          [status, isComplete, '$reqNo']);
+
+      print(
+          "###### updateWorkListStatus()  $status  update seccess $count   row");
     } catch (e) {
       print("########## update working()  Error : ${e.toString()}");
     }
@@ -223,7 +248,34 @@ class SQLiteHotline {
     for (var item in maps) {
       MastOutageMenuModel model = MastOutageMenuModel.fromMap(item);
       models.add(model);
-      print("selectChecklist()  model return : " + models.length.toString());
+      //print("selectChecklist()  model return : " + models.length.toString());
+    }
+
+    return models;
+  }
+
+  //************* OFFICE */
+  Future<Null> insertOffice(SQLiteMastOfficeAddrModel model) async {
+    Database database = await connectedDatabase();
+    try {
+      database.insert(
+        'tbOFFICE',
+        model.toMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      print('######## insert tbOFFICE SQLite success');
+    } catch (e) {
+      print('insert error : ' + e);
+    }
+  } //insert
+
+  Future<List<SQLiteMastOfficeAddrModel>> selectOffice() async {
+    Database database = await connectedDatabase();
+    List<SQLiteMastOfficeAddrModel> models = [];
+    List<Map<String, dynamic>> maps = await database.query('tbOFFICE');
+    for (var item in maps) {
+      SQLiteMastOfficeAddrModel model = SQLiteMastOfficeAddrModel.fromMap(item);
+      models.add(model);
     }
 
     return models;

@@ -6,15 +6,14 @@ import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
 import 'package:wesafe/utility/sqliteHotline.dart';
 import 'package:wesafe/widgets/showDrawer.dart';
-import 'package:wesafe/widgets/showProgress.dart';
 import 'package:wesafe/widgets/showTitle.dart';
-import 'package:wesafe/widgets/show_icon_image.dart';
 
 class HotlineSubMenu extends StatefulWidget {
   final String MenuName;
   final int MenuID;
   final SQLiteUserModel userModel;
-  HotlineSubMenu({@required this.MenuName, this.MenuID, this.userModel});
+  final String rsg;
+  HotlineSubMenu({@required this.MenuName, this.MenuID, this.userModel, this.rsg});
 
   @override
   State<HotlineSubMenu> createState() => _HotlineSubMenuState();
@@ -110,6 +109,7 @@ class _HotlineSubMenuState extends State<HotlineSubMenu> {
                         MenuSubID: listMenu[index].menuSubID,
                         MenuSubName: listMenu[index].menuSubName,
                         userModel: widget.userModel,
+                        rsg: widget.rsg,
                       )),
                     ),
                   );
