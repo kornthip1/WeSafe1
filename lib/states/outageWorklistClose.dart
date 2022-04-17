@@ -8,11 +8,11 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:wesafe/models/InsertWorklistOutageModel.dart';
 import 'package:wesafe/models/MastOutageMenuModel.dart';
 import 'package:wesafe/models/mastMainMenuModel.dart';
-import 'package:wesafe/models/mastOutageAllList.dart';
 import 'package:wesafe/models/mastOutageCloseWork.dart';
 import 'package:wesafe/models/responeModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistOutageModel.dart';
+import 'package:wesafe/states/otageCloseAndCheck.dart';
 import 'package:wesafe/states/outageMainMenu.dart';
 import 'package:wesafe/utility/dialog.dart';
 import 'package:wesafe/utility/my_constain.dart';
@@ -82,7 +82,6 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
             load = false;
           });
 
-
           SQLiteHelperOutage().selectWorkList(reqNo, "2").then((results) {
             print('********** # results : ${results.length} ');
             if (results.length > 0) {
@@ -124,16 +123,6 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
                   });
                 }
               }
-
-              //test
-
-              // SQLiteHelperOutage().readWorkList().then((value) {
-              //   for (var item in value) {
-              //     print(' check value....');
-              //     print(
-              //         '-----${item.reqNo} : ${item.checklist} - ${item.submenU} :${item.workstatus} ');
-              //   }
-              // });
             }
           });
         }
@@ -141,167 +130,6 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
     } catch (e) {
       normalDialog(context, "Error", e.toString());
     }
-
-    // print("###### getwork");
-    // //isConnected = true;
-
-    //   SQLiteHelperOutage()
-    //       .selectChecklist(int.parse(widget.mainID), 2)
-    //       .then((result) {
-    //     if (result == null || result.length == 0) {
-    //       //no check list in sqlite
-    //       //call api
-    //       print("Success  : " + allList.isSuccess.toString());
-    //       if (!allList.isSuccess) {
-    //         normalDialog(context, 'Error', allList.message);
-    //       } else {
-    //         checkListModels.clear();
-    //         MastOutageAllListModel listAllModel = allList;
-    //         for (int j = 0; j < listAllModel.result.length; j++) {
-    //           if (listAllModel.result[j].menuMainID ==
-    //                   int.parse(widget.mainID) &&
-    //               listAllModel.result[j].menuSubID == 2) {
-    //             MastOutageMenuModel model = MastOutageMenuModel(
-    //               dateCreated: MyConstant.strDateNow,
-    //               isChoice: "",
-    //               menuListID: listAllModel.result[j].menuChecklistID,
-    //               menuListName: listAllModel.result[j].menuChecklistName,
-    //               menuMainID: listAllModel.result[j].menuMainID,
-    //               menuMainName: listAllModel.result[j].menuMainName,
-    //               menuSubID: listAllModel.result[j].menuSubID,
-    //               menuSubName: listAllModel.result[j].menuSubName,
-    //               quantityImg: 10,
-    //               type: listAllModel.result[j].type,
-    //             );
-
-    //             checkListModels.add(model);
-
-    //             // for worklist
-    //             SQLiteWorklistOutageModel modelSqlite =
-    //                 SQLiteWorklistOutageModel(
-    //               reqNo: reqNo,
-    //               checklist: listAllModel.result[j].menuChecklistID,
-    //               mainmenu: listAllModel.result[j].menuMainID.toString(),
-    //               dateCreated: MyConstant.strDateNow,
-    //               submenU: listAllModel.result[j].menuSubID.toString(),
-    //               user: userModel.userID,
-    //               isComplete: 0,
-    //               workperform: workPerform,
-    //               isMainLine: mainLine,
-    //               imgList: "",
-    //               region: userModel.rsg,
-    //               remark: "",
-    //               workstatus: 0,
-    //             );
-    //             SQLiteHelperOutage().insertWorkList(modelSqlite);
-
-    //             setState(() {
-    //               // checkListModels = checkListModels;
-    //               closelistModels.add(modelSqlite);
-    //               listModels.add(modelSqlite);
-
-    //               load = false;
-    //             });
-    //           }
-    //         }
-    //       }
-    //     } else {
-    //       print("### old checkListModels not null " + result.length.toString());
-    //       //there are check list in sqlite
-    //       setState(() {
-    //         checkListModels = result;
-    //         load = false;
-    //       });
-
-    //       bool isEmtype = true;
-    //       List<SQLiteWorklistOutageModel> modelTest;
-    //       SQLiteHelperOutage().selectWorkList(reqNo, "2").then((result) {
-    //         if (result != null) {
-    //           isEmtype = false;
-    //           modelTest = result;
-    //         }
-    //       });
-
-    //       if (isEmtype) {
-    //         for (int i = 0; i < checkListModels.length; i++) {
-    //           SQLiteWorklistOutageModel model = SQLiteWorklistOutageModel(
-    //             reqNo: reqNo,
-    //             checklist: checkListModels[i].menuListID,
-    //             mainmenu: checkListModels[i].menuMainID.toString(),
-    //             dateCreated: MyConstant.strDateNow,
-    //             submenU: checkListModels[i].menuSubID.toString(),
-    //             user: userModel.userID,
-    //             isComplete: 0,
-    //             workperform: workPerform,
-    //             isMainLine: mainLine,
-    //             imgList: "",
-    //             region: userModel.rsg,
-    //             remark: "",
-    //             workstatus: 0,
-    //           );
-    //           SQLiteHelperOutage().insertWorkList(model);
-    //           setState(() {
-    //             closelistModels.add(model);
-    //             listModels.add(model);
-    //           });
-    //         }
-    //       } else {
-    //         print("###### not emtype ");
-    //         setState(() {
-    //           closelistModels = modelTest;
-    //           listModels = listModels;
-    //         });
-    //       }
-    //     }
-    //   });
-    // }
-
-    // print(" Close list :  workStatus " + workStatus.toString());
-    // if (workStatus == 4) {
-    //   SQLiteHelperOutage()
-    //       .selectChecklist(int.parse(widget.mainID), 2)
-    //       .then((result) {
-    //     if (result == null) {
-    //     } else {
-    //       setState(() {
-    //         checkListModels = result;
-    //         for (var item in result) {
-    //           SQLiteWorklistOutageModel sqLiteWorklistModel =
-    //               SQLiteWorklistOutageModel(
-    //             checklist: item.menuListID,
-    //             dateCreated: MyConstant.strDateNow,
-    //             mainmenu: item.menuMainID.toString(),
-    //             submenU: item.menuSubID.toString(),
-    //             reqNo: reqNo,
-    //             workstatus: 0,
-    //           );
-
-    //           if (closelistModels.length <= 0) {
-    //             SQLiteHelperOutage().insertWorkList(sqLiteWorklistModel);
-    //           }
-    //         }
-    //         load = false;
-    //       });
-    //     }
-    //   });
-    // }
-
-    // prepareWorking(checkListModels);
-
-    // SQLiteHelperOutage().selectWorkList(reqNo, "1").then((result) {
-    //   if (result == null) {
-    //     print("Error : " + result.toString());
-    //   } else {
-    //     setState(() {
-    //       listModels = result;
-    //       print("list : " + listModels.length.toString());
-    //       print('workperform :  ${listModels[0].workperform}');
-    //       load = false;
-    //     });
-    //   }
-    // });
-
-    //else
   }
 
   void checkConnection(BuildContext context) async {
@@ -336,13 +164,25 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
           index: 3,
         ),
         onPressed: () async {
-          listModels.isEmpty
-              ? print("")
-              : listModels[listModels.length - 1].workstatus == 2
+          //test
+          //isConnected = true;
+
+          isConnected
+              ? listModels[listModels.length - 1].workstatus == 2
                   ? reqNo.length < 5
                       ? onlineInsert(reqNo)
                       : sendToServer(reqNo)
-                  : print("can't insert");
+                  : print('..')
+              : updateStatusOffline();
+          // !isConnected
+          //     ? updateStatusOffline()
+          //     : listModels.isEmpty
+          //         ? print("")
+          //         : listModels[listModels.length - 1].workstatus == 2
+          //             ? reqNo.length < 5
+          //                 ? onlineInsert(reqNo)
+          //                 : sendToServer(reqNo)
+          //             : print("can't insert");
         },
         style: ElevatedButton.styleFrom(
           primary: listModels.isEmpty
@@ -353,6 +193,19 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
         ),
       ),
     );
+  }
+
+  void updateStatusOffline() {
+    SQLiteHelperOutage().updateWorkListStatus(6, widget.reqNo).then((value) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OtageCloseAndCheck(
+            userModel: widget.userModel,
+          ),
+        ),
+      );
+    });
   }
 
   Center buildContent() {
@@ -422,7 +275,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
           width: size * 1,
           child: Padding(
             padding: const EdgeInsets.only(left: 15.0),
-            child: Text('งานที่ปฏิบัติงาน  :  $workPerform',
+            child: Text('งานที่ปฏิบัติงาน  :  ${widget.workPerform}',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ),
         ),
@@ -603,7 +456,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
               body: utf8.encode(listValues.toString()),
             );
 
-            print("respond  : " + response.body);
+            print("sent to server respond  : " + response.body);
             ResponeModel responeModel =
                 ResponeModel.fromJson(jsonDecode(response.body));
 
@@ -615,7 +468,7 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
 
             SQLiteHelperOutage().deleteWorklistByReqNo(reqNo);
 
-            setLine();
+            setLine(reqNo);
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -741,14 +594,13 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
             ResponeModel responeModel =
                 ResponeModel.fromJson(jsonDecode(response.body));
 
-            SQLiteHelperOutage()
-                .updateWorkListReq(reqNo, responeModel.result.reply.toString(),1);
+            SQLiteHelperOutage().updateWorkListReq(
+                reqNo, responeModel.result.reply.toString(), 1);
 
             setState(() {
               //if (responeModel.isSuccess) {
               newReq = responeModel.result.reply.toString();
 
-            
               sendToServer(newReq);
               //}
             });
@@ -789,20 +641,23 @@ class _OutageWorklistCloseState extends State<OutageWorklistClose> {
     return arr;
   }
 
-  Future<Null> setLine() async {
+  Future<Null> setLine(String reqNo) async {
     findLatLng();
 
     //test
     // List<String> lineToken = [];
     // lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
-
+    if (userModel.userID.contains('506429')) {
+      lineToken = [];
+      lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+    }
     final client = HttpClient();
 
     for (int i = 0; i < lineToken.length; i++) {
       print("####--->  line Token  :  $lineToken");
       final request = await client
           .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
-      String msg = "📣 ปิดงาน : $newReq"
+      String msg = "📣 ปิดงาน : $reqNo"
               "\n" +
           listModels[0].mainmenu +
           " : หลังปฏิบัติงาน"

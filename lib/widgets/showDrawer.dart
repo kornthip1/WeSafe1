@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/states/authen.dart';
 import 'package:wesafe/states/checkWork.dart';
+import 'package:wesafe/states/checkingCar.dart';
 import 'package:wesafe/states/hotLineMainMenu.dart';
 import 'package:wesafe/states/hotlineCloseAndCheck.dart';
 import 'package:wesafe/states/mainInfo.dart';
@@ -156,7 +156,7 @@ class ShowDrawer extends StatelessWidget {
         color: MyConstant.primart,
       ),
       title: ShowTitle(
-        title: titles[4],
+        title: titles[5],
         index: 1,
       ),
       onTap: () {
@@ -226,6 +226,15 @@ class ShowDrawer extends StatelessWidget {
       ),
       onTap: () {
         //test(context);
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => CheckingCar(
+              userModel: userModel,
+            ),
+          ),
+        );
       },
     );
   }

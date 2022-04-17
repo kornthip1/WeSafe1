@@ -88,7 +88,6 @@ class _OutageWorkListState extends State<OutageWorkList> {
               MastCheckListModel.fromJson(jsonDecode(response.body));
         });
       } else {
-
         SQLiteHelperOutage()
             .selectChecklist(int.parse(widget.mainID), 1)
             .then((result) {
@@ -103,7 +102,6 @@ class _OutageWorkListState extends State<OutageWorkList> {
         });
       } //else
 
-      
     } catch (e) {
       print("Error : " + e.toString());
       SQLiteHelperOutage()
@@ -218,7 +216,8 @@ class _OutageWorkListState extends State<OutageWorkList> {
               }
 
               if (checkListModels[index].type.contains("1")) {
-                print("insert db and update work status   - ID : "+workID.toString());
+                print("insert db and update work status   - ID : " +
+                    workID.toString());
 
                 SQLiteHelperOutage().updateWorkList(
                     2,
@@ -477,8 +476,7 @@ class _OutageWorkListState extends State<OutageWorkList> {
     });
   }
 
-  Future<Null> 
-  prepareWorking() async {
+  Future<Null> prepareWorking() async {
     if (workID == 0) {
       int lastID = 1;
       await SQLiteHelperOutage().selectLastID().then((result) {
@@ -534,6 +532,11 @@ class _OutageWorkListState extends State<OutageWorkList> {
     // List<String> lineToken = [];
     // lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
 
+    if (userModel.userID.contains('506429')) {
+      lineToken = [];
+      lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+    }
+
     final client = HttpClient();
     print('####--->  line Token  :  ${lineToken.length}');
     for (int i = 0; i < lineToken.length; i++) {
@@ -579,7 +582,7 @@ class _OutageWorkListState extends State<OutageWorkList> {
       InsertWorklistOutageModel insertWorklistModel;
       print('connecttion   : $isConnected');
       //test
-      // isConnected = true;
+      //isConnected = true;
       if (isConnected) {
         SQLiteHelperOutage().selectWorkList(reqNo, "1").then((result) async {
           if (result == null) {
@@ -653,8 +656,8 @@ class _OutageWorkListState extends State<OutageWorkList> {
             print(
                 "Insert success  req_no = ${responeModel.result.reply.toString()}");
 
-            SQLiteHelperOutage()
-                .updateWorkListReq(reqNo, responeModel.result.reply.toString(),0);
+            SQLiteHelperOutage().updateWorkListReq(
+                reqNo, responeModel.result.reply.toString(), 0);
 
             setLine(responeModel.result.reply.toString());
             // Navigator.push(
@@ -670,8 +673,10 @@ class _OutageWorkListState extends State<OutageWorkList> {
           }
         });
       } else {
-        offilineAlert(
-            context, "OffLine", "ขณะนี้ทำงานแบบ offline", userModel, reqNo, 4);
+        SQLiteHelperOutage().updateWorkListStatus(2, reqNo).then((value) {
+          offilineAlert(context, "OffLine", "ขณะนี้ทำงานแบบ offline", userModel,
+              reqNo, 2);
+        });
       }
     } catch (E) {
       await http.post(

@@ -7,7 +7,7 @@ import 'package:wesafe/utility/sqliteOutage.dart';
 import 'package:wesafe/widgets/showTitle.dart';
 
 Future<Null> offilineAlert(BuildContext context, String title, String message,
-    SQLiteUserModel userModel, String reqNo, int status ) async {
+    SQLiteUserModel userModel, String reqNo, int status) async {
   showDialog(
     context: context,
     builder: (context) => SimpleDialog(
@@ -30,8 +30,8 @@ Future<Null> offilineAlert(BuildContext context, String title, String message,
               Card(
                 child: TextButton(
                     onPressed: () {
-                      
-                     if(userModel.ownerID.contains("O")){
+                      if (userModel.ownerID.contains("O")) {
+                        print('Offline  update status...6');
                         SQLiteHelperOutage()
                             .updateWorkListStatus(status, reqNo);
                         Navigator.push(
@@ -44,7 +44,7 @@ Future<Null> offilineAlert(BuildContext context, String title, String message,
                             ),
                           ),
                         );
-                     }else if(userModel.ownerID.contains("H")){
+                      } else if (userModel.ownerID.contains("H")) {
                         SQLiteHelperOutage()
                             .updateWorkListStatus(status, reqNo);
                         Navigator.push(
@@ -57,9 +57,7 @@ Future<Null> offilineAlert(BuildContext context, String title, String message,
                             ),
                           ),
                         );
-                     }
-
-                     
+                      }
                     },
                     child: Text('ตกลง')),
               ),

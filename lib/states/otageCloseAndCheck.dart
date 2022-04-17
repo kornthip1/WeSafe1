@@ -1,11 +1,17 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:wesafe/models/InsertWorklistOutageModel.dart';
 import 'package:wesafe/models/MastOutageMenuModel.dart';
 import 'package:wesafe/models/mastCheckWorkListModel.dart';
+import 'package:wesafe/models/mastMainMenuModel.dart';
 import 'package:wesafe/models/mastOutageAllList.dart';
+import 'package:wesafe/models/responeModel.dart';
 import 'package:wesafe/models/sqliteUserModel.dart';
 import 'package:wesafe/models/sqliteWorklistOutageModel.dart';
 import 'package:wesafe/states/outageWorklistClose.dart';
@@ -26,68 +32,104 @@ class OtageCloseAndCheck extends StatefulWidget {
 }
 
 class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
-  SQLiteUserModel userModel;
-  MastCheckWorkListModel modelCheck;
   List<SQLiteWorklistOutageModel> models = [];
-  bool isConnected = false;
+  MastCheckWorkListModel modelCheck;
+  List<String> lineToken;
+  double lat, lng = 0.0;
+  bool isConnected = true;
   bool load = true;
 
   @override
   // ignore: must_call_super
   void initState() {
-    userModel = widget.userModel;
     checkConnection(context);
     readAllWork();
   }
 
-  void checkConnection(BuildContext context) async {
-    final bool isConn = await InternetConnectionChecker().hasConnection;
-    setState(() {
-      isConnected = isConn;
-    });
-  }
-
   Future<void> readAllWork() async {
-    //final bool isConn = await InternetConnectionChecker().hasConnection;
+    //test
+    final bool isConnected = await InternetConnectionChecker().hasConnection;
+
     try {
-      //isConnected = true;
-      
+      //test
       bool isSqlite = false;
       SQLiteHelperOutage().selectWorkListForCheck().then((result) async {
         if (result == null) {
           print("result error");
         } else {
+          print('#######---> result : ${result.length}');
           setState(() {
             models = result;
             isSqlite = models.length > 0 ? true : false;
             load = false;
           });
+          //test
 
+          //  if (isConnected) {
           if (isConnected) {
-            final response = await http.post(
-              Uri.parse('${MyConstant.newService}request/check'),
-              headers: <String, String>{
-                'Content-Type': 'application/json; charset=UTF-8',
-              },
-              body: '{"Region_Code":  "${userModel.rsg}"  }',
-            );
+            print('online.....');
+            //update to server if status = 6
+            SQLiteHelperOutage().selectWorkListOffLine().then((value) async {
+              if (value != null) {
+                for (var item in value) {
+                  onlineInsert(item.reqNo);
+                }
+              }
+              final response = await http.post(
+                Uri.parse('${MyConstant.newService}request/check'),
+                headers: <String, String>{
+                  'Content-Type': 'application/json; charset=UTF-8',
+                },
+                body: '{"Region_Code":  "${widget.userModel.rsg}"  }',
+              );
+              modelCheck =
+                  MastCheckWorkListModel.fromJson(jsonDecode(response.body));
+              if (!isSqlite) {
+                setState(() {
+                  load = false;
 
-            // final responseList = await http.get(
-            //   Uri.parse('${MyConstant.newService}workmenu/list_all'),
-            //   headers: <String, String>{
-            //     'Content-Type': 'application/json; charset=UTF-8',
-            //   },
-            // );
+                  for (var item in modelCheck.result) {
+                    // print(
+                    //     "check close : ${widget.userModel.userID} :  ${item.employee_ID}  ");
+                    if (widget.userModel.userID.contains(item.employee_ID)) {
+                      SQLiteWorklistOutageModel sqlMpdel =
+                          SQLiteWorklistOutageModel(
+                        checklist: item.menuChecklistID,
+                        dateCreated: MyConstant.strDateNow,
+                        doOrNot: 0,
+                        imgList: null,
+                        isComplete: int.parse(item.mastStatus),
+                        isMainLine: null == item.isMainLine
+                            ? 0
+                            : int.parse(item.isMainLine),
+                        latitude: null,
+                        longtitude: null,
+                        region: widget.userModel.rsg,
+                        reqNo: item.reqNo,
+                        reseanNOT: "",
+                        user: widget.userModel.userID,
+                        workperform: item.workPerform,
+                        mainmenu: item.menuMainID.toString(),
+                        remark: item.statusDetail,
+                        submenU: item.menuSubID.toString(),
+                        workstatus: int.parse(item.mastStatus),
+                      );
+                      setState(() {
+                        models.add(sqlMpdel);
+                        load = false;
+                      });
+                      // insert to sqlite
+                    }
+                  }
+                });
+              } else {
+                //update status from api
 
-            if (!isSqlite) {
-              setState(() {
-                load = false;
-                modelCheck =
-                    MastCheckWorkListModel.fromJson(jsonDecode(response.body));
+                print('#### api : ${modelCheck.result.length}');
                 for (var item in modelCheck.result) {
                   print(
-                      "check close : ${userModel.userID} :  ${item.employee_ID}  ");
-                  if (userModel.userID.contains(item.employee_ID)) {
+                      "check close : ${widget.userModel.userID} :  ${item.employee_ID}  ");
+                  if (widget.userModel.userID.contains(item.employee_ID)) {
                     SQLiteWorklistOutageModel sqlMpdel =
                         SQLiteWorklistOutageModel(
                       checklist: item.menuChecklistID,
@@ -100,34 +142,38 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
                           : int.parse(item.isMainLine),
                       latitude: null,
                       longtitude: null,
-                      region: userModel.rsg,
+                      region: widget.userModel.rsg,
                       reqNo: item.reqNo,
                       reseanNOT: "",
-                      user: userModel.userID,
+                      user: widget.userModel.userID,
                       workperform: item.workPerform,
                       mainmenu: item.menuMainID.toString(),
                       remark: item.statusDetail,
-                      submenU: "",
+                      submenU: item.menuSubID.toString(),
                       workstatus: int.parse(item.mastStatus),
                     );
+                    SQLiteHelperOutage()
+                        .updateWorkListStatus(
+                            item.mastStatus == ""
+                                ? 2
+                                : int.parse(item.mastStatus),
+                            item.reqNo)
+                        .then((value) => value == null ? null : newRander());
                     setState(() {
-                      models.add(sqlMpdel);
+                      //models.add(sqlMpdel);
+                      //   for (var items in result) {
+                      //     if(items.reqNo!=item.reqNo){
+                      //         models.add(sqlMpdel);
+                      //     }
+                      //   }
+
                       load = false;
                     });
                     // insert to sqlite
                   }
                 }
-              });
-
-              // List<SQLiteWorklistOutageModel> listAll = [];
-              // SQLiteHelperOutage().readWorkList().then((results) {
-              //   listAll = results;
-              //   for (int i = 0; i < listAll.length; i++) {
-              //     print(
-              //         '#################### ${listAll[i].reqNo}  : ${listAll[i].workstatus}');
-              //   }
-              // });
-            }
+              }
+            });
           }
         }
 
@@ -138,9 +184,194 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
     }
   }
 
+  // ignore: missing_return
+  Future<Null> newRander() {
+    print('######### ---- newRander()');
+    SQLiteHelperOutage().selectWorkListForCheck().then((result) async {
+      if (result == null) {
+        print("result error");
+      } else {
+        setState(() {
+          models = result;
+          load = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WillPopScope(
+      onWillPop: () async {
+        return false;
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: ShowTitle(title: "ตรวจสอบและปิดงาน", index: 3),
+        ),
+        drawer: ShowDrawer(userModel: widget.userModel),
+        body: load ? ShowProgress() : buildListView(),
+      ),
+    );
+  }
+
+  Widget buildListView() {
+    double size = MediaQuery.of(context).size.width;
+    return ListView.builder(
+      itemCount: models.length,
+      itemBuilder: (context, index) => GestureDetector(
+        //child: Text('${models[index].reqNo}'),
+        onTap: () {
+          // print("#### --- >" +
+          //     widget.userModel.userID +
+          //     " , " +
+          //     models[index].mainmenu +
+          //     " , " +
+          //     models[index].submenU +
+          //     " , " +
+          //     models[index].reqNo +
+          //     ' , ${models[index].workstatus} , ${models[index].remark} ');
+
+          print('#########----> workperform  : ${models[index].workperform}');
+          //test
+          //isConnected = true;
+          //isConnected = false;
+
+          if (models[index].workstatus != 5) {
+            isConnected
+                ? models[index].workstatus == 2
+                    ? Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => OutageWorklistClose(
+                            userModel: widget.userModel,
+                            reqNo: models[index].reqNo,
+                            workStatus: models[index].workstatus,
+                            mainID: models[index].mainmenu,
+                            isMainLine: models[index].isMainLine,
+                            workPerform: models[index].workperform,
+                          ),
+                        ),
+                      )
+                    : models[index].workstatus == 4
+                        ? Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => OutageWorklistClose(
+                                userModel: widget.userModel,
+                                reqNo: models[index].reqNo,
+                                workStatus: models[index].workstatus,
+                                mainID: models[index].mainmenu,
+                                isMainLine: models[index].isMainLine,
+                                workPerform:
+                                    models[index].workperform.toString(),
+                              ),
+                            ),
+                          )
+                        : print('to do something..')
+                : models[index].workstatus == 6
+                    ? print(' wait for update to server...')
+                    : offilineDialog(
+                        context,
+                        "offline",
+                        "ต้องการทำงานแบบออฟไลน์หรือไม่",
+                        models[index].reqNo,
+                        widget.userModel,
+                        models[index].workstatus,
+                        models[index].mainmenu,
+                        models[index].submenU,
+                        models[index].isMainLine,
+                        models[index].workperform);
+          }
+        },
+
+        child: Column(
+          children: [
+            Slidable(
+              child: Card(
+                color: models[index].workstatus == 4
+                    ? Colors.green[200]
+                    : Colors.grey[300],
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: ListTile(
+                    leading: Container(
+                      width: size * 0.13,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: models[index].workstatus == 6
+                            ? Icon(
+                                Icons.access_alarm_outlined,
+                                size: size * 0.09,
+                              )
+                            : Icon(
+                                Icons.check,
+                                size: size * 0.09,
+                              ),
+                      ),
+                    ),
+                    title: Column(
+                      children: [
+                        ShowTitle(
+                          title: models[index].reqNo, //+
+                          // " : " +
+                          // models[index].workstatus.toString() +
+                          // " : " +
+                          // models[index].mainmenu.toString() +
+                          // " : " +
+                          // models[index].workperform.toString(),
+                          index: 4,
+                        ),
+                        ShowTitle(
+                          title: models[index].workperform,
+                          index: 2,
+                        ),
+                        ShowTitle(
+                          title: models[index].remark,
+                          index: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              key: ValueKey(models[index].reqNo),
+              startActionPane: ActionPane(
+                motion: const ScrollMotion(),
+                dismissible: DismissiblePane(onDismissed: () {
+                  print('###----> pass slide');
+                  SQLiteHelperOutage()
+                      .deleteWorklistByReqNo(models[index].reqNo);
+                  SQLiteHelperOutage()
+                      .updateWorkListStatus(9, models[index].reqNo);
+                }),
+                children: [
+                  SlidableAction(
+                    onPressed: (context) {
+                      print('delet ReqNo : ${models[index].reqNo}');
+                      SQLiteHelperOutage()
+                          .deleteWorklistByReqNo(models[index].reqNo);
+                      SQLiteHelperOutage()
+                          .updateWorkListStatus(9, models[index].reqNo);
+                    },
+                    backgroundColor: Color(0xFFFE4A49),
+                    foregroundColor: Colors.white,
+                    icon: Icons.delete,
+                    label: 'Delete',
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> allList() async {
     try {
       print("##############  allList() start() ");
+      final bool isConnected = await InternetConnectionChecker().hasConnection;
       //isConnected = true;
       if (isConnected) {
         final response = await http.get(
@@ -195,81 +426,204 @@ class _OtageCloseAndCheckState extends State<OtageCloseAndCheck> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        return false;
-      },
-      child: Scaffold(
-          appBar: AppBar(
-            title: ShowTitle(title: "ตรวจสอบและปิดงาน", index: 3),
-          ),
-          drawer: ShowDrawer(userModel: userModel),
-          body: load ? ShowProgress() : buildListView()),
-    );
+  void checkConnection(BuildContext context) async {
+    final bool isConn = await InternetConnectionChecker().hasConnection;
+    setState(() {
+      isConnected = isConn;
+    });
   }
 
-  ListView buildListView() {
-    double size = MediaQuery.of(context).size.width;
-    return ListView.builder(
-      itemCount: models.length,
-      itemBuilder: (context, index) => GestureDetector(
-        //child: Text('${models[index].reqNo}'),
-        onTap: () {
-          print("continue...." + widget.userModel.userID);
-          print("main...." + models[index].mainmenu);
-          print("req no #------->" + models[index].reqNo);
-          print('workstatus #-------> ${models[index].workstatus}');
-          print('workperform #-------> ${models[index].workperform}');
-          if (models[index].workstatus != 5) {
-            isConnected
-                ? Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => OutageWorklistClose(
-                            userModel: userModel,
-                            reqNo: models[index].reqNo,
-                            workStatus: models[index].workstatus,
-                            mainID: models[index].mainmenu,
-                            workPerform: models[index].workperform,
-                            isMainLine: models[index].isMainLine)),
-                  )
-                : offilineDialog(
-                    context,
-                    "offline",
-                    "ต้องการทำงานแบบออฟไลน์หรือไม่",
-                    models[index].reqNo,
-                    widget.userModel,
-                    models[index].workstatus,
-                    models[index].mainmenu,"1");
-          }
+  //****************** ONLINE TO SERVER******** */
+  Future<Null> onlineInsert(String reqNo) async {
+    InsertWorklistOutageModel insertWorklistModel;
+    String _strJson;
+    List<String> listValues = [];
+    String main, sub = "";
+    int i = 0;
+    SQLiteHelperOutage().selectWorkList(reqNo, "1").then((result) async {
+      if (result != null || result.length > 0) {
+        print(
+            'onlineInsert()    Req No :  $reqNo  ---> size : ${result.length}');
+        for (var item in result) {
+          main = item.mainmenu;
+          sub = item.submenU;
+          insertWorklistModel = InsertWorklistOutageModel(
+              deptName: widget.userModel.deptName == null
+                  ? ""
+                  : widget.userModel.deptName,
+              dateTimeWorkFinish: "",
+              docRequire: "",
+              empLeaderID: widget.userModel.leaderId == null
+                  ? ""
+                  : widget.userModel.leaderId,
+              employeeID: widget.userModel.userID == null
+                  ? ""
+                  : widget.userModel.userID,
+              iPAddress: "",
+              image: item.imgList == null ? [""] : generateImage(item.imgList),
+              // image: [""],
+              isOffElect: "",
+              offElectReason: "",
+              isSortGND: "",
+              gNDReason: "",
+              locationLat: lat.toString(),
+              locationLng: lng.toString(),
+              macAddress: "",
+              menuChecklistID: item == null ? "" : item.checklist.toString(),
+              menuMainID: item.mainmenu,
+              menuSubID: item.submenU,
+              ownerID: "H",
+              parcel: "",
+              province: "",
+              regionCode:
+                  widget.userModel.rsg == null ? "" : widget.userModel.rsg,
+              remark: "off|",
+              sender: widget.userModel.userID == null
+                  ? ""
+                  : widget.userModel.userID,
+              station: "",
+              tokenNoti: "",
+              waitApprove: "",
+              workArea: "",
+              workPerform: "",
+              workStatus: "5",
+              workType: "",
+              reqNo: reqNo,
+              doOrNot: "",
+              isMainLine: "",
+              reasonNot: "");
+
+          _strJson = json.encode(insertWorklistModel);
+          listValues.add(_strJson);
+        } //for
+      } //if
+      //
+
+      print('######  onlineInsert >  listValues.length : ${listValues.length}');
+
+      final response = await http.post(
+        Uri.parse('${MyConstant.webService}WeSafe_InsertTransactionO'),
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
         },
-        child: Card(
-          color: models[index].workstatus == 2
-              ? Colors.green[200]
-              : Colors.grey[300],
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-              child: Column(
-                children: [
-                  ShowTitle(
-                    title: models[index].reqNo +
-                        "   : " +
-                        models[index].workstatus.toString(),
-                    index: 4,
-                  ),
-                  ShowTitle(
-                    title: models[index].remark,
-                    index: 2,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
+        body: utf8.encode(listValues.toString()),
+      );
+
+      print("respond  : " + response.body);
+      ResponeModel responeModel =
+          ResponeModel.fromJson(jsonDecode(response.body));
+
+      SQLiteHelperOutage()
+          .updateWorkListReq(reqNo, responeModel.result.reply.toString(), 1)
+          .then((value) {
+        setLine(responeModel.result.reply.toString(), main, sub);
+      });
+    });
+    setState(() {
+      load = false;
+    });
+  } //
+
+  Future<Null> setLine(String reqNo, String mainMenu, String subMenu) async {
+    findLatLng();
+    try {
+      //test
+      // List<String> lineToken = [];
+      // lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+
+      final client = HttpClient();
+      for (int i = 0; i < lineToken.length; i++) {
+        print('####--->  line Token  :  ${lineToken[i]}');
+        final request = await client
+            .postUrl(Uri.parse("${MyConstant.webService}WeSafe_SendToken"));
+        String msg = "📣 ใบงาน : $reqNo" +
+            "\n" +
+            mainMenu +
+            " : " +
+            subMenu +
+            "\n" +
+            "\n" +
+            widget.userModel.firstName +
+            " " +
+            widget.userModel.lastName +
+            "\n" +
+            widget.userModel.deptName +
+            "\n" +
+            MyConstant.strDateNow +
+            "\n" +
+            "https://wesafe.pea.co.th/admin/detail.aspx?WebGetReqNO=$reqNo";
+
+        request.headers.contentType =
+            new ContentType("application", "json", charset: "utf-8");
+
+        request.write('{"strMsg": "$msg",   "strToken": "${lineToken[i]}"}');
+        final response = await request.close();
+
+        //output return
+        response.transform(utf8.decoder).listen((contents) {
+          print("###### notification reply : $contents");
+        });
+      }
+      setState(() {
+        load = false;
+      });
+    } catch (e) {
+      normalDialog(context, 'Error', e.toString());
+    }
+  }
+
+  Future<Null> findLatLng() async {
+    Position position = await Geolocator.getLastKnownPosition();
+
+    setState(() {
+      lat = position.latitude;
+      lng = position.longitude;
+    });
+  }
+
+  List generateImage(String strImg) {
+    List arr = new List();
+    arr = strImg.split(',');
+    //print('### generateImage --- > ${arr[0].toString()}');
+    return arr;
+  }
+
+  Future<Null> getToken() async {
+    //print("#--------> get line token");
+    final bool isConnect = await InternetConnectionChecker().hasConnection;
+    MastMainMenuModel _mainMenuModel;
+    try {
+      if (isConnect) {
+        final client = HttpClient();
+        final request = await client
+            .postUrl(Uri.parse("${MyConstant.webService}WeSafeCheckMainMenu"));
+        request.headers.set(HttpHeaders.contentTypeHeader, "application/json");
+        request.write(
+            '{"Owner_ID": "H",   "REGION_CODE": "${widget.userModel.rsg}"}');
+        final response = await request.close();
+
+        response.transform(utf8.decoder).listen(
+          (contents) {
+            if (contents.contains('Error')) {
+              contents = contents.replaceAll("[", "").replaceAll("]", "");
+              normalDialog(context, 'Error', contents);
+            } else {
+              // print("### return  : " + contents);
+              _mainMenuModel =
+                  MastMainMenuModel.fromJson(json.decode(contents));
+
+              for (int i = 0; i < 1; i++) {
+                setState(() {
+                  load = false;
+                  lineToken = _mainMenuModel.result[i].lineToken;
+                });
+              }
+            } //else
+          },
+        );
+      }
+    } catch (e) {
+      normalDialog(context, "Error", e.toString());
+    }
   }
 }

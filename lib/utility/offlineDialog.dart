@@ -12,7 +12,9 @@ Future<Null> offilineDialog(
     SQLiteUserModel userModel,
     int workStatus,
     String mainID,
-    String subID) async {
+    String subID,
+    int ismainLine,
+    String workPerform) async {
   showDialog(
     context: context,
     builder: (context) => SimpleDialog(
@@ -46,6 +48,8 @@ Future<Null> offilineDialog(
                                     reqNo: reqNo,
                                     workStatus: workStatus,
                                     mainID: mainID,
+                                    isMainLine: ismainLine,
+                                    workPerform: workPerform,
                                   )),
                         );
                       } else if (mainID.substring(0, 1) == "1") {

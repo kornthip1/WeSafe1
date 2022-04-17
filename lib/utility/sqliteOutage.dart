@@ -106,10 +106,11 @@ class SQLiteHelperOutage {
         "     WHEN WORKSTATUS = 3 THEN 'ไม่อนุมัติ'" +
         "     WHEN WORKSTATUS = 4 THEN 'อนุมัติแล้วยังไม่จบกระบวนการ (รอปิดงาน)'" +
         "     WHEN WORKSTATUS = 5 THEN 'ปิดงาน'" +
+        "     WHEN WORKSTATUS = 6 THEN 'ปิดงานแล้ว (รออัพเดทขึ้น Server)'" +
         "     END AS REMARK," +
         "     MAINMENU,"
             "     WORKSTATUS  , WORKPERFORM  " +
-        "     FROM  WORKLIST WHERE ISCOMPLATE  != 1  AND MAINMENU != '999' AND WORKSTATUS != 0 " +
+        "     FROM  WORKLIST WHERE ISCOMPLATE  != 1  AND MAINMENU != '999' AND   WORKPERFORM != 'null' AND (  WORKSTATUS == 2 OR WORKSTATUS == 4 OR WORKSTATUS == 6 ) " +
         "     ORDER BY REQNO DESC  ");
 
     //AND  ( WORKSTATUS = 4  OR WORKSTATUS = 5 )
@@ -122,12 +123,32 @@ class SQLiteHelperOutage {
     return models;
   }
 
+  Future<List<SQLiteWorklistOutageModel>> selectWorkListOffLine() async {
+    Database database = await connectedDatabase();
+    List<SQLiteWorklistOutageModel> models = [];
+    List<Map<String, dynamic>> maps = await database.rawQuery(
+        "SELECT DISTINCT REQNO " +
+            "FROM  WORKLIST  WHERE WORKSTATUS == 6 " +
+            "ORDER BY REQNO ASC  ");
+    int i = 1;
+    for (var item in maps) {
+      i++;
+      if (item.length != i) {
+        SQLiteWorklistOutageModel model =
+            SQLiteWorklistOutageModel.fromMap(item);
+        models.add(model);
+      }
+    }
+
+    return models;
+  }
+
   // update sent complete or not
   Future<Null> updateWorkListStatus(int status, String reqNo) async {
     Database database = await connectedDatabase();
     try {
       int count = await database.rawUpdate(
-          'UPDATE  WORKLIST  ' + 'SET WORKSTATUS = ?  ' + 'WHERE REQNO = ? ',
+          'UPDATE  WORKLIST  SET WORKSTATUS = ?  WHERE REQNO = ? ',
           [status, '$reqNo']);
 
       print(

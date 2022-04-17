@@ -95,6 +95,26 @@ class SQLiteHotline {
     return models;
   }
 
+  Future<List<SQLiteWorklistOutageModel>> selectWorkListOffLine() async {
+    Database database = await connectedDatabase();
+    List<SQLiteWorklistOutageModel> models = [];
+    List<Map<String, dynamic>> maps = await database.rawQuery(
+        "SELECT DISTINCT REQNO " +
+            "FROM  WORKLIST  WHERE WORKSTATUS == 6 " +
+            "ORDER BY REQNO ASC  ");
+    int i = 1;
+    for (var item in maps) {
+      i++;
+      if (item.length != i) {
+        SQLiteWorklistOutageModel model =
+            SQLiteWorklistOutageModel.fromMap(item);
+        models.add(model);
+      }
+    }
+
+    return models;
+  }
+
   Future<List<SQLiteWorklistOutageModel>> selectWorkListForCheck() async {
     Database database = await connectedDatabase();
     List<SQLiteWorklistOutageModel> models = [];

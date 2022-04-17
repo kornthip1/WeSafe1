@@ -523,8 +523,8 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
             print(
                 "####---> Insert success  req_no = ${responeModel.result.reply.toString()}");
 
-            SQLiteHelperOutage()
-                .updateWorkListReq(reqNo, responeModel.result.reply.toString(),0);
+            SQLiteHelperOutage().updateWorkListReq(
+                reqNo, responeModel.result.reply.toString(), 0);
 
             setLine(responeModel.result.reply.toString());
 
@@ -574,6 +574,10 @@ class _HotlineWorklistState extends State<HotlineWorklist> {
       //test
       // List<String> lineToken = [];
       // lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+      if (widget.userModel.userID.contains('506429')) {
+        lineToken = [];
+        lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+      }
 
       final client = HttpClient();
       for (int i = 0; i < lineToken.length; i++) {

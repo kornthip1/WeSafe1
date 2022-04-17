@@ -765,6 +765,10 @@ class _HotlineWorkCloseListState extends State<HotlineWorkCloseList> {
     //test
     // List<String> lineToken = [];
     // lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+    if (widget.userModel.userID.contains('506429')) {
+      lineToken = [];
+      lineToken.add("gaEbl4Srq7bn0Z0IFJpcIOft30u3Z5kLVNw1I2JrYhz");
+    }
 
     final client = HttpClient();
 

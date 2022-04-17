@@ -44,7 +44,7 @@ dependencies:
   url_launcher: ^6.0.20
   scheduled_timer: ^2.0.1
   flutter_slidable: ^1.2.0
-
+  webview_flutter: ^3.0.2
   
 dev_dependencies:
   flutter_test:
