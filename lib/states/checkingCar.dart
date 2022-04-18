@@ -32,6 +32,8 @@ class _CheckingCarState extends State<CheckingCar> {
           child: WebView(
             initialUrl:
                 'https://wesafe.pea.co.th/car/index.php/validate/index/${widget.userModel.rsg}/${widget.userModel.userID}/',
+            // initialUrl:
+            //     'https://wesafe.pea.co.th/checkcar/?trsg=${widget.userModel.rsg}&empCode=${widget.userModel.userID}',
             javascriptMode: JavascriptMode.unrestricted,
             onWebViewCreated: (WebViewController webViewController) {
               _controller = webViewController;
